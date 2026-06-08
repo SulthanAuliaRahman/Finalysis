@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  laravel:
+    build: .
+    container_name: financial_laravel
+    ports:
+      - "8080:8080"   # Laravel app
+      - "5173:5173"   # Vite dev server (hot-reload CSS/JS)
+    env_file:
+      - .env
+    volumes:
+      # Mount seluruh project untuk hot-reload
+      - .:/var/www/html
+      # Exclude vendor dan node_modules dari volume mount
+      - /var/www/html/vendor
+      - /var/www/html/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: financial_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: inertiajstest
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

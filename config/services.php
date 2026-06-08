@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'python_service' => [
+        'url'     => env('PYTHON_SERVICE_URL', 'http://localhost:8000'),
+        'timeout' => env('PYTHON_SERVICE_TIMEOUT', 120),
+    ],
+
 ];
