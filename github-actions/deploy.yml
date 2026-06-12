@@ -1,0 +1,136 @@
+# ══════════════════════════════════════════════════════════════
+# .github/workflows/deploy.yml — Finalysis Laravel
+# Trigger: push ke branch main
+# Pipeline: Build → Push ACR → Deploy Azure Container Apps
+# ══════════════════════════════════════════════════════════════
+
+name: Deploy Laravel to Azure Container Apps
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Bisa trigger manual dari GitHub UI
+
+env:
+  # Azure Container Registry
+  ACR_NAME: finalysisacr
+  ACR_LOGIN_SERVER: finalysisacr.azurecr.io
+  IMAGE_NAME: finalysis-laravel
+
+  # Azure Resources
+  RESOURCE_GROUP: rg-finalysis
+  CONTAINER_APP_NAME: finalysis-laravel
+  CONTAINER_APP_ENV: finalysis-env
+
+jobs:
+  # ────────────────────────────────────────────────────────────
+  # JOB 1: Build & Push Docker Image ke ACR
+  # ────────────────────────────────────────────────────────────
+  build-and-push:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tag }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Login ke Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login ke Azure Container Registry
+        run: |
+          az acr login --name ${{ env.ACR_NAME }}
+
+      # Generate tag berdasarkan commit SHA (short) + timestamp
+      - name: Generate Image Tag
+        id: meta
+        run: |
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "tag=${SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "Image tag: ${SHORT_SHA}"
+
+      # Setup Docker Buildx untuk layer caching
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build & Push dengan cache dari ACR
+      - name: Build & Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tag }}
+            ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
+          # Layer caching dari registry — kunci efisiensi CI/CD
+          cache-from: type=registry,ref=${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+
+  # ────────────────────────────────────────────────────────────
+  # JOB 2: Deploy ke Azure Container Apps
+  # ────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to Azure Container Apps
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: production
+
+    steps:
+      - name: Login ke Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy ke Azure Container Apps
+        run: |
+          az containerapp update \
+            --name ${{ env.CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ needs.build-and-push.outputs.image-tag }} \
+            --set-env-vars \
+              APP_ENV=production \
+              APP_DEBUG=false \
+              APP_KEY=secretref:app-key \
+              APP_URL=secretref:app-url \
+              DB_CONNECTION=pgsql \
+              DB_HOST=secretref:db-host \
+              DB_PORT=5432 \
+              DB_DATABASE=secretref:db-database \
+              DB_USERNAME=secretref:db-username \
+              DB_PASSWORD=secretref:db-password \
+              SESSION_DRIVER=file \
+              CACHE_STORE=database \
+              QUEUE_CONNECTION=database \
+              PYTHON_SERVICE_URL=secretref:python-service-url \
+              PYTHON_SERVICE_TIMEOUT=600 \
+              LOG_LEVEL=error
+
+      - name: Verifikasi Deployment
+        run: |
+          echo "Menunggu deployment selesai..."
+          sleep 15
+          STATUS=$(az containerapp show \
+            --name ${{ env.CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --query "properties.runningStatus" -o tsv)
+          echo "Status: $STATUS"
+          if [ "$STATUS" != "Running" ]; then
+            echo "⚠️  Container tidak Running, cek Azure Portal"
+          else
+            echo "✅ Deployment berhasil!"
+          fi
+
+      - name: Print URL Aplikasi
+        run: |
+          URL=$(az containerapp show \
+            --name ${{ env.CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --query "properties.configuration.ingress.fqdn" -o tsv)
+          echo "✅ Aplikasi berjalan di: https://${URL}"
