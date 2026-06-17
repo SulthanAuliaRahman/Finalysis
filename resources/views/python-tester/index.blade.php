@@ -201,6 +201,36 @@
             font-size: 12px;
         }
         .stmt-tag span { color: var(--accent); margin-left: 5px; }
+        .stmt-checks {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        .stmt-check-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 8px 14px;
+            cursor: pointer;
+            transition: border-color .15s, background .15s;
+            user-select: none;
+            font-size: 13px;
+        }
+        .stmt-check-item:has(input:checked) {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+        .stmt-check-item input[type="checkbox"] {
+            accent-color: var(--accent);
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+        }
 
         /* ── Chunk viewer ── */
         .chunk-viewer {
@@ -259,6 +289,32 @@
             justify-content: center;
             margin-top: 10px;
         }
+
+        .btn-embed {
+            width: 100%;
+            justify-content: center;
+            margin-top: 10px;
+            background: var(--green-dim);
+            border-color: var(--green);
+            color: var(--green);
+        }
+        .btn-embed:hover {
+            background: var(--green);
+            border-color: var(--green);
+            color: #0f1117;
+        }
+        .btn-embed:disabled {
+            opacity: .35;
+            cursor: not-allowed;
+        }
+        .embed-status {
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+            margin-top: 6px;
+        }
+        .embed-status.success { color: var(--green); }
+        .embed-status.error   { color: var(--red); }
     </style>
 </head>
 <body>
@@ -286,6 +342,24 @@
                 <label>Period</label>
                 <input type="text" id="period" value="2024" placeholder="e.g. 2024 or Q1-2024" />
             </div>
+        </div>
+    </div>
+
+    <div class="field" style="margin-top:4px;">
+        <label>Statement Types <span style="color:var(--red)">*</span></label>
+        <div class="stmt-checks">
+            <label class="stmt-check-item">
+                <input type="checkbox" name="stmt_type" value="neraca" checked>
+                Neraca
+            </label>
+            <label class="stmt-check-item">
+                <input type="checkbox" name="stmt_type" value="laba_rugi" checked>
+                Laba Rugi
+            </label>
+            <label class="stmt-check-item">
+                <input type="checkbox" name="stmt_type" value="arus_kas" checked>
+                Arus Kas
+            </label>
         </div>
     </div>
 
@@ -344,6 +418,16 @@
             <div class="chunk-meta" id="chunkMeta"></div>
         </div>
 
+        <button class="btn-embed" id="btnEmbed" onclick="runEmbed()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m6.36 6.36l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m6.36-6.36l4.24-4.24"/>
+            </svg>
+            Start Data Loader (Embed to Vector Store)
+        </button>
+
+        <div class="embed-status" id="embedStatus"></div>
+
         <button class="btn-download" onclick="downloadJSON()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download Full JSON
@@ -356,6 +440,7 @@
 const csrfToken    = document.querySelector('meta[name="csrf-token"]').content;
 const ingestUrl    = "{{ route('python-tester.ingest') }}";
 const healthUrl    = "{{ route('python-tester.health') }}";
+const embedUrl = "{{ route('python-tester.embed') }}";
 
 let selectedFile   = null;
 let allChunks      = [];
@@ -435,6 +520,14 @@ async function runIngest() {
     const period  = document.getElementById('period').value.trim();
     if (!company || !period) { showAlert('Company name and period are required.', 'error'); return; }
 
+    // Ambil statement types yang dicentang
+    const checkedBoxes = document.querySelectorAll('input[name="stmt_type"]:checked');
+    const statementTypes = Array.from(checkedBoxes).map(cb => cb.value);
+    if (statementTypes.length === 0) {
+        showAlert('Pilih minimal satu statement type.', 'error');
+        return;
+    }
+
     const btn = document.getElementById('btnIngest');
     btn.disabled    = true;
     btn.textContent = 'Processing…';
@@ -443,15 +536,16 @@ async function runIngest() {
     showAlert('Uploading PDF to Python service — this may take a minute for large files…', 'info');
 
     const fd = new FormData();
-    fd.append('file',    selectedFile);
-    fd.append('company', company);
-    fd.append('period',  period);
+    fd.append('file',            selectedFile);
+    fd.append('company',         company);
+    fd.append('period',          period);
+    fd.append('statement_types', JSON.stringify(statementTypes));  // ← tambahan
 
     try {
         const res  = await fetch(ingestUrl, {
-            method: 'POST',
+            method:  'POST',
             headers: { 'X-CSRF-TOKEN': csrfToken },
-            body: fd,
+            body:    fd,
         });
         const data = await res.json();
 
@@ -466,8 +560,8 @@ async function runIngest() {
     } catch (e) {
         showAlert('Request failed: ' + e.message, 'error');
     } finally {
-        btn.disabled    = false;
-        btn.innerHTML   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg> Send to Python Service`;
+        btn.disabled  = false;
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg> Send to Python Service`;
     }
 }
 
@@ -530,6 +624,49 @@ function downloadJSON() {
     a.href     = URL.createObjectURL(new Blob([JSON.stringify(fullResponse, null, 2)], { type: 'application/json' }));
     a.download = 'ingest_result.json';
     a.click();
+}
+
+async function runEmbed() {
+    if (!fullResponse || !fullResponse.chunks || !fullResponse.chunks.length) {
+        showAlert('No chunks available. Run ingest first.', 'error');
+        return;
+    }
+
+    const btn    = document.getElementById('btnEmbed');
+    const status = document.getElementById('embedStatus');
+
+    btn.disabled = true;
+    btn.textContent = 'Embedding…';
+    status.className = 'embed-status';
+    status.textContent = 'Generating embeddings and saving to vector store…';
+
+    try {
+        const res = await fetch(embedUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ chunks: fullResponse.chunks }),
+        });
+        const data = await res.json();
+
+        if (!data.ok) {
+            status.className   = 'embed-status error';
+            status.textContent = 'Error: ' + (data.error ?? JSON.stringify(data));
+            return;
+        }
+
+        status.className   = 'embed-status success';
+        status.textContent = '✅ ' + data.embedded + ' chunk(s) embedded to vector store.';
+    } catch (e) {
+        status.className   = 'embed-status error';
+        status.textContent = 'Request failed: ' + e.message;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m6.36 6.36l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m6.36-6.36l4.24-4.24"/></svg> Start Data Loader (Embed to Vector Store)`;
+    }
 }
 </script>
 </body>

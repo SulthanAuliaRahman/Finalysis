@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9e57f485fd364b0de45c4d2e905cfc3e",
+    "content-hash": "4c8b4231eb80b6ff5acdf9955a082b71",
     "packages": [
         {
             "name": "brick/math",
@@ -2587,16 +2587,16 @@
         },
         {
             "name": "neuron-core/neuron-ai",
-            "version": "3.15.5",
+            "version": "3.15.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/neuron-core/neuron-ai.git",
-                "reference": "d8e826cdbc52a41539a10501428e4745f1702b31"
+                "reference": "c93862119cda32bc672d3823a8107ae2bd29f0b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/neuron-core/neuron-ai/zipball/d8e826cdbc52a41539a10501428e4745f1702b31",
-                "reference": "d8e826cdbc52a41539a10501428e4745f1702b31",
+                "url": "https://api.github.com/repos/neuron-core/neuron-ai/zipball/c93862119cda32bc672d3823a8107ae2bd29f0b5",
+                "reference": "c93862119cda32bc672d3823a8107ae2bd29f0b5",
                 "shasum": ""
             },
             "require": {
@@ -2647,7 +2647,7 @@
             "description": "The PHP Agentic Framework.",
             "support": {
                 "issues": "https://github.com/neuron-core/neuron-ai/issues",
-                "source": "https://github.com/neuron-core/neuron-ai/tree/3.15.5"
+                "source": "https://github.com/neuron-core/neuron-ai/tree/3.15.11"
             },
             "funding": [
                 {
@@ -2655,7 +2655,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-05-28T09:42:58+00:00"
+            "time": "2026-06-12T12:24:14+00:00"
         },
         {
             "name": "neuron-core/neuron-laravel",

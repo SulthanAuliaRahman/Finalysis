@@ -31,13 +31,14 @@ class PythonDocumentService
     /**
      * Full pipeline: chunking + extraction.
      */
-    public function ingest(UploadedFile $file, string $company, string $period): array
+    public function ingest(UploadedFile $file, string $company, string $period,array $statementTypes = ['neraca','laba_rugi','arus_kas'] ): array
     {
         $response = Http::timeout($this->timeout)
             ->attach('file', file_get_contents($file->getRealPath()), $file->getClientOriginalName())
             ->post("{$this->baseUrl}/api/v1/ingest", [
                 'company'        => $company,
                 'period'         => $period,
+                'statement_types' => json_encode($statementTypes),
                 'run_extraction' => 'true',
             ]);
 

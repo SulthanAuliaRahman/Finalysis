@@ -16,6 +16,12 @@ Route::prefix('python-tester')->name('python-tester.')->group(function () {
     // Chunking
     Route::post('/ingest', [PythonTesterController::class, 'ingest'])->name('ingest');
 
+    //embedd
+    Route::post('/embed', [PythonTesterController::class, 'embed'])->name('embed');
+
+    Route::get('/chat',       [PythonTesterController::class, 'chatPage'])->name('chat');
+    Route::post('/chat/ask',  [PythonTesterController::class, 'chatAsk'])->name('chat.ask');
+
     // Extractor
     Route::get('/extract',      [PythonTesterController::class, 'index2'])->name('index2');
     Route::post('/extract/run', [PythonTesterController::class, 'extract'])->name('extract');
