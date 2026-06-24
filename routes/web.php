@@ -5,8 +5,10 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\DocumentController;
-
 use App\Http\Controllers\PythonTesterController;
+
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PerusahaanController;
 
 Route::prefix('python-tester')->name('python-tester.')->group(function () {
 
@@ -29,6 +31,7 @@ Route::prefix('python-tester')->name('python-tester.')->group(function () {
 
 
 
+Route::get('/perusahaan', [PerusahaanController::class, 'index']);
 
 Route::get('/documents/upload', [DocumentController::class, 'create'])->name('documents.create');
 Route::post('/documents',       [DocumentController::class, 'store'])->name('documents.store');
