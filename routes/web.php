@@ -8,7 +8,11 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\PythonTesterController;
 
 use App\Http\Controllers\HomeController;
+
+// Real Not Test
 use App\Http\Controllers\PerusahaanController;
+use App\Http\Controllers\DokumenController;
+
 
 Route::prefix('python-tester')->name('python-tester.')->group(function () {
 
@@ -31,7 +35,24 @@ Route::prefix('python-tester')->name('python-tester.')->group(function () {
 
 
 
-Route::get('/perusahaan', [PerusahaanController::class, 'index']);
+// Antarmuka Utama & Operasi CRUD Perusahaan (Halaman Terpisah)
+Route::get('/perusahaan', [PerusahaanController::class, 'index'])->name('perusahaan.index');
+Route::get('/perusahaan/create', [PerusahaanController::class, 'create'])->name('perusahaan.create');
+Route::post('/perusahaan', [PerusahaanController::class, 'store'])->name('perusahaan.store');
+Route::get('/perusahaan/{perusahaan}/edit', [PerusahaanController::class, 'edit'])->name('perusahaan.edit');
+Route::put('/perusahaan/{perusahaan}', [PerusahaanController::class, 'update'])->name('perusahaan.update');
+Route::delete('/perusahaan/{perusahaan}', [PerusahaanController::class, 'destroy'])->name('perusahaan.destroy');
+
+// Rute Pengelolaan Dokumen Perusahaan
+Route::get('/perusahaan/{perusahaan}/dokumen', [DokumenController::class, 'index'])->name('perusahaan.dokumen.index');
+Route::get('/perusahaan/{perusahaan}/dokumen/create', [DokumenController::class, 'create'])->name('perusahaan.dokumen.create');
+Route::post('/perusahaan/{perusahaan}/dokumen', [DokumenController::class, 'store'])->name('perusahaan.dokumen.store');
+
+// Halaman Alur Proses RAG Terpisah
+Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/review', [DokumenController::class, 'review'])->name('perusahaan.dokumen.review');
+Route::post('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunk', [DokumenController::class, 'chunk'])->name('perusahaan.dokumen.chunk');
+Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'embedPage'])->name('perusahaan.dokumen.embed');
+Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunks', [DokumenController::class, 'showChunks'])->name('perusahaan.dokumen.chunks');
 
 Route::get('/documents/upload', [DocumentController::class, 'create'])->name('documents.create');
 Route::post('/documents',       [DocumentController::class, 'store'])->name('documents.store');
