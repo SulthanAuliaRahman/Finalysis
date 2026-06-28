@@ -17,7 +17,7 @@ class PerusahaanController extends Controller
                 $query->where('nama', 'like', "%{$search}%")
                       ->orWhere('sektor', 'like', "%{$search}%");
             })
-            ->withCount('dokumen') // Menghitung otomatis jumlah dokumen terelasi
+            ->withCount('dokumen')
             ->latest()
             ->get();
 

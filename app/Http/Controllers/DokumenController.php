@@ -3,49 +3,37 @@
 namespace App\Http\Controllers;
 
 use App\Models\Perusahaan;
+use App\Models\Dokumen;
+use App\Services\PythonDocumentService;
+use App\Neuron\DataLoader\DataLoader;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class DokumenController extends Controller
 {
-    // Halaman Utama: Daftar Dokumen Berdasarkan Perusahaan
+    protected PythonDocumentService $pythonService;
+
+    public function __construct(PythonDocumentService $pythonService)
+    {
+        $this->pythonService = $pythonService;
+    }
+
     public function index(Perusahaan $perusahaan)
     {
-        // DATA DUMMY: Simulasi daftar dokumen dengan berbagai status untuk melihat tombol aksi dinamis
-        $dummyDokumen = [
-            [
-                'id' => 101,
-                'nama_file' => 'Draf LK Pilar 2024.pdf',
-                'periode' => '2024',
-                'ukuran_file' => 4404019, // ~4.2 MB
-                'status' => 'diekstrak', // Akan memunculkan tombol "Lanjut Review"
-                'created_at' => now()->subDays(2)->toIsoString()
-            ],
-            [
-                'id' => 102,
-                'nama_file' => 'Laporan_Keuangan_Q3_Asli.pdf',
-                'periode' => '2024',
-                'ukuran_file' => 1887436, // ~1.8 MB
-                'status' => 'dichunk', // Akan memunculkan tombol "Lanjut Embed"
-                'created_at' => now()->subDays(5)->toIsoString()
-            ],
-            [
-                'id' => 103,
-                'nama_file' => 'Annual_Report_Final_V2.pdf',
-                'periode' => '2023',
-                'ukuran_file' => 5767168, // ~5.5 MB
-                'status' => 'selesai', // Akan memunculkan tombol "Lihat Chunks"
-                'created_at' => now()->subMonths(1)->toIsoString()
-            ],
-        ];
+        $dokumen = $perusahaan->dokumen()
+            ->select('id', 'nama_file', 'periode', 'ukuran_file', 'status', 'created_at')
+            ->latest()
+            ->get();
 
         return Inertia::render('Perusahaan/Dokumen/Index', [
             'perusahaan' => $perusahaan,
-            'dokumenList' => $dummyDokumen
+            'dokumenList' => $dokumen
         ]);
     }
 
-    // Step 1: Menampilkan Halaman Upload
     public function create(Perusahaan $perusahaan)
     {
         return Inertia::render('Perusahaan/Dokumen/Create', [
@@ -53,164 +41,282 @@ class DokumenController extends Controller
         ]);
     }
 
-    // Step 1 (Action): Simulasi Terima File & Redirect ke Halaman Review (Step 2)
     public function store(Request $request, Perusahaan $perusahaan)
     {
-        // Validasi formalitas agar useForm di Front End tidak error
         $request->validate([
-            'file' => 'required',
-            'periode' => 'required',
+            'file' => 'required|file|mimes:pdf|max:20480', // Maksimal 20MB
+            'periode' => 'required|string|max:10',
             'statement_types' => 'required|array'
         ]);
 
-        // Simulasi ID Dokumen Baru yang berhasil dibuat di database dengan status "diekstrak"
-        $mockNewDokumenId = 101;
+        $file = $request->file('file');
+        $namaFileOriginal = $file->getClientOriginalName();
+        $ukuranFile = $file->getSize();
+        $storedPath = $file->storeAs('documents', time() . '_' . $namaFileOriginal, 'local');
 
-        // Setelah upload, langsung arahkan user ke halaman Review (Step 2)
-        return redirect()->route('perusahaan.dokumen.review', [
-            'perusahaan' => $perusahaan->id,
-            'dokumen' => $mockNewDokumenId
-        ]);
+        $dokumen = DB::transaction(function () use ($perusahaan, $namaFileOriginal, $storedPath, $request, $ukuranFile) {
+            return Dokumen::create([
+                'perusahaan_id' => $perusahaan->id,
+                'nama_file' => $namaFileOriginal,
+                'storage_path' => $storedPath,
+                'periode' => $request->periode,
+                'statement_types' => $request->statement_types,
+                'ukuran_file' => $ukuranFile,
+                'status' => 'menunggu'
+            ]);
+        });
+
+        try {
+            $result = $this->pythonService->extract($file, $perusahaan->nama, $request->periode, $request->statement_types);
+
+            // dd($result); //  Debugging: Tampilkan hasil ekstraksi dari Python Service
+
+            DB::transaction(function () use ($dokumen, $result) {
+                $extracted = $result['extracted'] ?? [];
+                $foundAtData = $result['found_at'] ?? [];
+
+                // Filter data found_at per kelompok komponen untuk memetakan traceability koordinat
+                $filterFoundAt = function($fields) use ($foundAtData) {
+                    return array_intersect_key($foundAtData, array_flip($fields));
+                };
+
+                // Ambil nilai Neraca
+                if (isset($extracted['balance_sheet'])) {
+                    $bs = $extracted['balance_sheet'];
+                    DB::table('neraca')->insert([
+                        'dokumen_id' => $dokumen->id,
+                        'total_equity' => $bs['total_equity'] ?? null,
+                        'total_liabilities' => $bs['total_liabilities'] ?? null,
+                        'current_liabilities' => $bs['current_liabilities'] ?? null,
+                        'total_assets' => $bs['total_assets'] ?? null,
+                        'current_assets' => $bs['current_assets'] ?? null,
+                        'found_at' => json_encode($filterFoundAt(['total_equity', 'total_liabilities', 'current_liabilities', 'total_assets', 'current_assets'])),
+                        'created_at' => now(), 'updated_at' => now()
+                    ]);
+                }
+
+                // Ambil nilai Laba Rugi
+                if (isset($extracted['income_statement'])) {
+                    $is = $extracted['income_statement'];
+                    DB::table('laba_rugi')->insert([
+                        'dokumen_id' => $dokumen->id,
+                        'pendapatan'  => $is['revenue'] ?? null,
+                        'laba_kotor'  => $is['gross_profit'] ?? null,
+                        'laba_bersih' => $is['net_profit'] ?? null,
+                        'found_at' => json_encode($filterFoundAt(['revenue', 'gross_profit', 'net_profit'])),
+                        'created_at' => now(), 'updated_at' => now()
+                    ]);
+                }
+
+                // Ambil nilai Arus Kas
+                if (isset($extracted['cash_flow'])) {
+                    $cf = $extracted['cash_flow'];
+                    DB::table('arus_kas')->insert([
+                        'dokumen_id' => $dokumen->id,
+                        'kas_masuk'  => $cf['cfo'] ?? null,
+                        'kas_keluar' => $cf['cff'] ?? null,
+                        'found_at' => json_encode($filterFoundAt(['cfo', 'cff'])),
+                        'created_at' => now(), 'updated_at' => now()
+                    ]);
+                }
+
+                $dokumen->update(['status' => 'diekstrak']);
+            });
+
+            return redirect()->route('perusahaan.dokumen.review', [$perusahaan->id, $dokumen->id]);
+
+        } catch (\Exception $e) {
+            return redirect()->route('perusahaan.dokumen.index', $perusahaan->id)
+                ->with('error', 'Gagal ekstraksi AI: ' . $e->getMessage());
+        }
     }
 
-    // STEP 2: Halaman Verifikasi & Review Finansial (Memuat Data Dummy Hasil Extract Python)
-    public function review(Perusahaan $perusahaan, $dokumen)
+    public function review(Perusahaan $perusahaan, Dokumen $dokumen)
     {
-        $mockDokumenModel = [
-            'id' => $dokumen,
-            'nama_file' => 'Draf LK Pilar 2024.pdf',
-            'status' => 'diekstrak'
-        ];
+        $neraca = DB::table('neraca')->where('dokumen_id', $dokumen->id)->first();
+        $labaRugi = DB::table('laba_rugi')->where('dokumen_id', $dokumen->id)->first();
+        $arusKas = DB::table('arus_kas')->where('dokumen_id', $dokumen->id)->first();
 
-        // DATA DUMMY: Disesuaikan dengan skema database baru Anda
-        $dummyExtractedData = [
-            "neraca" => [
-                "total_equity" => 177925766,
-                "total_liabilities" => 1603932233,
-                "current_liabilities" => 1426006467,
-                "total_assets" => 1603932233,
-                "current_assets" => 1597428191,
-            ],
-            "laba_rugi" => [
-                "pendapatan" => null, // Bisa null jika tidak ke extrak
-                "laba_kotor" => 1443364106,
-                "laba_bersih" => 411158584
-            ],
-            "arus_kas" => [
-                "kas_masuk" => 520000000,
-                "kas_keluar" => 380000000
-            ]
-        ];
+        Log::info('neraca found_at raw:',   ['value' => $neraca?->found_at]);
+        Log::info('labarugi found_at raw:', ['value' => $labaRugi?->found_at]);
+        Log::info('aruskAs found_at raw:',  ['value' => $arusKas?->found_at]);
 
-        // DATA DUMMY FOUND AT: Menyimpan posisi deteksi untuk setiap field numerik
-        $dummyFoundAt = [
-            "total_equity" => ["page" => 1, "label_in_pdf" => "Jumlah Ekuitas", "all_numbers_on_row" => ["177.925.766"]],
-            "total_liabilities" => ["page" => 1, "label_in_pdf" => "Total Kewajiban", "all_numbers_on_row" => ["1.603.932.233"]],
-            "current_liabilities" => ["page" => 1, "label_in_pdf" => "Jumlah Kewajiban Lancar", "all_numbers_on_row" => ["1.426.006.467"]],
-            "total_assets" => ["page" => 1, "label_in_pdf" => "TOTAL AKTIVA", "all_numbers_on_row" => ["1.603.932.233"]],
-            "current_assets" => ["page" => 1, "label_in_pdf" => "Jumlah Aktiva Lancar", "all_numbers_on_row" => ["1.597.428.191"]],
-
-            "pendapatan" => ["page" => 2, "label_in_pdf" => "Pendapatan Bersih", "all_numbers_on_row" => ["3.676.484.627"]],
-            "laba_kotor" => ["page" => 2, "label_in_pdf" => "Laba Kotor", "all_numbers_on_row" => ["1.443.364.106", "2.100.000"]],
-            "laba_bersih" => ["page" => 2, "label_in_pdf" => "Laba Tahun Berjalan", "all_numbers_on_row" => ["411.158.584"]],
-
-            "kas_masuk" => ["page" => 3, "label_in_pdf" => "Arus Kas Masuk dari Operasional", "all_numbers_on_row" => ["520.000.000"]],
-            "kas_keluar" => ["page" => 3, "label_in_pdf" => "Arus Kas Keluar untuk Investasi", "all_numbers_on_row" => ["380.000.000"]]
-        ];
+        // Gabungkan seluruh payload found_at gabungan untuk dikirim ke frontend review
+        $foundAtMerged = array_merge(
+            json_decode($neraca->found_at ?? '{}', true),
+            json_decode($labaRugi->found_at ?? '{}', true),
+            json_decode($arusKas->found_at ?? '{}', true)
+        );
 
         return Inertia::render('Perusahaan/Dokumen/Review', [
             'perusahaan' => $perusahaan,
-            'dokumen' => $mockDokumenModel,
-            'extractedData' => $dummyExtractedData,
-            'foundAt' => $dummyFoundAt
+            'dokumen' => $dokumen,
+            'extractedData' => [
+                'neraca' => $neraca,
+                'laba_rugi' => $labaRugi,
+                'arus_kas' => $arusKas
+            ],
+            'foundAt' => $foundAtMerged
         ]);
     }
 
-    // Step 2 (Action): Simulasi Tombol "Proses Chunking" diklik
-    public function embedPage(Perusahaan $perusahaan, $dokumen)
+    public function chunk(Request $request, Perusahaan $perusahaan, Dokumen $dokumen)
     {
-        $mockDokumenModel = [
-            'id' => $dokumen,
-            'nama_file' => 'Draf LK Pilar 2024.pdf',
-            'status' => 'dichunk',
-            'ukuran_file' => 4404019
-        ];
+        Log::info('found_at raw:', ['value' => $request->input('found_at'), 'type' => gettype($request->input('found_at'))]);
 
-        // DATA DUMMY: Hasil dari proses Chunking Python
-        $dummyChunks = [
-            [
-                "id" => 1,
-                "text" => "## Laporan Posisi Keuangan (Neraca)\n\nAset Lancar:\n- Kas dan Setara Kas: 1.597.428.191\n- Piutang Usaha: 9.800.000\n\nTotal Aset: 1.603.932.233\n\nLiabilitas dan Ekuitas:\n- Liabilitas Jangka Pendek: 1.426.006.467\n- Total Ekuitas: 177.925.766",
-                "metadata" => [
-                    "company" => $perusahaan->nama,
-                    "period" => "2024",
-                    "statement_type" => "neraca",
-                    "statement_label" => "Laporan Posisi Keuangan",
-                    "page_start" => 1,
-                    "page_end" => 1,
-                    "chunk_index" => 0
-                ]
-            ],
-            [
-                "id" => 2,
-                "text" => "## Laporan Laba Rugi\n\nPendapatan Usaha: 3.676.484.627\nBeban Pokok Pendapatan: (2.233.120.521)\n\nLaba Kotor: 1.443.364.106\nBeban Usaha: (979.461.545)\n\nLaba Operasional: 463.902.561\nLaba Bersih Tahun Berjalan: 411.158.584",
-                "metadata" => [
-                    "company" => $perusahaan->nama,
-                    "period" => "2024",
-                    "statement_type" => "laba_rugi",
-                    "statement_label" => "Laporan Laba Rugi Komprehensif",
-                    "page_start" => 2,
-                    "page_end" => 2,
-                    "chunk_index" => 1
-                ]
-            ],
+        DB::transaction(function () use ($dokumen, $request) {
+            if ($request->has('neraca')) {
+                DB::table('neraca')->where('dokumen_id', $dokumen->id)->update([
+                    'current_assets' => $request->input('neraca.current_assets'),
+                    'total_assets' => $request->input('neraca.total_assets'),
+                    'current_liabilities' => $request->input('neraca.current_liabilities'),
+                    'total_liabilities' => $request->input('neraca.total_liabilities'),
+                    'total_equity' => $request->input('neraca.total_equity'),
+                    'updated_at' => now()
+                ]);
+            }
+            if ($request->has('laba_rugi')) {
+                DB::table('laba_rugi')->where('dokumen_id', $dokumen->id)->update([
+                    'pendapatan' => $request->input('laba_rugi.pendapatan'),
+                    'laba_kotor' => $request->input('laba_rugi.laba_kotor'),
+                    'laba_bersih' => $request->input('laba_rugi.laba_bersih'),
+                    'updated_at' => now()
+                ]);
+            }
+            if ($request->has('arus_kas')) {
+                DB::table('arus_kas')->where('dokumen_id', $dokumen->id)->update([
+                    'kas_masuk' => $request->input('arus_kas.kas_masuk'),
+                    'kas_keluar' => $request->input('arus_kas.kas_keluar'),
+                    'updated_at' => now()
+                ]);
+            }
+        });
 
-        ];
+        $absolutePath = Storage::disk('local')->path($dokumen->storage_path);
+        $foundAt = $request->input('found_at', '{}');
+        $foundAtArray = is_string($foundAt) ? json_decode($foundAt, true) : $foundAt;
+
+        Log::info('found_at type: ' . gettype($foundAtArray));
+        Log::info('found_at value: ' . json_encode($foundAtArray));
+
+        if (is_string($foundAtArray)) {
+            $foundAtArray = json_decode($foundAtArray, true) ?? [];
+        }
+
+
+        $chunkResult = $this->pythonService->chunk(
+            $absolutePath,
+            $dokumen->nama_file,
+            $perusahaan->nama,
+            $dokumen->periode,
+            $dokumen->statement_types ?? ['neraca', 'laba_rugi'],
+            $foundAtArray ?? []
+        );
+
+        // Bulk Insert array chunks ke tabel database
+        DB::transaction(function () use ($dokumen, $chunkResult) {
+            // Hapus chunk lama jika ada untuk mencegah duplikasi data jika di-re-chunking
+            DB::table('chunks')->where('dokumen_id', $dokumen->id)->delete();
+
+            $insertPayload = [];
+            foreach ($chunkResult['chunks'] as $c) {
+                $insertPayload[] = [
+                    'dokumen_id'   => $dokumen->id,
+                    'chunk_index'  => $c['metadata']['chunk_index'] ?? 0,
+                    'text'         => $c['text'],
+                    'metadata'     => json_encode($c['metadata']),
+                    'has_table'    => $c['metadata']['has_table'] ?? false,
+                    'created_at'   => now()
+                ];
+            }
+
+            DB::table('chunks')->insert($insertPayload);
+
+            $dokumen->update(['status' => 'dichunk']);
+        });
+
+        return redirect()->route('perusahaan.dokumen.embed', [$perusahaan->id, $dokumen->id]);
+    }
+
+    public function embedPage(Perusahaan $perusahaan, Dokumen $dokumen)
+    {
+        $chunks = DB::table('chunks')
+            ->where('dokumen_id', $dokumen->id)
+            ->orderBy('chunk_index', 'asc')
+            ->get()
+            ->map(function ($c) {
+                return [
+                    'id' => $c->id,
+                    'text' => $c->text,
+                    'metadata' => json_decode($c->metadata, true)
+                ];
+            });
 
         return Inertia::render('Perusahaan/Dokumen/Embed', [
             'perusahaan' => $perusahaan,
-            'dokumen' => $mockDokumenModel,
-            'chunks' => $dummyChunks
+            'dokumen' => $dokumen,
+            'chunks' => $chunks
         ]);
     }
 
-    // Step 3 (Action): Simulasi Proses Embedding ke Vector DB (NeuronAI / Chroma / Milvus dll)
-    public function startEmbedding(Request $request, Perusahaan $perusahaan, $dokumen)
+    public function startEmbedding(Request $request, Perusahaan $perusahaan, Dokumen $dokumen)
     {
-        // Di sini nantinya controller Anda akan mengirim request ke NeuronAI DataLoader
-        // Update dokumen status menjadi 'selesai'
+        $chunksFromDb = DB::table('chunks')
+            ->where('dokumen_id', $dokumen->id)
+            ->orderBy('chunk_index', 'asc')
+            ->get()
+            ->map(function ($c) {
+                return [
+                    'text' => $c->text,
+                    'metadata' => json_decode($c->metadata, true)
+                ];
+            })->toArray();
+
+        //  NeuronAI DataLoader ke Vector DB
+        $embeddedCount = DataLoader::embedChunks($chunksFromDb);
+
+        if ($embeddedCount > 0) {
+            $dokumen->update(['status' => 'selesai']);
+        }
 
         return redirect()->route('perusahaan.dokumen.index', $perusahaan->id);
     }
 
-    // STEP 4: Halaman Arsip - Hanya Lihat Chunks yang Sudah Selesai Diembed
-    public function showChunks(Perusahaan $perusahaan, $dokumen)
+    public function showChunks(Perusahaan $perusahaan, Dokumen $dokumen)
     {
-        $mockDokumenModel = [
-            'id' => $dokumen,
-            'nama_file' => 'Draf LK Pilar 2024.pdf',
-            'status' => 'selesai', // Statusnya sudah selesai
-            'ukuran_file' => 4404019
-        ];
-
-        // Data Dummy Chunks yang sama untuk dibaca
-        $dummyChunks = [
-            [
-                "id" => 1,
-                "text" => "## Laporan Posisi Keuangan (Neraca)\n\nAset Lancar:\n- Kas dan Setara Kas: 1.597.428.191\n- Piutang Usaha: 9.800.000\n\nTotal Aset: 1.603.932.233",
-                "metadata" => ["statement_type" => "neraca", "page_start" => 1, "page_end" => 1, "chunk_index" => 0]
-            ],
-            [
-                "id" => 2,
-                "text" => "## Laporan Laba Rugi\n\nPendapatan Usaha: 3.676.484.627\nLaba Kotor: 1.443.364.106\nLaba Bersih Tahun Berjalan: 411.158.584",
-                "metadata" => ["statement_type" => "laba_rugi", "page_start" => 2, "page_end" => 2, "chunk_index" => 1]
-            ]
-        ];
+        $chunks = DB::table('chunks')
+            ->where('dokumen_id', $dokumen->id)
+            ->orderBy('chunk_index', 'asc')
+            ->get()
+            ->map(function ($c) {
+                return [
+                    'id' => $c->id,
+                    'text' => $c->text,
+                    'metadata' => json_decode($c->metadata, true)
+                ];
+            });
 
         return Inertia::render('Perusahaan/Dokumen/ShowChunks', [
             'perusahaan' => $perusahaan,
-            'dokumen' => $mockDokumenModel,
-            'chunks' => $dummyChunks
+            'dokumen' => $dokumen,
+            'chunks' => $chunks
         ]);
+    }
+
+    public function checkPythonHealth()
+    {
+        try {
+            $status = $this->pythonService->health();
+            return response()->json([
+                'ok' => true,
+                'status' => $status['status'] ?? 'ok',
+                'version' => $status['version'] ?? '1.0.0'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'ok' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

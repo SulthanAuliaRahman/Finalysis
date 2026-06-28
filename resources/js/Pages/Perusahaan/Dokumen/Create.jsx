@@ -1,14 +1,42 @@
+import { useState, useEffect } from "react";
 import { useForm, Link } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import { Button } from "@/Components/ui/button";
-import { ArrowLeft, Loader2, CloudUpload, FileText, CheckCircle2 } from "lucide-react";
+import {
+    ArrowLeft, Loader2, CloudUpload, FileText,
+    HeartPulse, CheckCircle2, AlertCircle
+} from "lucide-react";
 
 export default function Create({ perusahaan }) {
+    // State khusus untuk memantau Health Check Python Service
+    const [health, setHealth] = useState({ status: "checking", version: "" });
     const { data, setData, post, processing, errors } = useForm({
         file: null,
         periode: new Date().getFullYear().toString(),
-        statement_types: ["neraca", "laba_rugi"] // Default tercentang
+        statement_types: ["neraca", "laba_rugi"]
     });
+
+    // Fungsi Asynchronous untuk menembak rute internal Laravel /python-health
+    const runHealthCheck = async () => {
+        setHealth({ status: "checking", version: "" });
+        try {
+            const response = await fetch("/python-health");
+            const result = await response.json();
+
+            if (response.ok && result.ok) {
+                setHealth({ status: "healthy", version: result.version });
+            } else {
+                setHealth({ status: "unreachable", version: "" });
+            }
+        } catch (error) {
+            setHealth({ status: "unreachable", version: "" });
+        }
+    };
+
+    // (Auto-check) tiap di load
+    useEffect(() => {
+        runHealthCheck();
+    }, []);
 
     function handleCheckboxChange(type) {
         if (data.statement_types.includes(type)) {
@@ -20,8 +48,47 @@ export default function Create({ perusahaan }) {
 
     function handleSubmit(e) {
         e.preventDefault();
-        // Inertia otomatis mengirimkan data multipart/form-data jika mendeteksi objek File
         post(`/perusahaan/${perusahaan.id}/dokumen`);
+    }
+
+    function renderHealthBadge() {
+        if (health.status === "checking") {
+            return (
+                <button
+                    type="button"
+                    disabled
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-500 font-medium animate-pulse"
+                >
+                    <Loader2 className="w-3 h-3 animate-spin text-slate-400" /> Mengecek Layanan AI...
+                </button>
+            );
+        }
+
+        if (health.status === "healthy") {
+            return (
+                <button
+                    type="button"
+                    onClick={runHealthCheck}
+                    title="Klik untuk mengecek ulang"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 border border-green-200 text-xs text-green-700 font-medium hover:bg-green-100 transition-colors cursor-pointer"
+                >
+                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                    Layanan Aktif — v{health.version}
+                </button>
+            );
+        }
+
+        return (
+            <button
+                type="button"
+                onClick={runHealthCheck}
+                title="Klik untuk mencoba menghubungkan kembali"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 border border-red-200 text-xs text-red-700 font-medium hover:bg-red-100 transition-colors cursor-pointer animate-bounce"
+            >
+                <AlertCircle className="w-3 h-3 text-red-500" />
+                Layanan Terputus (Hubungkan Kembali)
+            </button>
+        );
     }
 
     return (
@@ -31,10 +98,28 @@ export default function Create({ perusahaan }) {
             </Link>
 
             <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-6">
-                <div>
-                    <h2 className="text-lg font-bold text-slate-900">Unggah & Ekstraksi Dokumen</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Sistem akan menyimpan berkas PDF lalu mengekstrak tabel finansial via Python API otomatis.</p>
+
+                {/* Bagian Header + Penempatan Health Badge */}
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div className="space-y-0.5">
+                        <h2 className="text-lg font-bold text-slate-900">Unggah & Ekstraksi Dokumen</h2>
+                        <p className="text-xs text-slate-500">Sistem akan menyimpan berkas PDF lalu mengekstrak tabel finansial via Python API otomatis.</p>
+                    </div>
+                    {/* Render badge status di pojok kanan atas form */}
+                    <div className="flex-shrink-0">
+                        {renderHealthBadge()}
+                    </div>
                 </div>
+
+                {/* Notifikasi Warning Jika Server Python Mati */}
+                {health.status === "unreachable" && (
+                    <div className="p-3.5 rounded-lg bg-red-50 border border-red-100 text-xs text-red-800 flex items-start gap-2.5">
+                        <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                            <span className="font-bold">Peringatan Sistem:</span> Server pemrosesan ekstraksi dokumen kecerdasan buatan (FastAPI Python) saat ini tidak dapat dijangkau. Harap nyalakan kembali service python Anda sebelum melakukan pengunggahan laporan keuangan untuk menghindari kegagalan sistem.
+                        </div>
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     {/* Input Drag & Drop File */}
@@ -47,7 +132,7 @@ export default function Create({ perusahaan }) {
                                 className="hidden"
                                 id="pdf-file"
                                 onChange={e => setData("file", e.target.files[0])}
-                                disabled={processing}
+                                disabled={processing || health.status === "unreachable"}
                             />
                             {data.file ? (
                                 <>
@@ -64,7 +149,9 @@ export default function Create({ perusahaan }) {
                                 <>
                                     <CloudUpload className="w-10 h-10 text-slate-400" />
                                     <div className="text-center">
-                                        <label htmlFor="pdf-file" className="text-sm font-semibold text-blue-600 hover:underline cursor-pointer">Klik untuk memilih berkas</label>
+                                        <label htmlFor="pdf-file" className={`text-sm font-semibold ${health.status === 'unreachable' ? 'text-slate-400 cursor-not-allowed' : 'text-blue-600 hover:underline cursor-pointer'}`}>
+                                            Klik untuk memilih berkas
+                                        </label>
                                         <p className="text-xs text-slate-400 mt-0.5">Pastikan file bertipe PDF jernih</p>
                                     </div>
                                 </>
@@ -83,7 +170,7 @@ export default function Create({ perusahaan }) {
                             value={data.periode}
                             onChange={e => setData("periode", e.target.value)}
                             className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-full max-w-[200px]"
-                            disabled={processing}
+                            disabled={processing || health.status === "unreachable"}
                         />
                         {errors.periode && <p className="text-xs text-red-500">{errors.periode}</p>}
                     </div>
@@ -92,14 +179,14 @@ export default function Create({ perusahaan }) {
                     <div className="flex flex-col gap-2">
                         <label className="text-xs font-semibold text-slate-700">Komponen Tabel yang Ingin Diekstrak</label>
                         <div className="flex gap-4">
-                            {["neraca", "laba_rugi", "cash_flow"].map((type) => (
+                            {["neraca", "laba_rugi", "arus_kas"].map((type) => (
                                 <label key={type} className="inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={data.statement_types.includes(type)}
                                         onChange={() => handleCheckboxChange(type)}
                                         className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4"
-                                        disabled={processing}
+                                        disabled={processing || health.status === "unreachable"}
                                     />
                                     <span className="capitalize">{type.replace('_', ' ')}</span>
                                 </label>
@@ -107,12 +194,17 @@ export default function Create({ perusahaan }) {
                         </div>
                     </div>
 
-                    {/* TombolSubmit */}
+                    {/* Tombol Submit */}
                     <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
                         <Link href={`/perusahaan/${perusahaan.id}/dokumen`}>
                             <Button type="button" variant="outline" disabled={processing}>Batal</Button>
                         </Link>
-                        <Button type="submit" disabled={!data.file || processing} className="min-w-[160px]">
+                        {/* Tombol disabilitas otomatis jika server terputus */}
+                        <Button
+                            type="submit"
+                            disabled={!data.file || processing || health.status === "unreachable"}
+                            className="min-w-[160px]"
+                        >
                             {processing ? (
                                 <><Loader2 className="w-4 h-4 animate-spin mr-1.5" /> Mengekstrak AI...</>
                             ) : (

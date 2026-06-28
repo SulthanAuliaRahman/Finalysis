@@ -51,9 +51,14 @@ Route::post('/perusahaan/{perusahaan}/dokumen', [DokumenController::class, 'stor
 // Halaman Alur Proses RAG Terpisah
 Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/review', [DokumenController::class, 'review'])->name('perusahaan.dokumen.review');
 Route::post('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunk', [DokumenController::class, 'chunk'])->name('perusahaan.dokumen.chunk');
-Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'embedPage'])->name('perusahaan.dokumen.embed');
-Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunks', [DokumenController::class, 'showChunks'])->name('perusahaan.dokumen.chunks');
 
+Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'embedPage'])->name('perusahaan.dokumen.embed');
+Route::post('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'startEmbedding'])->name('perusahaan.dokumen.embed.run');
+
+Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunks', [DokumenController::class, 'showChunks'])->name('perusahaan.dokumen.chunks');
+Route::delete('/perusahaan/{perusahaan}/dokumen/{dokumen}', [DokumenController::class, 'destroy'])->name('perusahaan.dokumen.destroy');
+
+Route::get('/python-health', [DokumenController::class, 'checkPythonHealth'])->name('python.health');
 Route::get('/documents/upload', [DocumentController::class, 'create'])->name('documents.create');
 Route::post('/documents',       [DocumentController::class, 'store'])->name('documents.store');
 Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');

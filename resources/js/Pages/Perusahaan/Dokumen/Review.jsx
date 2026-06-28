@@ -3,7 +3,7 @@ import AppLayout from "@/Layouts/AppLayout";
 import { Button } from "@/Components/ui/button";
 import { ArrowLeft, Loader2, Scale, TrendingUp, Wallet, MapPin } from "lucide-react";
 
-// Sub-Komponen Reusable untuk merender Input Field beserta data pelacak Found At
+// Sub-Komponen Reusable untuk Input Field beserta data Found At
 function InputFieldWithMeta({ label, section, fieldKey, value, onChange, meta, disabled }) {
     return (
         <div className="space-y-1 bg-white border border-slate-100 rounded-lg p-3 shadow-2xs">
@@ -39,7 +39,7 @@ function InputFieldWithMeta({ label, section, fieldKey, value, onChange, meta, d
 
 export default function Review({ perusahaan, dokumen, extractedData, foundAt }) {
     const { data, setData, post, processing } = useForm({
-        found_at: foundAt, // Dikirim balik utuh ke backend untuk parameter /chunk
+        found_at: JSON.stringify(foundAt), // Dikirim balik utuh ke backend untuk parameter /chunk
 
         neraca: {
             total_equity: extractedData?.neraca?.total_equity ?? 0,
@@ -129,17 +129,17 @@ export default function Review({ perusahaan, dokumen, extractedData, foundAt }) 
                                 <InputFieldWithMeta
                                     label="Pendapatan Usaha (Revenue)" section="laba_rugi" fieldKey="pendapatan"
                                     value={data.laba_rugi.pendapatan} onChange={handleNestedChange}
-                                    meta={foundAt?.pendapatan} disabled={processing}
+                                    meta={foundAt?.revenue} disabled={processing}
                                 />
                                 <InputFieldWithMeta
                                     label="Laba Kotor (Gross Profit)" section="laba_rugi" fieldKey="laba_kotor"
                                     value={data.laba_rugi.laba_kotor} onChange={handleNestedChange}
-                                    meta={foundAt?.laba_kotor} disabled={processing}
+                                    meta={foundAt?.gross_profit} disabled={processing}
                                 />
                                 <InputFieldWithMeta
                                     label="Laba Bersih (Net Profit)" section="laba_rugi" fieldKey="laba_bersih"
                                     value={data.laba_rugi.laba_bersih} onChange={handleNestedChange}
-                                    meta={foundAt?.laba_bersih} disabled={processing}
+                                    meta={foundAt?.net_profit} disabled={processing}
                                 />
                             </div>
                         </div>
@@ -153,12 +153,12 @@ export default function Review({ perusahaan, dokumen, extractedData, foundAt }) 
                                 <InputFieldWithMeta
                                     label="Kas Masuk (Cash Inflow)" section="arus_kas" fieldKey="kas_masuk"
                                     value={data.arus_kas.kas_masuk} onChange={handleNestedChange}
-                                    meta={foundAt?.kas_masuk} disabled={processing}
+                                    meta={foundAt?.cfo} disabled={processing}
                                 />
                                 <InputFieldWithMeta
                                     label="Kas Keluar (Cash Outflow)" section="arus_kas" fieldKey="kas_keluar"
                                     value={data.arus_kas.kas_keluar} onChange={handleNestedChange}
-                                    meta={foundAt?.kas_keluar} disabled={processing}
+                                    meta={foundAt?.cff} disabled={processing}
                                 />
                             </div>
                         </div>
