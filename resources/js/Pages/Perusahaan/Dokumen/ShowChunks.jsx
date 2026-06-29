@@ -31,7 +31,7 @@ export default function ShowChunks({ perusahaan, dokumen, chunks }) {
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w mx-auto space-y-4">
             {/* Tombol Kembali */}
             <Link href={`/perusahaan/${perusahaan.id}/dokumen`} className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-slate-800 gap-1 transition-colors">
                 <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Daftar Dokumen
@@ -106,7 +106,7 @@ export default function ShowChunks({ perusahaan, dokumen, chunks }) {
                 </div>
 
                 {/* Teks Box Tampilan Chunk */}
-                <div className="p-5 bg-slate-900 text-slate-300 font-mono text-sm leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto">
+                <div className="p-5 bg-slate-900 text-slate-300 font-mono text-sm leading-relaxed whitespace-pre-wrap max-h-[800px] overflow-y-auto">
                     {currentChunk ? currentChunk.text : <span className="text-slate-600 italic">Tidak ada chunk tersedia.</span>}
                 </div>
 

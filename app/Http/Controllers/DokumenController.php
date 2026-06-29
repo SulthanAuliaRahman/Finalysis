@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
+use Illuminate\Filesystem\FilesystemAdapter;
+
 class DokumenController extends Controller
 {
     protected PythonDocumentService $pythonService;
@@ -318,5 +320,36 @@ class DokumenController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function destroy(Perusahaan $perusahaan, Dokumen $dokumen)
+    {
+        try {
+            if (Storage::disk('local')->exists($dokumen->storage_path)) {
+                Storage::disk('local')->delete($dokumen->storage_path);
+            }
+            $dokumen->delete();
+
+            return redirect()->route('perusahaan.dokumen.index', $perusahaan->id)
+                ->with('success', 'Dokumen beserta data ekstraksi berhasil dihapus.');
+
+        } catch (\Exception $e) {
+            Log::error('Gagal menghapus dokumen: ' . $e->getMessage());
+
+            return redirect()->route('perusahaan.dokumen.index', $perusahaan->id)
+                ->with('error', 'Gagal menghapus dokumen: ' . $e->getMessage());
+        }
+    }
+
+    public function viewPdf(Perusahaan $perusahaan, Dokumen $dokumen)
+    {
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk('local');
+
+        if (! $disk->exists($dokumen->storage_path)) {
+            abort(404, 'File dokumen tidak ditemukan di server.');
+        }
+
+        return $disk->response($dokumen->storage_path);
     }
 }

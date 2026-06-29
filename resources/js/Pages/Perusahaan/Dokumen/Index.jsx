@@ -25,9 +25,12 @@ function StatusBadge({ status }) {
 
 export default function Index({ perusahaan, dokumenList }) {
 
-    function handleDelete(id) {
+    function handleDelete(documentId) {
         if (confirm("Apakah Anda yakin ingin menghapus berkas laporan keuangan ini beserta seluruh data olahan AI di dalamnya?")) {
-            router.delete(`/dokumen/${id}`); // Sesuaikan endpoint destroy Anda
+            router.delete(`/perusahaan/${perusahaan.id}/dokumen/${documentId}`);
+            // router.delete(`/dokumen/${id}`);
+
+
         }
     }
 
@@ -106,25 +109,24 @@ export default function Index({ perusahaan, dokumenList }) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-slate-700">
-                                {dokumenList.map((doc) => (
-                                    <tr key={doc.id} className="hover:bg-slate-50/40 transition-colors">
+                                {dokumenList.map((dokumen) => (
+                                    <tr key={dokumen.id} className="hover:bg-slate-50/40 transition-colors">
                                         <td className="px-5 py-4 flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
                                                 <FileText className="w-4 h-4 text-blue-600" />
                                             </div>
-                                            <span className="font-mono text-xs text-slate-900 font-medium truncate max-w-xs">{doc.nama_file}</span>
+                                            <span className="font-mono text-xs text-slate-900 font-medium truncate max-w-xs">{dokumen.nama_file}</span>
                                         </td>
-                                        <td className="px-5 py-4"><Badge variant="outline">{doc.periode}</Badge></td>
+                                        <td className="px-5 py-4"><Badge variant="outline">{dokumen.periode}</Badge></td>
                                         <td className="px-5 py-4 font-mono text-xs text-slate-400">
-                                            {doc.ukuran_file ? `${(doc.ukuran_file / 1024 / 1024).toFixed(2)} MB` : "—"}
+                                            {dokumen.ukuran_file ? `${(dokumen.ukuran_file / 1024 / 1024).toFixed(2)} MB` : "—"}
                                         </td>
-                                        <td className="px-5 py-4"><StatusBadge status={doc.status} /></td>
+                                        <td className="px-5 py-4"><StatusBadge status={dokumen.status} /></td>
 
                                         {/* Kolom Tombol Alur Kontekstual Dinamis */}
-                                        <td className="px-5 py-4 whitespace-nowrap">{renderActionButtons(doc)}</td>
-
+                                        <td className="px-5 py-4 whitespace-nowrap">{renderActionButtons(dokumen)}</td>
                                         <td className="px-5 py-4 text-right">
-                                            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(doc.id)}>
+                                            <Button variant="ghost" size="icon" onClick={() => handleDelete(dokumen.id)}>
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </Button>
                                         </td>

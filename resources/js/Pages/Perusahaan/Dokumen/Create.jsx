@@ -92,7 +92,7 @@ export default function Create({ perusahaan }) {
     }
 
     return (
-        <div className="max-w-2xl mx-auto space-y-4">
+        <div className="max-w mx-auto space-y-4">
             <Link href={`/perusahaan/${perusahaan.id}/dokumen`} className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-slate-800 gap-1 transition-colors">
                 <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Berkas Dokumen
             </Link>
