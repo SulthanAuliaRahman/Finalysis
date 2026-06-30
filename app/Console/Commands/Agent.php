@@ -5,10 +5,11 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use NeuronAI\Chat\Messages\UserMessage;
 // Mengimpor keempat Agen Terfokus dari sub-folder Agents
-use App\Neuron\Agents\LiquidityAgent;
-use App\Neuron\Agents\ProfitabilityDuPontAgent;
-use App\Neuron\Agents\SolvencyStructureAgent;
-use App\Neuron\Agents\ActivityAgent;
+use App\Neuron\RAG\LiquidityAgent;
+use App\Neuron\RAG\ProfitabilityDuPontAgent;
+use App\Neuron\RAG\SolvencyStructureAgent;
+use App\Neuron\RAG\ActivityAgent;
+use App\Services\FinancialService;
 
 class Agent extends Command
 {
@@ -50,25 +51,30 @@ class Agent extends Command
             'interest_expense' => 20000000, 'inventory' => 100000000, 'cash' => 150000000
         ];
 
-        // Penghitungan Rasio Keuangan
-        $currentRatio = $fin->current_assets / $fin->current_liabilities;
-        $quickRatio   = ($fin->current_assets - $fin->inventory) / $fin->current_liabilities;
-        $cashRatio    = $fin->cash / $fin->current_liabilities;
-        $npm          = $fin->net_profit / $fin->revenue;
-        $roa          = $fin->net_profit / $fin->total_assets;
-        $roe          = $fin->net_profit / $fin->total_equity;
-        $der          = $fin->total_liabilities / $fin->total_equity;
-        $dar          = $fin->total_liabilities / $fin->total_assets;
-        $tato         = $fin->revenue / $fin->total_assets;
-        $leverage     = $fin->total_assets / $fin->total_equity;
+        $financialService = new FinancialService();
 
-        // Perhitungan Persentase Common-Size
-        $cs_grossProfit     = ($fin->gross_profit / $fin->revenue) * 100;
-        $cs_operatingExp    = ($fin->operating_expenses / $fin->revenue) * 100;
-        $cs_netProfit       = ($fin->net_profit / $fin->revenue) * 100;
-        $cs_currentAssets   = ($fin->current_assets / $fin->total_assets) * 100;
-        $cs_currentLiab     = ($fin->current_liabilities / $fin->total_assets) * 100;
-        $cs_equity          = ($fin->total_equity / $fin->total_assets) * 100;
+        // Hitung Rasio Esensial via Service (1 Rumus 1 Fungsi)
+        $currentRatio = $financialService->currentRatio($fin->current_assets, $fin->current_liabilities);
+        $quickRatio   = $financialService->quickRatio($fin->current_assets, $fin->inventory, $fin->current_liabilities);
+        $cashRatio    = $financialService->cashRatio($fin->cash, $fin->current_liabilities);
+        
+        $npm          = $financialService->netProfitMargin($fin->net_profit, $fin->revenue);
+        $roa          = $financialService->returnOnAssets($fin->net_profit, $fin->total_assets);
+        $roe          = $financialService->returnOnEquity($fin->net_profit, $fin->total_equity);
+        
+        $der          = $financialService->debtToEquity($fin->total_liabilities, $fin->total_equity);
+        $dar          = $financialService->debtToAsset($fin->total_liabilities, $fin->total_assets);
+        $tato         = $financialService->totalAssetTurnover($fin->revenue, $fin->total_assets);
+        $leverage     = $financialService->financialLeverage($fin->total_assets, $fin->total_equity);
+
+        // Perhitungan Persentase Common-Size via Service
+        $cs_grossProfit  = $financialService->commonSizePercentage($fin->gross_profit, $fin->revenue);
+        $cs_operatingExp = $financialService->commonSizePercentage($fin->operating_expenses, $fin->revenue);
+        $cs_netProfit    = $financialService->commonSizePercentage($fin->net_profit, $fin->revenue);
+        
+        $cs_currentAssets = $financialService->commonSizePercentage($fin->current_assets, $fin->total_assets);
+        $cs_currentLiab   = $financialService->commonSizePercentage($fin->current_liabilities, $fin->total_assets);
+        $cs_equity        = $financialService->commonSizePercentage($fin->total_equity, $fin->total_assets);
 
   
         // BLOK 3 — KONTEKS DOKUMEN LAPORAN KEUANGAN (RAG Retrieval)
