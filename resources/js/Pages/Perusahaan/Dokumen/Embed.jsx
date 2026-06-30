@@ -1,42 +1,18 @@
-import { useState } from "react";
 import { useForm, Link } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
-import {
-    ArrowLeft, Loader2, Database, ChevronLeft, ChevronRight,
-    FileText, CheckCircle2, Layers
-} from "lucide-react";
+import { ArrowLeft, Loader2, Database, Layers } from "lucide-react";
+import ChunkViewer from "@/Components/Dokumen/ChunkViewer";
 
 export default function Embed({ perusahaan, dokumen, chunks }) {
-    // Setup Filter dan Navigasi Chunk
-    const [filterType, setFilterType] = useState("");
-    const [currentIndex, setCurrentIndex] = useState(0);
-
-    // Ambil daftar tipe unik untuk dropdown filter
+    // Ambil daftar tipe unik untuk header statistik
     const uniqueTypes = [...new Set(chunks.map(c => c.metadata.statement_type))];
-
-    // Saring chunk berdasarkan pilihan dropdown
-    const filteredChunks = filterType
-        ? chunks.filter(c => c.metadata.statement_type === filterType)
-        : chunks;
-
-    const currentChunk = filteredChunks[currentIndex];
 
     // Setup Form Inertia untuk Action Start Embedding
     const { post, processing } = useForm({});
 
     function handleEmbedSubmit() {
-        // Asumsi rute POST yang Anda buat untuk eksekusi embed
         post(`/perusahaan/${perusahaan.id}/dokumen/${dokumen.id}/embed`);
-    }
-
-    function handleNext() {
-        if (currentIndex < filteredChunks.length - 1) setCurrentIndex(currentIndex + 1);
-    }
-
-    function handlePrev() {
-        if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
     }
 
     return (
@@ -68,85 +44,7 @@ export default function Embed({ perusahaan, dokumen, chunks }) {
                 </div>
             </div>
 
-            {/* Chunk Viewer Component */}
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
-
-                {/* Toolbar Viewer */}
-                <div className="flex flex-wrap items-center gap-3 p-3 border-b border-slate-100 bg-slate-50/50">
-                    <div className="flex items-center gap-1.5">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 px-2 text-slate-600"
-                            onClick={handlePrev}
-                            disabled={currentIndex === 0}
-                        >
-                            <ChevronLeft className="w-4 h-4" /> Prev
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 px-2 text-slate-600"
-                            onClick={handleNext}
-                            disabled={filteredChunks.length === 0 || currentIndex === filteredChunks.length - 1}
-                        >
-                            Next <ChevronRight className="w-4 h-4" />
-                        </Button>
-                    </div>
-
-                    <span className="text-xs font-medium text-slate-500 min-w-[50px] text-center">
-                        {filteredChunks.length > 0 ? `${currentIndex + 1} / ${filteredChunks.length}` : "0 / 0"}
-                    </span>
-
-                    <div className="ml-auto flex items-center gap-2">
-                        <span className="text-xs font-semibold text-slate-500">Filter Tipe:</span>
-                        <select
-                            className="text-xs border border-slate-200 rounded bg-white px-2 py-1.5 focus:outline-none focus:border-blue-500"
-                            value={filterType}
-                            onChange={(e) => {
-                                setFilterType(e.target.value);
-                                setCurrentIndex(0); // Reset index tiap ganti filter
-                            }}
-                        >
-                            <option value="">Semua Tipe</option>
-                            {uniqueTypes.map(type => (
-                                <option key={type} value={type}>{type.replace('_', ' ').toUpperCase()}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                {/* Body Viewer (Teks Chunk) */}
-                <div className="p-5 bg-slate-900 text-slate-300 font-mono text-sm leading-relaxed whitespace-pre-wrap max-h-[800px] overflow-y-auto">
-                    {currentChunk ? currentChunk.text : <span className="text-slate-600 italic">Tidak ada chunk yang sesuai filter.</span>}
-                </div>
-
-                {/* Footer Metadata */}
-                {currentChunk && (
-                    <div className="flex flex-wrap gap-x-6 gap-y-2 p-4 border-t border-slate-100 bg-slate-50 text-xs">
-                        <div className="flex gap-1.5">
-                            <span className="font-semibold text-slate-400">Tipe Tabel:</span>
-                            <Badge variant="outline" className="text-[10px] bg-white text-blue-700 border-blue-200 capitalize">
-                                {currentChunk.metadata.statement_type.replace('_', ' ')}
-                            </Badge>
-                        </div>
-                        <div className="flex gap-1.5">
-                            <span className="font-semibold text-slate-400">Chunk ID:</span>
-                            <span className="text-slate-700 font-mono">#{currentChunk.metadata.chunk_index}</span>
-                        </div>
-                        <div className="flex gap-1.5">
-                            <span className="font-semibold text-slate-400">Halaman PDF:</span>
-                            <span className="text-slate-700 font-mono">
-                                {currentChunk.metadata.page_start} {currentChunk.metadata.page_start !== currentChunk.metadata.page_end && `- ${currentChunk.metadata.page_end}`}
-                            </span>
-                        </div>
-                        <div className="flex gap-1.5">
-                            <span className="font-semibold text-slate-400">Periode:</span>
-                            <span className="text-slate-700 font-mono">{currentChunk.metadata.period}</span>
-                        </div>
-                    </div>
-                )}
-            </div>
+            <ChunkViewer chunks={chunks} />
 
             {/* Tombol Eksekusi Akhir (Embed) */}
             <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">

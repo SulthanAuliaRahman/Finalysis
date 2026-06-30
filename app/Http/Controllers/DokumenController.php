@@ -110,14 +110,27 @@ class DokumenController extends Controller
                     ]);
                 }
 
-                // Ambil nilai Arus Kas
+                // kas_masuk  = jumlah seluruh komponen yang bernilai positif
+                // kas_keluar = jumlah absolut seluruh komponen yang bernilai negatif
                 if (isset($extracted['cash_flow'])) {
                     $cf = $extracted['cash_flow'];
+
+                    $cfo = $cf['cash_flow_from_operations'] ?? 0;
+                    $cfi = $cf['cash_flow_from_investing']  ?? 0;
+                    $cff = $cf['cash_flow_from_financing']  ?? 0;
+
+                    $kasMasuk  = max(0, $cfo) + max(0, $cfi) + max(0, $cff);
+                    $kasKeluar = abs(min(0, $cfo)) + abs(min(0, $cfi)) + abs(min(0, $cff));
+
                     DB::table('arus_kas')->insert([
                         'dokumen_id' => $dokumen->id,
-                        'kas_masuk'  => $cf['cfo'] ?? null,
-                        'kas_keluar' => $cf['cff'] ?? null,
-                        'found_at' => json_encode($filterFoundAt(['cfo', 'cff'])),
+                        'kas_masuk'  => $kasMasuk,
+                        'kas_keluar' => $kasKeluar,
+                        'found_at' => json_encode($filterFoundAt([
+                            'cash_flow_from_operations',
+                            'cash_flow_from_investing',
+                            'cash_flow_from_financing',
+                        ])),
                         'created_at' => now(), 'updated_at' => now()
                     ]);
                 }
@@ -166,7 +179,22 @@ class DokumenController extends Controller
     {
         Log::info('found_at raw:', ['value' => $request->input('found_at'), 'type' => gettype($request->input('found_at'))]);
 
-        DB::transaction(function () use ($dokumen, $request) {
+        // untuk Dokumentasi nyalain
+        // dd($request->all());
+
+        $foundAt = $request->input('found_at', '{}');
+        // Pastikan format menjadi array
+        $foundAtArray = is_string($foundAt) ? json_decode($foundAt, true) : $foundAt;
+        if (is_string($foundAtArray)) {
+            $foundAtArray = json_decode($foundAtArray, true) ?? [];
+        }
+
+        // Penambahan Helper untuk membagi payload found_at berdasarkan tabel database masing-masing
+        $filterFoundAt = function($fields) use ($foundAtArray) {
+            return array_intersect_key($foundAtArray, array_flip($fields));
+        };
+
+        DB::transaction(function () use ($dokumen, $request, $filterFoundAt) {
             if ($request->has('neraca')) {
                 DB::table('neraca')->where('dokumen_id', $dokumen->id)->update([
                     'current_assets' => $request->input('neraca.current_assets'),
@@ -174,6 +202,8 @@ class DokumenController extends Controller
                     'current_liabilities' => $request->input('neraca.current_liabilities'),
                     'total_liabilities' => $request->input('neraca.total_liabilities'),
                     'total_equity' => $request->input('neraca.total_equity'),
+                    // Ikut simpan koordinat/metadata baru hasil manipulasi manual
+                    'found_at' => json_encode($filterFoundAt(['total_equity', 'total_liabilities', 'current_liabilities', 'total_assets', 'current_assets'])),
                     'updated_at' => now()
                 ]);
             }
@@ -182,6 +212,8 @@ class DokumenController extends Controller
                     'pendapatan' => $request->input('laba_rugi.pendapatan'),
                     'laba_kotor' => $request->input('laba_rugi.laba_kotor'),
                     'laba_bersih' => $request->input('laba_rugi.laba_bersih'),
+                    // Ikut simpan koordinat/metadata baru hasil manipulasi manual
+                    'found_at' => json_encode($filterFoundAt(['revenue', 'gross_profit', 'net_profit'])),
                     'updated_at' => now()
                 ]);
             }
@@ -189,23 +221,22 @@ class DokumenController extends Controller
                 DB::table('arus_kas')->where('dokumen_id', $dokumen->id)->update([
                     'kas_masuk' => $request->input('arus_kas.kas_masuk'),
                     'kas_keluar' => $request->input('arus_kas.kas_keluar'),
+                    // Ikut simpan koordinat/metadata baru termasuk key kas_masuk & kas_keluar manual
+                    'found_at' => json_encode($filterFoundAt([
+                        'cash_flow_from_operations',
+                        'cash_flow_from_investing',
+                        'cash_flow_from_financing',
+                        'kas_masuk',
+                        'kas_keluar'
+                    ])),
                     'updated_at' => now()
                 ]);
             }
         });
 
         $absolutePath = Storage::disk('local')->path($dokumen->storage_path);
-        $foundAt = $request->input('found_at', '{}');
-        $foundAtArray = is_string($foundAt) ? json_decode($foundAt, true) : $foundAt;
 
-        Log::info('found_at type: ' . gettype($foundAtArray));
-        Log::info('found_at value: ' . json_encode($foundAtArray));
-
-        if (is_string($foundAtArray)) {
-            $foundAtArray = json_decode($foundAtArray, true) ?? [];
-        }
-
-
+        // Teruskan data payload gabungan foundAtArray ke python chunking engine secara aman
         $chunkResult = $this->pythonService->chunk(
             $absolutePath,
             $dokumen->nama_file,
@@ -215,9 +246,8 @@ class DokumenController extends Controller
             $foundAtArray ?? []
         );
 
-        // Bulk Insert array chunks ke tabel database
+        // Bulk Insert array chunks ke tabel database (Sama seperti code lama anda)
         DB::transaction(function () use ($dokumen, $chunkResult) {
-            // Hapus chunk lama jika ada untuk mencegah duplikasi data jika di-re-chunking
             DB::table('chunks')->where('dokumen_id', $dokumen->id)->delete();
 
             $insertPayload = [];
@@ -233,7 +263,6 @@ class DokumenController extends Controller
             }
 
             DB::table('chunks')->insert($insertPayload);
-
             $dokumen->update(['status' => 'dichunk']);
         });
 

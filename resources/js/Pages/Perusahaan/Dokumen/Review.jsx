@@ -41,7 +41,7 @@ export default function Review({ perusahaan, dokumen, extractedData, foundAt }) 
         setData('found_at', {
             ...data.found_at,
             [metaKey]: {
-                ...data.found_at[metaKey],
+                ...(data.found_at[metaKey] || {}),
                 [keyToUpdate]: value
             }
         });
