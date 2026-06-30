@@ -84,7 +84,7 @@ export default function Review({ perusahaan, dokumen, extractedData, foundAt }) 
                                 data={data}
                                 foundAt={data.found_at}
                                 onDataChange={handleDataChange}
-                                onMetaChange={handleMetaChange}
+                                onMetadataChange={handleMetaChange}
                                 disabled={processing}
                             />
 

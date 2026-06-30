@@ -110,8 +110,8 @@ class DokumenController extends Controller
                     ]);
                 }
 
-                // kas_masuk  = jumlah seluruh komponen yang bernilai positif
-                // kas_keluar = jumlah absolut seluruh komponen yang bernilai negatif
+                // kas_masuk  = komponen yang bernilai positif
+                // kas_keluar =  komponen yang bernilai negatif
                 if (isset($extracted['cash_flow'])) {
                     $cf = $extracted['cash_flow'];
 
@@ -162,6 +162,8 @@ class DokumenController extends Controller
             json_decode($labaRugi->found_at ?? '{}', true),
             json_decode($arusKas->found_at ?? '{}', true)
         );
+
+        // dd($foundAtMerged); //Debug: Request ke review
 
         return Inertia::render('Perusahaan/Dokumen/Review', [
             'perusahaan' => $perusahaan,
