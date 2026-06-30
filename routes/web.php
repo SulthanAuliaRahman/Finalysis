@@ -4,38 +4,11 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\DocumentController;
-use App\Http\Controllers\PythonTesterController;
 
-use App\Http\Controllers\HomeController;
-
-// Real Not Test
 use App\Http\Controllers\PerusahaanController;
 use App\Http\Controllers\DokumenController;
 
-
-Route::prefix('python-tester')->name('python-tester.')->group(function () {
-
-    Route::get('/',        [PythonTesterController::class, 'index'])->name('index');
-    Route::get('/health',  [PythonTesterController::class, 'health'])->name('health');
-
-    // Chunking
-    Route::post('/ingest', [PythonTesterController::class, 'ingest'])->name('ingest');
-
-    //embedd
-    Route::post('/embed', [PythonTesterController::class, 'embed'])->name('embed');
-
-    Route::get('/chat',       [PythonTesterController::class, 'chatPage'])->name('chat');
-    Route::post('/chat/ask',  [PythonTesterController::class, 'chatAsk'])->name('chat.ask');
-
-    // Extractor
-    Route::get('/extract',      [PythonTesterController::class, 'index2'])->name('index2');
-    Route::post('/extract/run', [PythonTesterController::class, 'extract'])->name('extract');
-});
-
-
-
-// Antarmuka Utama & Operasi CRUD Perusahaan (Halaman Terpisah)
+// CRUD Perusahaan
 Route::get('/perusahaan', [PerusahaanController::class, 'index'])->name('perusahaan.index');
 Route::get('/perusahaan/create', [PerusahaanController::class, 'create'])->name('perusahaan.create');
 Route::post('/perusahaan', [PerusahaanController::class, 'store'])->name('perusahaan.store');
@@ -45,27 +18,31 @@ Route::delete('/perusahaan/{perusahaan}', [PerusahaanController::class, 'destroy
 
 // Rute Pengelolaan Dokumen Perusahaan
 Route::get('/perusahaan/{perusahaan}/dokumen', [DokumenController::class, 'index'])->name('perusahaan.dokumen.index');
+
+// Halaman Alur Pros
+Route::get('/python-health', [DokumenController::class, 'checkPythonHealth'])->name('python.health');
+
+// Extract
 Route::get('/perusahaan/{perusahaan}/dokumen/create', [DokumenController::class, 'create'])->name('perusahaan.dokumen.create');
 Route::post('/perusahaan/{perusahaan}/dokumen', [DokumenController::class, 'store'])->name('perusahaan.dokumen.store');
 
-// Halaman Alur Proses RAG Terpisah
-Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/review', [DokumenController::class, 'review'])->name('perusahaan.dokumen.review');
+//Review & StartChunking
 Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/view-pdf', [DokumenController::class, 'viewPdf'])->name('perusahaan.dokumen.view-pdf');
-
+Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/review', [DokumenController::class, 'review'])->name('perusahaan.dokumen.review');
 Route::post('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunk', [DokumenController::class, 'chunk'])->name('perusahaan.dokumen.chunk');
 
+// Start Embedding
 Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'embedPage'])->name('perusahaan.dokumen.embed');
 Route::post('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'startEmbedding'])->name('perusahaan.dokumen.embed.run');
 
+//Data Loading Done Sudah ada di vectorstore
 Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunks', [DokumenController::class, 'showChunks'])->name('perusahaan.dokumen.chunks');
+
 Route::delete('/perusahaan/{perusahaan}/dokumen/{dokumen}', [DokumenController::class, 'destroy'])->name('perusahaan.dokumen.destroy');
 
+// Alur Proses Generate Analisis RAG
 
 
-Route::get('/python-health', [DokumenController::class, 'checkPythonHealth'])->name('python.health');
-Route::get('/documents/upload', [DocumentController::class, 'create'])->name('documents.create');
-Route::post('/documents',       [DocumentController::class, 'store'])->name('documents.store');
-Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
 
 
 Route::get('/', function () {
