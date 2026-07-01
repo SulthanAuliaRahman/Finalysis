@@ -24,7 +24,14 @@ return new class extends Migration
             $table->foreignId('perusahaan_id')->constrained('perusahaan')->cascadeOnDelete();
             $table->string('nama_file');
             $table->string('storage_path');
-            $table->string('periode');
+            $table->enum('periode_type', [
+                'annual',
+                'quarterly',
+                'monthly'
+            ]);
+            $table->unsignedSmallInteger('tahun');// tahun
+            $table->unsignedTinyInteger('quarter')->nullable();// NULL jika annual
+            $table->unsignedTinyInteger('bulan')->nullable(); // NULL jika annual / quarterly
             $table->json('statement_types')->nullable(); // ["balance_sheet","income_statement","cash_flow"]
             $table->unsignedBigInteger('ukuran_file')->nullable();
             $table->enum('status', [
@@ -77,6 +84,7 @@ return new class extends Migration
             $table->foreignId('dokumen_id')->constrained('dokumen')->cascadeOnDelete();
             $table->unsignedInteger('chunk_index');
             $table->longText('text');
+            // $table->vector('embedding', 1536)->nullable();
             $table->json('metadata')->nullable();
             $table->boolean('has_table')->default(false);
             $table->timestamp('created_at')->useCurrent();

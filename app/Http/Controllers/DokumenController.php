@@ -26,7 +26,7 @@ class DokumenController extends Controller
     public function index(Perusahaan $perusahaan)
     {
         $dokumen = $perusahaan->dokumen()
-            ->select('id', 'nama_file', 'periode', 'ukuran_file', 'status', 'created_at')
+            ->select('id', 'nama_file', 'periode_type', 'tahun', 'quarter', 'bulan', 'ukuran_file', 'status', 'created_at')
             ->latest()
             ->get();
 
@@ -46,8 +46,11 @@ class DokumenController extends Controller
     public function store(Request $request, Perusahaan $perusahaan)
     {
         $request->validate([
-            'file' => 'required|file|mimes:pdf|max:20480', // Maksimal 20MB
-            'periode' => 'required|string|max:10',
+            'file' => 'required|file|mimes:pdf|max:20480', //Max 20MB
+            'periode_type' => 'required|in:annual,quarterly,monthly',
+            'tahun' => 'required|integer|min:1900|max:2100',
+            'quarter' => 'required_if:periode_type,quarterly|nullable|integer|between:1,4',
+            'bulan' => 'required_if:periode_type,monthly|nullable|integer|between:1,12',
             'statement_types' => 'required|array'
         ]);
 
@@ -61,7 +64,10 @@ class DokumenController extends Controller
                 'perusahaan_id' => $perusahaan->id,
                 'nama_file' => $namaFileOriginal,
                 'storage_path' => $storedPath,
-                'periode' => $request->periode,
+                'periode_type' => $request->periode_type,
+                'tahun' => $request->tahun,
+                'quarter' => $request->periode_type == 'quarterly' ? $request->quarter : null,
+                'bulan' => $request->periode_type == 'monthly' ? $request->bulan : null,
                 'statement_types' => $request->statement_types,
                 'ukuran_file' => $ukuranFile,
                 'status' => 'menunggu'
@@ -69,7 +75,13 @@ class DokumenController extends Controller
         });
 
         try {
-            $result = $this->pythonService->extract($file, $perusahaan->nama, $request->periode, $request->statement_types);
+
+            $result = $this->pythonService->extract(
+                $file,
+                $perusahaan->nama,
+                (string) $dokumen->periode, // Pakai Accesor
+                $request->statement_types
+            );
 
             // dd($result); //  Debugging: Tampilkan hasil ekstraksi dari Python Service
 
@@ -243,7 +255,7 @@ class DokumenController extends Controller
             $absolutePath,
             $dokumen->nama_file,
             $perusahaan->nama,
-            $dokumen->periode,
+            (string) $dokumen->periode,
             $dokumen->statement_types ?? ['neraca', 'laba_rugi'],
             $foundAtArray ?? []
         );

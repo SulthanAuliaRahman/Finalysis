@@ -12,8 +12,11 @@ export default function Create({ perusahaan }) {
     const [health, setHealth] = useState({ status: "checking", version: "" });
     const { data, setData, post, processing, errors } = useForm({
         file: null,
-        periode: new Date().getFullYear().toString(),
-        statement_types: ["neraca", "laba_rugi"]
+        periode_type: 'annual', // default
+        tahun: new Date().getFullYear().toString(),
+        quarter: '',
+        bulan: '',
+        statement_types: ["neraca", "laba_rugi"] // at the start ini yang aktif
     });
 
     // Fungsi Asynchronous untuk menembak rute internal Laravel /python-health
@@ -161,18 +164,96 @@ export default function Create({ perusahaan }) {
                     </div>
 
                     {/* Input Periode Tahun */}
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-semibold text-slate-700" htmlFor="periode">Tahun Laporan Keuangan <span className="text-red-500">*</span></label>
-                        <input
-                            id="periode"
-                            type="text"
-                            maxLength={4}
-                            value={data.periode}
-                            onChange={e => setData("periode", e.target.value)}
-                            className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-full max-w-[200px]"
-                            disabled={processing || health.status === "unreachable"}
-                        />
-                        {errors.periode && <p className="text-xs text-red-500">{errors.periode}</p>}
+                    {/* Input Periode Tahun */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Tipe Periode */}
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-xs font-semibold text-slate-700">Tipe Laporan <span className="text-red-500">*</span></label>
+                            <select
+                                value={data.periode_type}
+                                onChange={event => {
+                                    setData(prevData => ({
+                                        ...prevData,
+                                        periode_type: event.target.value,
+                                        quarter: '', // reset field lain saat ganti tipe
+                                        bulan: ''
+                                    }));
+                                }}
+                                className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 w-full"
+                                disabled={processing || health.status === "unreachable"}
+                            >
+                                <option value="annual">Tahunan (Annual)</option>
+                                <option value="quarterly">Kuartal (Quarterly)</option>
+                                <option value="monthly">Bulanan (Monthly)</option>
+                            </select>
+                            {errors.periode_type && <p className="text-xs text-red-500">{errors.periode_type}</p>}
+                        </div>
+
+                        {/* Input Tahun */}
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-xs font-semibold text-slate-700">Tahun <span className="text-red-500">*</span></label>
+                            <input
+                                type="number"
+                                min="1900"
+                                max="2100"
+                                value={data.tahun}
+                                onChange={event => setData("tahun", event.target.value)}
+                                className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 w-full"
+                                disabled={processing || health.status === "unreachable"}
+                            />
+                            {errors.tahun && <p className="text-xs text-red-500">{errors.tahun}</p>}
+                        </div>
+
+                        {/* Input Dinamis Quarter / Bulan */}
+                        {data.periode_type === 'quarterly' && (
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-semibold text-slate-700">Kuartal <span className="text-red-500">*</span></label>
+                                <select
+                                    value={data.quarter}
+                                    onChange={event => setData("quarter", event.target.value)}
+                                    className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 w-full"
+                                    disabled={processing}
+                                >
+                                    <option value="" disabled>Pilih Kuartal</option>
+                                    <option value="1">Q1</option>
+                                    <option value="2">Q2</option>
+                                    <option value="3">Q3</option>
+                                    <option value="4">Q4</option>
+                                </select>
+                                {errors.quarter && <p className="text-xs text-red-500">{errors.quarter}</p>}
+                            </div>
+                        )}
+
+                        {data.periode_type === 'monthly' && (
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-semibold text-slate-700">Bulan <span className="text-red-500">*</span></label>
+                                <select
+                                    value={data.bulan}
+                                    onChange={event => setData("bulan", event.target.value)}
+                                    className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 w-full"
+                                    disabled={processing}
+                                >
+                                    <option value="" disabled>Pilih Bulan</option>
+                                    {[
+                                        { value: 1, label: "Januari" },
+                                        { value: 2, label: "Februari" },
+                                        { value: 3, label: "Maret" },
+                                        { value: 4, label: "April" },
+                                        { value: 5, label: "Mei" },
+                                        { value: 6, label: "Juni" },
+                                        { value: 7, label: "Juli" },
+                                        { value: 8, label: "Agustus" },
+                                        { value: 9, label: "September" },
+                                        { value: 10, label: "Oktober" },
+                                        { value: 11, label: "November" },
+                                        { value: 12, label: "Desember" }
+                                    ].map(bulanOption => (
+                                        <option key={bulanOption.value} value={bulanOption.value}>{bulanOption.label}</option>
+                                    ))}
+                                </select>
+                                {errors.bulan && <p className="text-xs text-red-500">{errors.bulan}</p>}
+                            </div>
+                        )}
                     </div>
 
                     {/* Checkbox Jenis Statement */}

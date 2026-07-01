@@ -50,7 +50,7 @@ Route::get('/perusahaan/{perusahaan}/analisis/{analisis}', [AnalisisController::
 
 // Ganti rute lama ini
 Route::get('/', function () {
-    return Inertia::render('LandingPage'); // Mengarah langsung ke komponen LandingPage.jsx baru kamu
+    return Inertia::render('LandingPage');
 });
 
 Route::get('/dashboard', function () {

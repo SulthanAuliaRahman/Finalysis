@@ -28,21 +28,18 @@ export default function Index({ perusahaan, dokumenList }) {
     function handleDelete(documentId) {
         if (confirm("Apakah Anda yakin ingin menghapus berkas laporan keuangan ini beserta seluruh data olahan AI di dalamnya?")) {
             router.delete(`/perusahaan/${perusahaan.id}/dokumen/${documentId}`);
-            // router.delete(`/dokumen/${id}`);
-
-
         }
     }
 
     // Fungsi Render Tombol Aksi Dinamis Kontekstual Berdasarkan Status Dokumen
-    function renderActionButtons(doc) {
-        switch (doc.status) {
+    function renderActionButtons(dokumenData) {
+        switch (dokumenData.status) {
             case "menunggu":
-                return null; // Hanya menampilkan tombol hapus bawaan di ujung kanan
+                return null;
 
             case "diekstrak":
                 return (
-                    <Link href={`/perusahaan/${perusahaan.id}/dokumen/${doc.id}/review`}>
+                    <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/review`}>
                         <Button size="sm" variant="outline" className="h-7 text-xs text-blue-600 border-blue-200 bg-blue-50/50 hover:bg-blue-50 gap-1">
                             Lanjut Review <ArrowRight className="w-3 h-3" />
                         </Button>
@@ -51,7 +48,7 @@ export default function Index({ perusahaan, dokumenList }) {
 
             case "dichunk":
                 return (
-                    <Link href={`/perusahaan/${perusahaan.id}/dokumen/${doc.id}/embed`}>
+                    <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/embed`}>
                         <Button size="sm" variant="outline" className="h-7 text-xs text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-50 gap-1">
                             Lanjut Embed <ArrowRight className="w-3 h-3" />
                         </Button>
@@ -61,7 +58,7 @@ export default function Index({ perusahaan, dokumenList }) {
             case "diembed":
             case "selesai":
                 return (
-                    <Link href={`/perusahaan/${perusahaan.id}/dokumen/${doc.id}/chunks`}>
+                    <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/chunks`}>
                         <Button size="sm" variant="outline" className="h-7 text-xs text-slate-700 gap-1">
                             <Eye className="w-3 h-3" /> Lihat Chunks
                         </Button>
@@ -117,6 +114,7 @@ export default function Index({ perusahaan, dokumenList }) {
                                             </div>
                                             <span className="font-mono text-xs text-slate-900 font-medium truncate max-w-xs">{dokumen.nama_file}</span>
                                         </td>
+                                        {/* Properti 'periode' ini bisa diakses langsung berkat $appends di Model */}
                                         <td className="px-5 py-4"><Badge variant="outline">{dokumen.periode}</Badge></td>
                                         <td className="px-5 py-4 font-mono text-xs text-slate-400">
                                             {dokumen.ukuran_file ? `${(dokumen.ukuran_file / 1024 / 1024).toFixed(2)} MB` : "—"}
