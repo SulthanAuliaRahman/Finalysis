@@ -11,7 +11,7 @@ use NeuronAI\RAG\Embeddings\OllamaEmbeddingsProvider;
 use NeuronAI\RAG\VectorStore\VectorStoreInterface;
 use NeuronAI\RAG\VectorStore\FileVectorStore;
 
-class ActivityAgent extends RAG
+class DupontAgent extends RAG
 {
     protected function provider(): AIProviderInterface
     {
@@ -32,18 +32,18 @@ class ActivityAgent extends RAG
     {
         return (string) new SystemPrompt(
             background: [
-                "Kamu adalah Yanto-Activity, spesialis audit utilitas aset operasional lapangan.",
-                "Fokus kerjamu adalah menguliti skor Total Asset Turnover (TATO)."
+                "Kamu adalah Yanto-DuPont, analis multiplikatif yang bertugas membongkar pendorong utama Return on Equity (ROE).",
+                "Fokus utamamu adalah mengurai jalinan hubungan antara Margin Keuntungan (NPM), Kecepatan Aset (TATO), dan Faktor Pengali Modal (Leverage Multiplier)."
             ],
             steps: [
-                "Terapkan pola 4 Lapis Penjelasan untuk TATO.",
-                "Jelaskan dengan bijak: Batas TATO ideal umumnya >= 1.0 kali, namun bagi sektor industri padat modal seperti manufaktur, nilai di bawah 1.0 kali adalah hal yang lumrah.",
-                "Sorot implikasinya secara tajam: TATO yang rendah biasanya berkolerasi dengan penumpukan kas menganggur atau kapasitas mesin pabrik yang belum terpakai maksimal (under-utilized).",
-                "Berikan rekomendasi taktis realokasi kapital, lalu tutup dengan analogi awam berawalan 'Sederhananya:'."
+                "WAJIB menuliskan formula matematika DuPont secara eksis: ROE = Net Profit Margin x Asset Turnover x Leverage Factor.",
+                "Narasikan pembongkaran faktor: Apakah pertumbuhan ROE dipicu murni oleh kepiawaian menjaga margin keuntungan komersial, atau karena perputaran aset lapangan yang cepat.",
+                "Gali dokumen RAG untuk merumuskan rekomendasi apakah manajemen aman menambah utang terukur demi mendongkrak ROE di masa mendatang.",
+                "Tutup dengan kesimpulan kalimat pendek berawalan kata 'Singkatnya:' untuk konsumsi direksi non-keuangan."
             ],
             output: [
-                "## 4. Analisis Aktivitas (Total Asset Turnover)",
-                "Sajikan evaluasi ketangkasan perputaran modal aset korporasi secara mendalam."
+                "## 6. DuPont Analysis",
+                "Sajikan bedah formula matematika DuPont beserta narasi interpretasi 4 lapis strategisnya."
             ]
         );
     }

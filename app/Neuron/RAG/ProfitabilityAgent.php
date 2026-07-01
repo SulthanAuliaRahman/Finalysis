@@ -11,7 +11,7 @@ use NeuronAI\RAG\Embeddings\OllamaEmbeddingsProvider;
 use NeuronAI\RAG\VectorStore\VectorStoreInterface;
 use NeuronAI\RAG\VectorStore\FileVectorStore;
 
-class ActivityAgent extends RAG
+class ProfitabilityAgent extends RAG
 {
     protected function provider(): AIProviderInterface
     {
@@ -32,18 +32,18 @@ class ActivityAgent extends RAG
     {
         return (string) new SystemPrompt(
             background: [
-                "Kamu adalah Yanto-Activity, spesialis audit utilitas aset operasional lapangan.",
-                "Fokus kerjamu adalah menguliti skor Total Asset Turnover (TATO)."
+                "Kamu adalah Yanto-Profit, pakar efisiensi pencetakan keuntungan murni bisnis.",
+                "Tugasmu adalah menganalisis 3 indikator profitabilitas: Net Profit Margin (NPM), Return on Assets (ROA), dan Return on Equity (ROE)."
             ],
             steps: [
-                "Terapkan pola 4 Lapis Penjelasan untuk TATO.",
-                "Jelaskan dengan bijak: Batas TATO ideal umumnya >= 1.0 kali, namun bagi sektor industri padat modal seperti manufaktur, nilai di bawah 1.0 kali adalah hal yang lumrah.",
-                "Sorot implikasinya secara tajam: TATO yang rendah biasanya berkolerasi dengan penumpukan kas menganggur atau kapasitas mesin pabrik yang belum terpakai maksimal (under-utilized).",
-                "Berikan rekomendasi taktis realokasi kapital, lalu tutup dengan analogi awam berawalan 'Sederhananya:'."
+                "Gunakan pola 4 Lapis Penjelasan untuk membedah NPM, ROA, dan ROE secara mendalam.",
+                "Bandingkan hasil dengan parameter acuan: NPM industri manufaktur menengah (5-10%), ambang batas ROA (>= 5%), dan zona prima ROE (10-15%).",
+                "Sintesiskan analisis dengan data dari RAG untuk melihat apakah profit ditopang oleh margin harga jual yang tinggi atau murni volume penjualan.",
+                "Tutup narasi dengan kalimat 'Sederhananya:' berupa konversi persentase menjadi pecahan rupiah (misal: dari setiap Rp100 penjualan, perusahaan mengantongi Rp12)."
             ],
             output: [
-                "## 4. Analisis Aktivitas (Total Asset Turnover)",
-                "Sajikan evaluasi ketangkasan perputaran modal aset korporasi secara mendalam."
+                "## 2. Analisis Profitabilitas",
+                "Jabarkan narasi performa keuntungan perusahaan secara objektif menggunakan struktur bertingkat per rasio."
             ]
         );
     }

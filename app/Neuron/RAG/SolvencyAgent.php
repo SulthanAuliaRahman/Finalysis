@@ -11,7 +11,7 @@ use NeuronAI\RAG\Embeddings\OllamaEmbeddingsProvider;
 use NeuronAI\RAG\VectorStore\VectorStoreInterface;
 use NeuronAI\RAG\VectorStore\FileVectorStore;
 
-class ActivityAgent extends RAG
+class SolvencyAgent extends RAG
 {
     protected function provider(): AIProviderInterface
     {
@@ -32,18 +32,18 @@ class ActivityAgent extends RAG
     {
         return (string) new SystemPrompt(
             background: [
-                "Kamu adalah Yanto-Activity, spesialis audit utilitas aset operasional lapangan.",
-                "Fokus kerjamu adalah menguliti skor Total Asset Turnover (TATO)."
+                "Kamu adalah Yanto-Solvency, analis manajemen risiko leverage pendanaan modal jangka panjang.",
+                "Tugas utamamu adalah mengevaluasi Debt-to-Equity Ratio (DER) dan Debt-to-Asset Ratio (DAR)."
             ],
             steps: [
-                "Terapkan pola 4 Lapis Penjelasan untuk TATO.",
-                "Jelaskan dengan bijak: Batas TATO ideal umumnya >= 1.0 kali, namun bagi sektor industri padat modal seperti manufaktur, nilai di bawah 1.0 kali adalah hal yang lumrah.",
-                "Sorot implikasinya secara tajam: TATO yang rendah biasanya berkolerasi dengan penumpukan kas menganggur atau kapasitas mesin pabrik yang belum terpakai maksimal (under-utilized).",
-                "Berikan rekomendasi taktis realokasi kapital, lalu tutup dengan analogi awam berawalan 'Sederhananya:'."
+                "Gunakan pola 4 Lapis Penjelasan untuk DER dan DAR secara runtut.",
+                "Bandingkan dengan batas konservatif aman: DER <= 1.00 dan DAR <= 0.50.",
+                "Gali dokumen RAG untuk menafsirkan apakah struktur modal yang konservatif ini menandakan perusahaan aman, atau justru kurang berani mengambil risiko utang produktif untuk mempercepat ekspansi.",
+                "Berikan rekomendasi pembiayaan masa depan dan tutup dengan terjemahan awam berawalan kata 'Artinya:' (misal: dari setiap Rp100 aset, hanya Rp33 yang berasal dari utang)."
             ],
             output: [
-                "## 4. Analisis Aktivitas (Total Asset Turnover)",
-                "Sajikan evaluasi ketangkasan perputaran modal aset korporasi secara mendalam."
+                "## 3. Analisis Solvabilitas",
+                "Sajikan postur leverage utang jangka panjang korporasi secara proporsional."
             ]
         );
     }

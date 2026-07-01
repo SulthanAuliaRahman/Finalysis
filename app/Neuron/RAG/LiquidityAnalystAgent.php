@@ -15,44 +15,37 @@ class LiquidityAgent extends RAG
 {
     protected function provider(): AIProviderInterface
     {
-        return new Ollama(
-            url: 'http://host.docker.internal:11434/api',
-            model: 'qwen3:8b',
-        );
+        return new Ollama(url: 'http://host.docker.internal:11434/api', model: 'qwen3:8b');
     }
 
     protected function embeddings(): EmbeddingsProviderInterface
     {
-        return new OllamaEmbeddingsProvider(
-            url: 'http://host.docker.internal:11434/api',
-            model: 'qwen3-embedding:8b',
-        );
+        return new OllamaEmbeddingsProvider(url: 'http://host.docker.internal:11434/api', model: 'qwen3-embedding:8b');
     }
 
     protected function vectorStore(): VectorStoreInterface
     {
-        return new FileVectorStore(
-            directory: __DIR__,
-            name: 'demo' // Nanti nama ini bisa disesuaikan dengan vector store proyek TA kalian
-        );
+        return new FileVectorStore(directory: __DIR__, name: 'demo');
     }
 
     protected function instructions(): string
     {
         return (string) new SystemPrompt(
             background: [
-                "Kamu adalah Yanto-Liquidity, bagian dari Multi-Agent finansial yang bertindak sebagai pakar manajemen arus kas dan analisis risiko likuiditas jangka pendek.",
-                "Tugas utamanya adalah mengaitkan data matematis kaku (Rasio Lancar, Cepat, Kas) dengan dokumen naratif finansial di knowledge base untuk mencari tahu alasan fungsional di balik angka tersebut."
+                "Kamu adalah Yanto-Liquidity, spesialis analisis risiko keuangan jangka pendek korporasi.",
+                "Tugas utamamu adalah membedah 3 metrik likuiditas esensial: Current Ratio, Quick Ratio, dan Cash Ratio berdasarkan data kuantitatif dan dokumen pendukung PDF di knowledge base."
             ],
             steps: [
-                "Periksa nilai matematis yang dikirimkan oleh user, bandingkan secara ketat dengan benchmark industri (Current >= 1.5, Quick >= 1.0, Cash >= 0.2).",
-                "Sintesiskan data rasio tersebut dengan konteks catatan laporan keuangan dari knowledge base (RAG) untuk menemukan alasan taktis (misal: kenapa kas menumpuk atau kenapa persediaan membengkak).",
-                "Gunakan pendekatan bahasa yang mudah dipahami oleh orang awam saat menerangkan hubungan grafik dengan realitas bisnis."
+                "WAJIB menuliskan analisis untuk masing-masing sub-rasio (Current, Quick, Cash) secara terpisah menggunakan pola 4 Lapis Penjelasan.",
+                "Lapis 1: Sebutkan Angka & Cara Hitung dengan jelas.",
+                "Lapis 2: Bandingkan secara ketat dengan benchmark industri (Current Ratio standar 1.5, Quick Ratio standar 1.0, Cash Ratio standar 0.2).",
+                "Lapis 3: Jabarkan Implikasi bagi Perusahaan (misal: posisi tawar di mata kreditur dagang atau adanya indikasi dana menganggur/idle cash).",
+                "Lapis 4: Berikan Rekomendasi konkret bagi manajemen untuk mengoptimalkan kelebihan aset cair.",
+                "Tutup setiap akhir sub-rasio dengan kalimat penjelasan santai berawalan kata 'Sederhananya:' atau 'Artinya:' menggunakan analogi sehari-hari (seperti tebal dompet vs tagihan harian)."
             ],
             output: [
-                "## ANALISIS LIKUIDITAS & MANAJEMEN KAS",
-                "Sajikan analisis mendalam per rasio (Current, Quick, Cash) yang memadukan kebenaran angka dengan fakta dari dokumen pendukung.",
-                "Berikan kesimpulan mutlak apakah kondisi likuiditas jangka pendek entitas berada dalam zona Aman, Waspada, atau Bahaya."
+                "## 1. Analisis Likuiditas",
+                "Sajikan analisis terpisah per metrik (Current Ratio, Quick Ratio, Cash Ratio) dalam format Markdown yang rapi tanpa menumpuk istilah teknis dalam satu kalimat panjang."
             ]
         );
     }

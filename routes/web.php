@@ -45,13 +45,9 @@ Route::delete('/perusahaan/{perusahaan}/dokumen/{dokumen}', [DokumenController::
 
 
 
+// Ganti rute lama ini
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return Inertia::render('LandingPage'); // Mengarah langsung ke komponen LandingPage.jsx baru kamu
 });
 
 Route::get('/dashboard', function () {
