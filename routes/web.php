@@ -7,6 +7,7 @@ use Inertia\Inertia;
 
 use App\Http\Controllers\PerusahaanController;
 use App\Http\Controllers\DokumenController;
+use App\Http\Controllers\AnalisisController;
 
 // CRUD Perusahaan
 Route::get('/perusahaan', [PerusahaanController::class, 'index'])->name('perusahaan.index');
@@ -40,9 +41,11 @@ Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunks', [DokumenControll
 
 Route::delete('/perusahaan/{perusahaan}/dokumen/{dokumen}', [DokumenController::class, 'destroy'])->name('perusahaan.dokumen.destroy');
 
+// Rute Pengelolaan Analisis Perusahaan
+Route::get('/perusahaan/{perusahaan}/analisis', [AnalisisController::class, 'index'])->name('perusahaan.analisis.index');
+Route::get('/perusahaan/{perusahaan}/analisis/{analisis}', [AnalisisController::class, 'analisis'])->name('perusahaan.analisis.detail');
+
 // Alur Proses Generate Analisis RAG
-
-
 
 
 // Ganti rute lama ini
