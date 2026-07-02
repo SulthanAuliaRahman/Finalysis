@@ -3,7 +3,7 @@
 namespace App\Neuron\RAG;
 
 use NeuronAI\RAG\RAG;
-use NeuronAI\NeuronAI\Agent\SystemPrompt;
+use NeuronAI\Agent\SystemPrompt;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\Providers\Ollama\Ollama;
 use NeuronAI\RAG\Embeddings\EmbeddingsProviderInterface;
