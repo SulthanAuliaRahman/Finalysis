@@ -17,7 +17,6 @@ class AnalysisFinancialService
 {
     protected FinancialService $financialService;
 
-    // Inject FinancialService ke dalam pipeline
     public function __construct(FinancialService $financialService)
     {
         $this->financialService = $financialService;

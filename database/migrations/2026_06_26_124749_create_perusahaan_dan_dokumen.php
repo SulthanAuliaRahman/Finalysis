@@ -47,6 +47,8 @@ return new class extends Migration
         Schema::create('neraca', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dokumen_id')->unique()->constrained('dokumen')->cascadeOnDelete();
+            $table->decimal('kas_setara_kas', 20, 2)->nullable();
+            $table->decimal('persediaan', 20, 2)->nullable();
             $table->decimal('total_equity', 20, 2)->nullable();
             $table->decimal('total_liabilities', 20, 2)->nullable();
             $table->decimal('current_liabilities', 20, 2)->nullable();

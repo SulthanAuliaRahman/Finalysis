@@ -81,7 +81,6 @@ class AnalisisController extends Controller
             ->latest()
             ->get();
 
-        // TAMBAHAN: Ambil Neraca & Laba Rugi untuk breakdown UI
         $neraca = Neraca::whereHas('dokumen', function ($query) use ($perusahaan, $analisis) {
             $query->where('perusahaan_id', $perusahaan->id)
                 ->where('periode_type', $analisis->periode_type)
@@ -140,10 +139,9 @@ class AnalisisController extends Controller
                 ->where('bulan', $analisis->bulan);
         })->latest()->first();
 
-        // 1. Validasi via Service
         $analysisFinancialService->validasiKelengkapanData($section, $neraca, $labaRugi);
 
-        // 2. Jalankan Pipeline dalam Transaction
+
         DB::transaction(function () use ($section, $analisis, $neraca, $labaRugi, $analysisFinancialService) {
 
             switch ($section) {
@@ -164,7 +162,7 @@ class AnalisisController extends Controller
                     break;
 
                 case 'summary':
-                    // TODO: Implementasi trigger prompt AI Agent (RAG) di sini pada fase selanjutnya
+                    // TODO: Implementasi trigger prompt AI Agent (RAG) di sini Untuk Summary
                     // $analysisFinancialService->generateAISummary($analisis);
                     break;
             }
