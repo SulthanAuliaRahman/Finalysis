@@ -46,7 +46,7 @@ Route::get('/perusahaan/{perusahaan}/analisis', [AnalisisController::class, 'ind
 Route::get('/perusahaan/{perusahaan}/analisis/{analisis}', [AnalisisController::class, 'analisis'])->name('perusahaan.analisis.detail');
 
 // Alur Proses Generate Analisis RAG
-
+Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/regenerasi', [AnalisisController::class, 'regenerasi'])->name('perusahaan.analisis.regenerasi');
 
 // Ganti rute lama ini
 Route::get('/', function () {

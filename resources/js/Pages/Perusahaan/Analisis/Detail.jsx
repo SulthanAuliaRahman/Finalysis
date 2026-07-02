@@ -5,62 +5,51 @@ import { AnalisisProfitabilitasCard } from "@/Components/Analisis/AnalisisProfit
 import { AnalisisSolvabilitasCard } from "@/Components/Analisis/AnalisisSolvabilitasCard";
 import { AnalisisAktivitasCard } from "@/Components/Analisis/AnalisisAktivitasCard";
 import { AIInsightCard } from "@/Components/Analisis/AIInsightCard";
-import { Button } from "@/Components/ui/button"; // Pastikan path ini sesuai
-import { Download } from "lucide-react";
+import { FileDown } from "lucide-react";
 
-export default function Detail({ perusahaan, periodeLabel }) {
-
-    // TODO: hubungkan ke endpoint regenerasi per-kategori rasio saat backend siap.
-    function handleRegenerateRatio(kategori) {
-        console.log(`Regenerasi rasio ${kategori} untuk perusahaan ${perusahaan.id}`);
-    }
-
-    function handleRegenerateInsight() {
-        console.log(`Regenerasi AI insight untuk perusahaan ${perusahaan.id}`);
-    }
-
-    // Placeholder untuk fitur Download PDF
+export default function Detail({ perusahaan, analisis, dokumenPeriode, likuiditas, profitabilitas, solvabilitas, aktivitas, neraca, labaRugi }) {
+    // TODO: hubungkan ke endpoint generate/download PDF laporan analisis saat backend siap.
     function handleDownloadPdf() {
-        console.log("Tombol Download PDF diklik (UI Only)");
+        console.log(`Download PDF analisis periode ${analisis.periode_label} untuk perusahaan ${perusahaan.id}`);
     }
 
     return (
         <div className="p-8">
-            {/* Wrapper Flexbox: Judul di kiri, Tombol di kanan */}
-            <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div className="flex items-start justify-between gap-4 mb-6">
                 <div>
                     <h2 className="text-3xl font-semibold text-slate-900">
-                        Detail Analisis Pada Periode {periodeLabel}
+                        Detail Analisis Pada Periode {analisis.periode_label}
                     </h2>
                     <p className="text-slate-500 mt-1">Ringkasan dan insight keuangan perusahaan</p>
                 </div>
-
-                {/* Button Download PDF */}
-                <Button
+                <button
                     onClick={handleDownloadPdf}
-                    variant="outline"
-                    className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-xs shrink-0"
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium flex-shrink-0"
                 >
-                    <Download className="w-4 h-4" />
+                    <FileDown className="w-4 h-4" />
                     Download PDF
-                </Button>
+                </button>
             </div>
 
-            <CompanyHeader />
+            <CompanyHeader perusahaan={perusahaan} dokumenPeriode={dokumenPeriode} />
 
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Rasio Keuangan</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <AnalisisLikuiditasCard onRegenerate={() => handleRegenerateRatio('likuiditas')} />
-                    <AnalisisProfitabilitasCard onRegenerate={() => handleRegenerateRatio('profitabilitas')} />
-                    <AnalisisSolvabilitasCard onRegenerate={() => handleRegenerateRatio('solvabilitas')} />
-                    <AnalisisAktivitasCard onRegenerate={() => handleRegenerateRatio('aktivitas')} />
+                    <AnalisisLikuiditasCard data={likuiditas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <AnalisisProfitabilitasCard data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <AnalisisSolvabilitasCard data={solvabilitas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <AnalisisAktivitasCard data={aktivitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                 </div>
             </div>
 
+            {/* Dupont */}
+
+            {/* Trend */}
+
             <div className="flex justify-center">
                 <div className="w-full max-w-4xl">
-                    <AIInsightCard onRegenerate={handleRegenerateInsight} />
+                    <AIInsightCard narasi={analisis.ai_summary_insight} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                 </div>
             </div>
         </div>

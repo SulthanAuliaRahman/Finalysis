@@ -1,15 +1,33 @@
 import { Shield } from 'lucide-react';
-import { RatioCardSkeleton } from './RatioCardSkeleton';
+import { RatioCardBase } from './RatioCardBase';
 
-export function AnalisisSolvabilitasCard({ onRegenerate }) {
+const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
+
+export function AnalisisSolvabilitasCard({ data, neraca, perusahaanId, analisisId }) {
     return (
-        <RatioCardSkeleton
+        <RatioCardBase
             title="Solvabilitas"
             icon={<Shield className="w-5 h-5" />}
-            ratioNames={['Debt to Equity', 'Debt to Asset', 'Debt Ratio']}
             iconBgColor="bg-purple-100"
             iconColor="text-purple-600"
-            onRegenerate={onRegenerate}
+            ratios={[
+                {
+                    label: 'Debt to Equity (DER)',
+                    value: data?.debt_to_equity ?? null, suffix: '%',
+                    formula: 'Total Kewajiban / Total Ekuitas',
+                    breakdown: neraca ? `${formatNum(neraca.total_liabilities)} / ${formatNum(neraca.total_equity)}` : null
+                },
+                {
+                    label: 'Debt to Asset (DAR)',
+                    value: data?.debt_to_asset ?? null, suffix: '%',
+                    formula: 'Total Kewajiban / Total Aset',
+                    breakdown: neraca ? `${formatNum(neraca.total_liabilities)} / ${formatNum(neraca.total_assets)}` : null
+                },
+            ]}
+            narasi={data?.narasi_solvabilitas_AI}
+            section="solvabilitas"
+            perusahaanId={perusahaanId}
+            analisisId={analisisId}
         />
     );
 }

@@ -9,23 +9,23 @@ import {
 
 function StatusBadge({ status }) {
     const badges = {
-        belum_dimulai: {
+        'belum dianalisis': {
             bg: "bg-slate-100 border-slate-200 text-slate-600",
             icon: <Circle className="w-3 h-3" />,
-            label: "Belum Dimulai"
+            label: "Belum Dianalisis"
         },
-        sudah_dianalisis: {
+        'sudah dianalisis': {
             bg: "bg-green-50 border-green-200 text-green-700",
             icon: <CheckCircle2 className="w-3 h-3" />,
             label: "Sudah Dianalisis"
         },
-        perubahan_data: {
+        'Terjadi Perubahan Data!': {
             bg: "bg-orange-50 border-orange-200 text-orange-700",
             icon: <AlertTriangle className="w-3 h-3" />,
             label: "Terjadi Perubahan Data!"
         }
     };
-    const current = badges[status] || badges['belum_dimulai'];
+    const current = badges[status] || badges['belum dianalisis'];
     return (
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-xs font-medium ${current.bg}`}>
             {current.icon} {current.label}
@@ -93,7 +93,7 @@ export default function Index({ perusahaan, analisisList }) {
                                             <span className="font-medium text-slate-900">{analisis.periode_label}</span>
                                         </td>
                                         <td className="px-5 py-4">
-                                            <TipePeriodeBadge tipe={analisis.tipe_periode} />
+                                            <TipePeriodeBadge tipe={analisis.periode_type} />
                                         </td>
                                         <td className="px-5 py-4">
                                             <span className="inline-flex items-center gap-1.5 text-slate-600">

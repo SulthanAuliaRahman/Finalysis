@@ -1,15 +1,27 @@
 import { Activity } from 'lucide-react';
-import { RatioCardSkeleton } from './RatioCardSkeleton';
+import { RatioCardBase } from './RatioCardBase';
 
-export function AnalisisAktivitasCard({ onRegenerate }) {
+const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
+
+export function AnalisisAktivitasCard({ data, neraca, labaRugi, perusahaanId, analisisId }) {
     return (
-        <RatioCardSkeleton
+        <RatioCardBase
             title="Aktivitas"
             icon={<Activity className="w-5 h-5" />}
-            ratioNames={['Asset Turnover', 'Inventory Turnover', 'Receivable Turnover']}
             iconBgColor="bg-orange-100"
             iconColor="text-orange-600"
-            onRegenerate={onRegenerate}
+            ratios={[
+                {
+                    label: 'Total Asset Turnover (TATO)',
+                    value: data?.total_asset_turnover ?? null, suffix: '%',
+                    formula: 'Pendapatan / Total Aset',
+                    breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.pendapatan)} / ${formatNum(neraca.total_assets)}` : null
+                },
+            ]}
+            narasi={data?.narasi_aktivitas_AI}
+            section="aktivitas"
+            perusahaanId={perusahaanId}
+            analisisId={analisisId}
         />
     );
 }
