@@ -5,12 +5,28 @@ import { AnalisisProfitabilitasCard } from "@/Components/Analisis/AnalisisProfit
 import { AnalisisSolvabilitasCard } from "@/Components/Analisis/AnalisisSolvabilitasCard";
 import { AnalisisAktivitasCard } from "@/Components/Analisis/AnalisisAktivitasCard";
 import { AIInsightCard } from "@/Components/Analisis/AIInsightCard";
-import { FileDown } from "lucide-react";
+import { FileDown, Calculator, Loader2 } from "lucide-react";
+import { router } from '@inertiajs/react';
+import { useState } from 'react';
 
 export default function Detail({ perusahaan, analisis, dokumenPeriode, likuiditas, profitabilitas, solvabilitas, aktivitas, neraca, labaRugi }) {
-    // TODO: hubungkan ke endpoint generate/download PDF laporan analisis saat backend siap.
+    const [isCalculating, setIsCalculating] = useState(false);
+
     function handleDownloadPdf() {
         console.log(`Download PDF analisis periode ${analisis.periode_label} untuk perusahaan ${perusahaan.id}`);
+    }
+
+    // Fungsi Hitung Rasio Global
+    function handleHitungRasio() {
+        setIsCalculating(true);
+        router.post(
+            `/perusahaan/${perusahaan.id}/analisis/${analisis.id}/hitung-rasio`,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setIsCalculating(false)
+            }
+        );
     }
 
     return (
@@ -20,15 +36,31 @@ export default function Detail({ perusahaan, analisis, dokumenPeriode, likuidita
                     <h2 className="text-3xl font-semibold text-slate-900">
                         Detail Analisis Pada Periode {analisis.periode_label}
                     </h2>
-                    <p className="text-slate-500 mt-1">Ringkasan dan insight keuangan perusahaan</p>
+                    <div className="flex items-center gap-3 mt-1">
+                        <p className="text-slate-500">Ringkasan dan insight keuangan perusahaan</p>
+                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
+                            Status: {analisis.status}
+                        </span>
+                    </div>
                 </div>
-                <button
-                    onClick={handleDownloadPdf}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium flex-shrink-0"
-                >
-                    <FileDown className="w-4 h-4" />
-                    Download PDF
-                </button>
+                <div className="flex gap-2">
+                    {/* Tombol Global Hitung Rasio */}
+                    <button
+                        onClick={handleHitungRasio}
+                        disabled={isCalculating}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex-shrink-0 disabled:opacity-50"
+                    >
+                        {isCalculating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
+                        Hitung Data Finansial
+                    </button>
+                    <button
+                        onClick={handleDownloadPdf}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium flex-shrink-0"
+                    >
+                        <FileDown className="w-4 h-4" />
+                        Download PDF
+                    </button>
+                </div>
             </div>
 
             <CompanyHeader perusahaan={perusahaan} dokumenPeriode={dokumenPeriode} />
@@ -42,10 +74,6 @@ export default function Detail({ perusahaan, analisis, dokumenPeriode, likuidita
                     <AnalisisAktivitasCard data={aktivitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                 </div>
             </div>
-
-            {/* Dupont */}
-
-            {/* Trend */}
 
             <div className="flex justify-center">
                 <div className="w-full max-w-4xl">

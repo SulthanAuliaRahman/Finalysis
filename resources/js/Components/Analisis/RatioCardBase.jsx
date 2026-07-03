@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
-import { RefreshCw, Sparkles, Loader2, X } from 'lucide-react';
+import { RefreshCw, Sparkles, Loader2, X, AlertCircle } from 'lucide-react';
 
 export function RatioCardBase({
     title,
@@ -16,7 +16,10 @@ export function RatioCardBase({
     const [isLoading, setIsLoading] = useState(false);
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
     const [userPrompt, setUserPrompt] = useState('');
+
     const belumDianalisis = !narasi;
+    // Cek apakah angka rasio sudah dihitung (jika null, berarti belum dihitung global)
+    const rasioBelumDihitung = ratios.every(r => r.value === null || r.value === undefined);
 
     function handleTrigger() {
         if (belumDianalisis) {
@@ -32,7 +35,7 @@ export function RatioCardBase({
             `/perusahaan/${perusahaanId}/analisis/${analisisId}/regenerasi`,
             {
                 section,
-                user_prompt: customPrompt // Akan null/kosong jika dipanggil dari "Mulai Analisis"
+                user_prompt: customPrompt
             },
             {
                 preserveScroll: true,
@@ -56,7 +59,7 @@ export function RatioCardBase({
                 </div>
                 <button
                     onClick={handleTrigger}
-                    disabled={isLoading}
+                    disabled={isLoading || rasioBelumDihitung}
                     className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
@@ -96,11 +99,15 @@ export function RatioCardBase({
                 </div>
             </div>
 
-            <div className="h-32 rounded-lg bg-slate-50 border border-dashed border-slate-200 flex items-center justify-center mb-4">
-                <span className="text-xs text-slate-400">Grafik tren akan tampil di sini</span>
-            </div>
-
-            {belumDianalisis ? (
+            {/* Info Box jika Rasio Belum dihitung */}
+            {rasioBelumDihitung ? (
+                <div className="bg-amber-50/70 border border-amber-200 rounded-lg p-3 flex gap-2 items-start text-amber-700">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <p className="text-xs">
+                        Silakan klik <strong>"Hitung Data Finansial"</strong> di bagian atas untuk mengkalkulasi rasio sebelum melakukan analisis AI.
+                    </p>
+                </div>
+            ) : belumDianalisis ? (
                 <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-lg p-4 text-center">
                     <p className="text-xs text-slate-400">
                         Analisis untuk {title.toLowerCase()} belum pernah dijalankan pada periode ini.

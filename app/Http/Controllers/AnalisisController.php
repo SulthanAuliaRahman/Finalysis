@@ -115,6 +115,29 @@ class AnalisisController extends Controller
         ]);
     }
 
+    public function hitungRasio(Request $request, Perusahaan $perusahaan, Analisis $analisis, AnalysisFinancialService $analysisFinancialService)
+    {
+        $neraca = Neraca::whereHas('dokumen', function ($query) use ($perusahaan, $analisis) {
+            $query->where('perusahaan_id', $perusahaan->id)
+                ->where('periode_type', $analisis->periode_type)->where('tahun', $analisis->tahun)
+                ->where('quarter', $analisis->quarter)->where('bulan', $analisis->bulan);
+        })->latest()->first();
+
+        $labaRugi = LabaRugi::whereHas('dokumen', function ($query) use ($perusahaan, $analisis) {
+            $query->where('perusahaan_id', $perusahaan->id)
+                ->where('periode_type', $analisis->periode_type)->where('tahun', $analisis->tahun)
+                ->where('quarter', $analisis->quarter)->where('bulan', $analisis->bulan);
+        })->latest()->first();
+
+        $analysisFinancialService->validasiKelengkapanData($neraca, $labaRugi);
+
+        DB::transaction(function () use ($analisis, $neraca, $labaRugi, $analysisFinancialService) {
+            $analysisFinancialService->hitungSemuaRasio($analisis, $neraca, $labaRugi);
+        });
+
+        return back();
+    }
+
     public function regenerasi(Request $request, Perusahaan $perusahaan, Analisis $analisis, AnalysisFinancialService $analysisFinancialService)
     {
         $request->validate([
@@ -125,46 +148,18 @@ class AnalisisController extends Controller
         $section = $request->input('section');
         $userPrompt = $request->input('user_prompt');
 
-        $neraca = Neraca::whereHas('dokumen', function ($query) use ($perusahaan, $analisis) {
-            $query->where('perusahaan_id', $perusahaan->id)
-                ->where('periode_type', $analisis->periode_type)
-                ->where('tahun', $analisis->tahun)
-                ->where('quarter', $analisis->quarter)
-                ->where('bulan', $analisis->bulan);
-        })->latest()->first();
+        // Pastikan rasio sudah dihitung sebelum bisa generate AI
+        if (!in_array($analisis->status, ['rasio tersedia', 'sudah dianalisis'])) {
+            return back()->withErrors(['message' => 'Silahkan Hitung Data Finansial terlebih dahulu.']);
+        }
 
-        $labaRugi = LabaRugi::whereHas('dokumen', function ($query) use ($perusahaan, $analisis) {
-            $query->where('perusahaan_id', $perusahaan->id)
-                ->where('periode_type', $analisis->periode_type)
-                ->where('tahun', $analisis->tahun)
-                ->where('quarter', $analisis->quarter)
-                ->where('bulan', $analisis->bulan);
-        })->latest()->first();
-
-        $analysisFinancialService->validasiKelengkapanData($section, $neraca, $labaRugi);
-
-        DB::transaction(function () use ($section, $analisis, $neraca, $labaRugi, $analysisFinancialService, $userPrompt) {
-
+        DB::transaction(function () use ($section, $analisis, $analysisFinancialService, $userPrompt) {
             switch ($section) {
-                case 'likuiditas':
-                    $analysisFinancialService->prosesLikuiditas($analisis, $neraca, $userPrompt);
-                    break;
-
-                case 'profitabilitas':
-                    $analysisFinancialService->prosesProfitabilitas($analisis, $neraca, $labaRugi, $userPrompt);
-                    break;
-
-                case 'solvabilitas':
-                    $analysisFinancialService->prosesSolvabilitas($analisis, $neraca, $userPrompt);
-                    break;
-
-                case 'aktivitas':
-                    $analysisFinancialService->prosesAktivitas($analisis, $neraca, $labaRugi, $userPrompt);
-                    break;
-
-                case 'summary':
-                    // $analysisFinancialService->generateAISummary($analisis, $userPrompt);
-                    break;
+                case 'likuiditas':     $analysisFinancialService->prosesLikuiditas($analisis, $userPrompt); break;
+                case 'profitabilitas': $analysisFinancialService->prosesProfitabilitas($analisis, $userPrompt); break;
+                case 'solvabilitas':   $analysisFinancialService->prosesSolvabilitas($analisis, $userPrompt); break;
+                case 'aktivitas':      $analysisFinancialService->prosesAktivitas($analisis, $userPrompt); break;
+                case 'summary':        /* $analysisFinancialService->generateAISummary($analisis, $userPrompt); */ break;
             }
 
             $analysisFinancialService->updateStatusJikaLengkap($analisis);

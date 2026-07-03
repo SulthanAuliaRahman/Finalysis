@@ -25,6 +25,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('bulan')->nullable(); // NULL jika annual / quarterly
             $table->enum('status', [
                 'belum dianalisis',
+                'rasio tersedia',
                 'sudah dianalisis',
                 'Terjadi Perubahan Data!',
             ])->default('belum dianalisis');
