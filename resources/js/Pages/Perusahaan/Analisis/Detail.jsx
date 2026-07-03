@@ -16,7 +16,6 @@ export default function Detail({ perusahaan, analisis, dokumenPeriode, likuidita
         console.log(`Download PDF analisis periode ${analisis.periode_label} untuk perusahaan ${perusahaan.id}`);
     }
 
-    // Fungsi Hitung Rasio Global
     function handleHitungRasio() {
         setIsCalculating(true);
         router.post(
@@ -44,7 +43,6 @@ export default function Detail({ perusahaan, analisis, dokumenPeriode, likuidita
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    {/* Tombol Global Hitung Rasio */}
                     <button
                         onClick={handleHitungRasio}
                         disabled={isCalculating}
@@ -68,10 +66,11 @@ export default function Detail({ perusahaan, analisis, dokumenPeriode, likuidita
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Rasio Keuangan</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <AnalisisLikuiditasCard data={likuiditas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <AnalisisProfitabilitasCard data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <AnalisisSolvabilitasCard data={solvabilitas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <AnalisisAktivitasCard data={aktivitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    {/* Tambahkan prop sektor ke masing-masing Card */}
+                    <AnalisisLikuiditasCard data={likuiditas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
+                    <AnalisisProfitabilitasCard data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
+                    <AnalisisSolvabilitasCard data={solvabilitas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
+                    <AnalisisAktivitasCard data={aktivitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
                 </div>
             </div>
 

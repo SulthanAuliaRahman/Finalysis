@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DialogFooter } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 
-const SEKTORS = ["Manufaktur", "Teknologi", "Energi", "Keuangan", "Properti", "Retail", "Pertanian", "Kesehatan", "Lainnya"];
+const SEKTORS = ["Manufaktur", "Jasa", "Perdangan", "Lainnya"];
 
 export default function PerusahaanForm({ editData, onClose }) {
     const { data, setData, post, put, processing, errors, reset } = useForm({

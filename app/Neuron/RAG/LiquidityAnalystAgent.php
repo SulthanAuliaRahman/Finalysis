@@ -11,7 +11,7 @@ use NeuronAI\RAG\Embeddings\OllamaEmbeddingsProvider;
 use NeuronAI\RAG\VectorStore\VectorStoreInterface;
 use NeuronAI\RAG\VectorStore\FileVectorStore;
 
-class LiquidityAgent extends RAG
+class LiquidityAnalystAgent extends RAG
 {
     protected function provider(): AIProviderInterface
     {

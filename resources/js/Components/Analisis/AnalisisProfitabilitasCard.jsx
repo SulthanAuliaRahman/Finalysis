@@ -2,14 +2,31 @@ import { TrendingUp } from 'lucide-react';
 import { RatioCardBase } from './RatioCardBase';
 
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
+// Profitabilitas direpresentasikan dalam persentase, jadi tidak perlu dibagi 100
+const parseVal = (val) => val ? Number(val) : 0;
 
-export function AnalisisProfitabilitasCard({ data, neraca, labaRugi, perusahaanId, analisisId }) {
+export function AnalisisProfitabilitasCard({ data, neraca, labaRugi, perusahaanId, analisisId, sektor }) {
+
+    // Logika Dinamis Benchmark NPM berdasarkan sektor
+    let npmBenchmark = null;
+    if (sektor === "Jasa") npmBenchmark = 10;
+    else if (sektor === "Manufaktur") npmBenchmark = 7.5; // Titik tengah dari 5-10%
+    else if (sektor === "Perdangan" || sektor === "Perdagangan") npmBenchmark = 3.5; // Titik tengah dari 2-5%
+
+    const chartData = [
+        { name: 'NPM', value: parseVal(data?.net_profit_margin), benchmark: npmBenchmark },
+        { name: 'ROA', value: parseVal(data?.ROA), benchmark: 5 },
+        { name: 'ROE', value: parseVal(data?.ROE), benchmark: 15 },
+    ];
+
     return (
         <RatioCardBase
             title="Profitabilitas"
             icon={<TrendingUp className="w-5 h-5" />}
             iconBgColor="bg-green-100"
             iconColor="text-green-600"
+            chartColor="#16a34a" // Warna Hijau Tailwind
+            chartData={chartData}
             ratios={[
                 {
                     label: 'Net Profit Margin',

@@ -3,7 +3,7 @@ import AppLayout from "@/Layouts/AppLayout";
 import { Button } from "@/Components/ui/button";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 
-const SEKTORS = ["Manufaktur", "Jasa", "Perdagangan", "Keuangan", "Properti", "Retail", "Pertanian", "Kesehatan", "Lainnya"];
+const SEKTORS = ["Manufaktur", "Jasa", "Perdangan", "Lainnya"];
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({

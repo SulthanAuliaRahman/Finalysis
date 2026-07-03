@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { RefreshCw, Sparkles, Loader2, X, AlertCircle } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export function RatioCardBase({
     title,
@@ -8,6 +9,8 @@ export function RatioCardBase({
     iconBgColor,
     iconColor,
     ratios,
+    chartData,
+    chartColor,
     narasi,
     section,
     perusahaanId,
@@ -18,7 +21,6 @@ export function RatioCardBase({
     const [userPrompt, setUserPrompt] = useState('');
 
     const belumDianalisis = !narasi;
-    // Cek apakah angka rasio sudah dihitung (jika null, berarti belum dihitung global)
     const rasioBelumDihitung = ratios.every(r => r.value === null || r.value === undefined);
 
     function handleTrigger() {
@@ -33,10 +35,7 @@ export function RatioCardBase({
         setIsLoading(true);
         router.post(
             `/perusahaan/${perusahaanId}/analisis/${analisisId}/regenerasi`,
-            {
-                section,
-                user_prompt: customPrompt
-            },
+            { section, user_prompt: customPrompt },
             {
                 preserveScroll: true,
                 onFinish: () => {
@@ -49,7 +48,7 @@ export function RatioCardBase({
     }
 
     return (
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs relative">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs relative flex flex-col h-full">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2.5">
                     <div className={`p-2 rounded-lg ${iconBgColor}`}>
@@ -62,11 +61,7 @@ export function RatioCardBase({
                     disabled={isLoading || rasioBelumDihitung}
                     className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {isLoading ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                        <RefreshCw className="w-3.5 h-3.5" />
-                    )}
+                    {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
                     {belumDianalisis ? 'Mulai Analisis' : 'Regenerasi'}
                 </button>
             </div>
@@ -99,31 +94,51 @@ export function RatioCardBase({
                 </div>
             </div>
 
-            {/* Info Box jika Rasio Belum dihitung */}
-            {rasioBelumDihitung ? (
-                <div className="bg-amber-50/70 border border-amber-200 rounded-lg p-3 flex gap-2 items-start text-amber-700">
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                    <p className="text-xs">
-                        Silakan klik <strong>"Hitung Data Finansial"</strong> di bagian atas untuk mengkalkulasi rasio sebelum melakukan analisis AI.
-                    </p>
-                </div>
-            ) : belumDianalisis ? (
-                <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-lg p-4 text-center">
-                    <p className="text-xs text-slate-400">
-                        Analisis untuk {title.toLowerCase()} belum pernah dijalankan pada periode ini.
-                    </p>
-                </div>
-            ) : (
-                <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3">
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-                        <span className="text-xs font-medium text-blue-700">Insight AI</span>
-                    </div>
-                    <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{narasi}</p>
+            {/* Diagram Render Area */}
+            {!rasioBelumDihitung && chartData && chartData.length > 0 && (
+                <div className="h-56 mb-4 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                            <Tooltip
+                                cursor={{ fill: '#f8fafc' }}
+                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
+                            />
+                            <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                            <Bar dataKey="value" name="Nilai Aktual" fill={chartColor || '#3b82f6'} radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="benchmark" name="Benchmark" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
                 </div>
             )}
 
-            {/* Modal Prompt */}
+            <div className="mt-auto">
+                {rasioBelumDihitung ? (
+                    <div className="bg-amber-50/70 border border-amber-200 rounded-lg p-3 flex gap-2 items-start text-amber-700">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <p className="text-xs">
+                            Silakan klik <strong>"Hitung Data Finansial"</strong> di bagian atas untuk mengkalkulasi rasio sebelum melakukan analisis AI.
+                        </p>
+                    </div>
+                ) : belumDianalisis ? (
+                    <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-lg p-4 text-center">
+                        <p className="text-xs text-slate-400">
+                            Analisis untuk {title.toLowerCase()} belum pernah dijalankan pada periode ini.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3">
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+                            <span className="text-xs font-medium text-blue-700">Insight AI</span>
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{narasi}</p>
+                    </div>
+                )}
+            </div>
+
             {isPromptModalOpen && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl p-4">
                     <div className="bg-white border border-slate-200 shadow-xl rounded-xl p-5 w-full">
@@ -142,20 +157,9 @@ export function RatioCardBase({
                             disabled={isLoading}
                         ></textarea>
                         <div className="flex justify-end gap-2">
-                            <button
-                                onClick={() => setIsPromptModalOpen(false)}
-                                className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
-                                disabled={isLoading}
-                            >
-                                Batal
-                            </button>
-                            <button
-                                onClick={() => submitAnalisis(userPrompt)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 rounded-lg disabled:opacity-50"
-                                disabled={isLoading}
-                            >
-                                {isLoading && <Loader2 className="w-3 h-3 animate-spin" />}
-                                Generate AI
+                            <button onClick={() => setIsPromptModalOpen(false)} className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg" disabled={isLoading}>Batal</button>
+                            <button onClick={() => submitAnalisis(userPrompt)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 rounded-lg disabled:opacity-50" disabled={isLoading}>
+                                {isLoading && <Loader2 className="w-3 h-3 animate-spin" />} Generate AI
                             </button>
                         </div>
                     </div>

@@ -2,18 +2,29 @@ import { Droplet } from 'lucide-react';
 import { RatioCardBase } from './RatioCardBase';
 
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
+// Helper: Ubah kembali persentase database (253.45) menjadi format desimal murni (2.53) untuk chart
+const parseVal = (val) => val ? Number((val / 100).toFixed(2)) : 0;
 
 export function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId }) {
+
+    const chartData = [
+        { name: 'CR', value: parseVal(data?.current_ratio), benchmark: 1.5 },
+        { name: 'QR', value: parseVal(data?.quick_ratio), benchmark: 1.0 },
+        { name: 'Cash', value: parseVal(data?.cash_ratio), benchmark: 0.2 },
+    ];
+
     return (
         <RatioCardBase
             title="Likuiditas"
             icon={<Droplet className="w-5 h-5" />}
             iconBgColor="bg-blue-100"
             iconColor="text-blue-600"
+            chartColor="#3b82f6" // Warna Biru Tailwind
+            chartData={chartData}
             ratios={[
                 {
                     label: 'Current Ratio',
-                    value: data?.current_ratio ?? null, suffix: '%',
+                    value: data?.current_ratio ?? null, suffix: '%', // Tampilan UI tetap mempertahankan % sesuai DB kamu
                     formula: 'Aset Lancar / Kewajiban Lancar',
                     breakdown: neraca ? `${formatNum(neraca.current_assets)} / ${formatNum(neraca.current_liabilities)}` : null
                 },
