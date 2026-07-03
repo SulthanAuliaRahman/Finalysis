@@ -47,6 +47,8 @@ Route::get('/perusahaan/{perusahaan}/analisis/{analisis}', [AnalisisController::
 
 // Alur Proses Generate Analisis RAG
 Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/regenerasi', [AnalisisController::class, 'regenerasi'])->name('perusahaan.analisis.regenerasi');
+// Pisah Analisis Dengan Hitung tapi analisis dan regenerasi harus nya sama
+
 
 // Ganti rute lama ini
 Route::get('/', function () {

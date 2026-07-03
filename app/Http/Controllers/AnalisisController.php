@@ -118,10 +118,12 @@ class AnalisisController extends Controller
     public function regenerasi(Request $request, Perusahaan $perusahaan, Analisis $analisis, AnalysisFinancialService $analysisFinancialService)
     {
         $request->validate([
-            'section' => 'required|string|in:likuiditas,profitabilitas,solvabilitas,aktivitas,summary'
+            'section' => 'required|string|in:likuiditas,profitabilitas,solvabilitas,aktivitas,summary',
+            'user_prompt' => 'nullable|string|max:1000'
         ]);
 
         $section = $request->input('section');
+        $userPrompt = $request->input('user_prompt');
 
         $neraca = Neraca::whereHas('dokumen', function ($query) use ($perusahaan, $analisis) {
             $query->where('perusahaan_id', $perusahaan->id)
@@ -141,33 +143,30 @@ class AnalisisController extends Controller
 
         $analysisFinancialService->validasiKelengkapanData($section, $neraca, $labaRugi);
 
-
-        DB::transaction(function () use ($section, $analisis, $neraca, $labaRugi, $analysisFinancialService) {
+        DB::transaction(function () use ($section, $analisis, $neraca, $labaRugi, $analysisFinancialService, $userPrompt) {
 
             switch ($section) {
                 case 'likuiditas':
-                    $analysisFinancialService->prosesLikuiditas($analisis, $neraca);
+                    $analysisFinancialService->prosesLikuiditas($analisis, $neraca, $userPrompt);
                     break;
 
                 case 'profitabilitas':
-                    $analysisFinancialService->prosesProfitabilitas($analisis, $neraca, $labaRugi);
+                    $analysisFinancialService->prosesProfitabilitas($analisis, $neraca, $labaRugi, $userPrompt);
                     break;
 
                 case 'solvabilitas':
-                    $analysisFinancialService->prosesSolvabilitas($analisis, $neraca);
+                    $analysisFinancialService->prosesSolvabilitas($analisis, $neraca, $userPrompt);
                     break;
 
                 case 'aktivitas':
-                    $analysisFinancialService->prosesAktivitas($analisis, $neraca, $labaRugi);
+                    $analysisFinancialService->prosesAktivitas($analisis, $neraca, $labaRugi, $userPrompt);
                     break;
 
                 case 'summary':
-                    // TODO: Implementasi trigger prompt AI Agent (RAG) di sini Untuk Summary
-                    // $analysisFinancialService->generateAISummary($analisis);
+                    // $analysisFinancialService->generateAISummary($analisis, $userPrompt);
                     break;
             }
 
-            // 3. Update Status
             $analysisFinancialService->updateStatusJikaLengkap($analisis);
         });
 

@@ -1,19 +1,7 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
-import { RefreshCw, Sparkles, Loader2 } from 'lucide-react';
+import { RefreshCw, Sparkles, Loader2, X } from 'lucide-react';
 
-/**
- * RatioCardBase
- *
- * Struktur dasar yang dipakai oleh AnalisisLikuiditasCard, AnalisisProfitabilitasCard,
- * AnalisisSolvabilitasCard, dan AnalisisAktivitasCard.
- *
- * - Jika `narasi` null/kosong -> tampilkan empty state + tombol "Mulai Analisis"
- * - Jika `narasi` sudah ada -> tampilkan rasio + narasi + tombol "Regenerasi"
- * - Tombol memanggil POST ke endpoint regenerasi per section (via Inertia router.post)
- *
- * ratios: array of { label: string, value: number|string|null, suffix?: string }
- */
 export function RatioCardBase({
     title,
     icon,
@@ -26,23 +14,39 @@ export function RatioCardBase({
     analisisId,
 }) {
     const [isLoading, setIsLoading] = useState(false);
-
+    const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
+    const [userPrompt, setUserPrompt] = useState('');
     const belumDianalisis = !narasi;
 
     function handleTrigger() {
+        if (belumDianalisis) {
+            submitAnalisis();
+        } else {
+            setIsPromptModalOpen(true);
+        }
+    }
+
+    function submitAnalisis(customPrompt = '') {
         setIsLoading(true);
         router.post(
             `/perusahaan/${perusahaanId}/analisis/${analisisId}/regenerasi`,
-            { section },
+            {
+                section,
+                user_prompt: customPrompt // Akan null/kosong jika dipanggil dari "Mulai Analisis"
+            },
             {
                 preserveScroll: true,
-                onFinish: () => setIsLoading(false),
+                onFinish: () => {
+                    setIsLoading(false);
+                    setIsPromptModalOpen(false);
+                    setUserPrompt('');
+                },
             }
         );
     }
 
     return (
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs relative">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2.5">
                     <div className={`p-2 rounded-lg ${iconBgColor}`}>
@@ -75,7 +79,6 @@ export function RatioCardBase({
                                 </span>
                             </div>
 
-                            {/* Menampilkan Breakdown Rumus dan Angka Mentah */}
                             {ratio.breakdown && ratio.value !== null && ratio.value !== undefined && (
                                 <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[11px] font-mono text-slate-500 space-y-1">
                                     <div className="flex gap-2">
@@ -110,6 +113,45 @@ export function RatioCardBase({
                         <span className="text-xs font-medium text-blue-700">Insight AI</span>
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{narasi}</p>
+                </div>
+            )}
+
+            {/* Modal Prompt */}
+            {isPromptModalOpen && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl p-4">
+                    <div className="bg-white border border-slate-200 shadow-xl rounded-xl p-5 w-full">
+                        <div className="flex justify-between items-center mb-3">
+                            <h4 className="text-sm font-semibold text-slate-900">Regenerasi {title}</h4>
+                            <button onClick={() => setIsPromptModalOpen(false)} className="text-slate-400 hover:text-slate-700">
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-3">Berikan instruksi tambahan ke AI (misal: "Fokuskan pada penurunan rasio bulan ini")</p>
+                        <textarea
+                            className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500 mb-4 resize-none h-24"
+                            placeholder="Instruksi Opsional..."
+                            value={userPrompt}
+                            onChange={(e) => setUserPrompt(e.target.value)}
+                            disabled={isLoading}
+                        ></textarea>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={() => setIsPromptModalOpen(false)}
+                                className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
+                                disabled={isLoading}
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={() => submitAnalisis(userPrompt)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 rounded-lg disabled:opacity-50"
+                                disabled={isLoading}
+                            >
+                                {isLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+                                Generate AI
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
