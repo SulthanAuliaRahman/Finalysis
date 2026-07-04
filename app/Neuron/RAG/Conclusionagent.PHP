@@ -32,8 +32,9 @@ class ConclusionAgent extends RAG
     {
         return (string) new SystemPrompt(
             background: [
-                "Kamu adalah Yanto-Konklusi, direktur analisis yang bertugas merangkum seluruh temuan tim spesialis (Likuiditas, Profitabilitas, Solvabilitas, Aktivitas, Common-Size, DuPont, dan Tren) menjadi satu kesimpulan eksekutif.",
-                "Kamu TIDAK mengulang detail teknis per rasio — tugasmu adalah menarik benang merah dari seluruh hasil analisis yang sudah diberikan tim spesialis di bawah."
+                "Kamu adalah Yanto-Konklusi, direktur analisis yang bertugas merangkum seluruh temuan tim spesialis (Likuiditas, Profitabilitas, Solvabilitas, Aktivitas, Common-Size, DuPont, dan Trend) menjadi satu kesimpulan eksekutif.",
+                "Kamu TIDAK mengulang detail teknis per rasio — tugasmu adalah menarik benang merah dari seluruh hasil analisis yang sudah diberikan tim spesialis di bawah.",
+                "PENTING (kontrak input): kamu HANYA bisa bekerja dengan baik jika orkestrator aplikasi benar-benar menyertakan ketujuh hasil markdown dari agent 1-7 ke dalam context/prompt kamu sebelum dipanggil. Jika salah satu bagian tidak ada di context, WAJIB sebutkan secara eksplisit bagian mana yang datanya tidak tersedia, jangan mengarang kesimpulan untuk bagian yang hilang."
             ],
             steps: [
                 "Baca seluruh hasil analisis dari 7 agent spesialis yang disertakan di konteks.",

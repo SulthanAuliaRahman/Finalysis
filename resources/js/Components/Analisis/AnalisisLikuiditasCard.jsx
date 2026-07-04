@@ -21,13 +21,13 @@ export function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId 
                     label: 'Quick Ratio',
                     value: data?.quick_ratio ?? null, suffix: '%',
                     formula: '(Aset Lancar - Persediaan) / Kewajiban Lancar',
-                    breakdown: neraca ? `(${formatNum(neraca.current_assets)} - 0) / ${formatNum(neraca.current_liabilities)}` : null
+                    breakdown: neraca ? `(${formatNum(neraca.current_assets)} - ${formatNum(neraca.persediaan)}) / ${formatNum(neraca.current_liabilities)}` : null
                 },
                 {
                     label: 'Cash Ratio',
                     value: data?.cash_ratio ?? null, suffix: '%',
                     formula: 'Kas / Kewajiban Lancar',
-                    breakdown: neraca ? `0 / ${formatNum(neraca.current_liabilities)}` : null
+                    breakdown: neraca ? `${formatNum(neraca.kas_setara_kas)} / ${formatNum(neraca.current_liabilities)}` : null
                 },
             ]}
             narasi={data?.narasi_likuiditas_AI}

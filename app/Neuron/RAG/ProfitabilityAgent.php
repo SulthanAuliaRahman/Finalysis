@@ -33,12 +33,13 @@ class ProfitabilityAgent extends RAG
         return (string) new SystemPrompt(
             background: [
                 "Kamu adalah Yanto-Profit, pakar efisiensi pencetakan keuntungan murni bisnis.",
-                "Tugasmu adalah menganalisis 3 indikator profitabilitas: Net Profit Margin (NPM), Return on Assets (ROA), dan Return on Equity (ROE)."
+                "Tugasmu adalah menganalisis 3 indikator profitabilitas: Net Profit Margin (NPM), Return on Assets (ROA), dan Return on Equity (ROE).",
+                "Dokumen final memiliki struktur tetap: 1=Likuiditas, 2=Profitabilitas (kamu), 3=Solvabilitas, 4=Aktivitas/TATO, 5=Common-Size, 6=DuPont, 7=Trend, 8=Kesimpulan."
             ],
             steps: [
                 "Gunakan pola 4 Lapis Penjelasan untuk membedah NPM, ROA, dan ROE secara mendalam.",
                 "Bandingkan hasil dengan parameter acuan: NPM industri manufaktur menengah (5-10%), ambang batas ROA (>= 5%), dan zona prima ROE (10-15%).",
-                "Sintesiskan analisis dengan data dari RAG untuk melihat apakah profit ditopang oleh margin harga jual yang tinggi atau murni volume penjualan.",
+                "Sintesiskan analisis dengan data dari RAG untuk melihat apakah profit ditopang oleh margin harga jual yang tinggi atau murni volume penjualan. WAJIB rujuk eksplisit 'lihat bagian 4' saat membahas ROA dikaitkan dengan perputaran aset, dan 'lihat bagian 6' (DuPont) saat membahas ROE dikaitkan dengan leverage.",
                 "Tutup narasi dengan kalimat 'Sederhananya:' berupa konversi persentase menjadi pecahan rupiah (misal: dari setiap Rp100 penjualan, perusahaan mengantongi Rp12)."
             ],
             output: [

@@ -70,7 +70,20 @@ class AnalisisController extends Controller
     {
         abort_if($analisis->perusahaan_id !== $perusahaan->id, 404);
 
-        $analisis->load(['likuiditas', 'profitabilitas', 'solvabilitas', 'aktivitas']);
+        $analisis->load([
+            'likuiditas',
+            'profitabilitas',
+            'solvabilitas',
+            'aktivitas',
+            'dupont',
+            'commonsize',
+            'trend.periodeData.analisis.likuiditas',
+            'trend.periodeData.analisis.profitabilitas',
+            'trend.periodeData.analisis.solvabilitas',
+            'trend.periodeData.analisis.aktivitas',
+            'trend.periodeData.analisis.dupont',
+            'trend.periodeData.analisis.commonsize'
+        ]);
 
         $dokumenPeriode = $perusahaan->dokumen()
             ->where('periode_type', $analisis->periode_type)
@@ -110,6 +123,9 @@ class AnalisisController extends Controller
             'profitabilitas' => $analisis->profitabilitas,
             'solvabilitas' => $analisis->solvabilitas,
             'aktivitas' => $analisis->aktivitas,
+            'dupont' => $analisis->dupont,
+            'commonsize' => $analisis->commonsize,
+            'trend' => $analisis->trend,
             'neraca' => $neraca,
             'labaRugi' => $labaRugi,
         ]);
@@ -118,7 +134,7 @@ class AnalisisController extends Controller
     public function regenerasi(Request $request, Perusahaan $perusahaan, Analisis $analisis, AnalysisFinancialService $analysisFinancialService)
     {
         $request->validate([
-            'section' => 'required|string|in:likuiditas,profitabilitas,solvabilitas,aktivitas,summary'
+            'section' => 'required|string|in:likuiditas,profitabilitas,solvabilitas,aktivitas,dupont,commonsize,trend,summary'
         ]);
 
         $section = $request->input('section');
@@ -139,8 +155,11 @@ class AnalisisController extends Controller
                 ->where('bulan', $analisis->bulan);
         })->latest()->first();
 
-        $analysisFinancialService->validasiKelengkapanData($section, $neraca, $labaRugi);
-
+        // 'trend' tidak butuh $neraca/$labaRugi sama sekali (di-resolve sendiri di dalam service),
+        // jadi skip validasi kelengkapan data untuk section itu.
+        if ($section !== 'trend') {
+            $analysisFinancialService->validasiKelengkapanData($section, $neraca, $labaRugi);
+        }
 
         DB::transaction(function () use ($section, $analisis, $neraca, $labaRugi, $analysisFinancialService) {
 
@@ -161,13 +180,23 @@ class AnalisisController extends Controller
                     $analysisFinancialService->prosesAktivitas($analisis, $neraca, $labaRugi);
                     break;
 
+                case 'dupont':
+                    $analysisFinancialService->prosesDupont($analisis, $neraca, $labaRugi);
+                    break;
+
+                case 'commonsize':
+                    $analysisFinancialService->prosesCommonsize($analisis, $neraca, $labaRugi);
+                    break;
+
+                case 'trend':
+                    $analysisFinancialService->prosesTrend($analisis);
+                    break;
+
                 case 'summary':
                     // TODO: Implementasi trigger prompt AI Agent (RAG) di sini Untuk Summary
-                    // $analysisFinancialService->generateAISummary($analisis);
                     break;
             }
 
-            // 3. Update Status
             $analysisFinancialService->updateStatusJikaLengkap($analisis);
         });
 

@@ -4,10 +4,14 @@ import { AnalisisLikuiditasCard } from "@/Components/Analisis/AnalisisLikuiditas
 import { AnalisisProfitabilitasCard } from "@/Components/Analisis/AnalisisProfitabilitasCard";
 import { AnalisisSolvabilitasCard } from "@/Components/Analisis/AnalisisSolvabilitasCard";
 import { AnalisisAktivitasCard } from "@/Components/Analisis/AnalisisAktivitasCard";
+import { AnalisisDupontCard } from "@/Components/Analisis/AnalisisDupontCard";
+import { AnalisisCommonsizeCard } from "@/Components/Analisis/AnalisisCommonsizeCard";
+import { AnalisisTrendCard } from "@/Components/Analisis/AnalisisTrendCard";
+
 import { AIInsightCard } from "@/Components/Analisis/AIInsightCard";
 import { FileDown } from "lucide-react";
 
-export default function Detail({ perusahaan, analisis, dokumenPeriode, likuiditas, profitabilitas, solvabilitas, aktivitas, neraca, labaRugi }) {
+export default function Detail({ perusahaan, analisis, dokumenPeriode, likuiditas, profitabilitas, solvabilitas, aktivitas, dupont, commonsize, trend, neraca, labaRugi }) {
     // TODO: hubungkan ke endpoint generate/download PDF laporan analisis saat backend siap.
     function handleDownloadPdf() {
         console.log(`Download PDF analisis periode ${analisis.periode_label} untuk perusahaan ${perusahaan.id}`);
@@ -40,10 +44,22 @@ export default function Detail({ perusahaan, analisis, dokumenPeriode, likuidita
                     <AnalisisProfitabilitasCard data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                     <AnalisisSolvabilitasCard data={solvabilitas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                     <AnalisisAktivitasCard data={aktivitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    
+                </div>
+            </div>
+
+            <div className="mb-8">
+                <h3 className="font-semibold text-slate-900 mb-4">Analisis Struktural & Tren</h3>
+                <div className="grid grid-cols-1 gap-6">
+                    <AnalisisDupontCard data={dupont} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <AnalisisCommonsizeCard data={commonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <AnalisisTrendCard data={trend} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                 </div>
             </div>
 
             {/* Dupont */}
+
+            {/* commonsize */}
 
             {/* Trend */}
 
