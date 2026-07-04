@@ -13,7 +13,7 @@ class Neraca extends Model
 
     protected $fillable = [
         'dokumen_id',
-        'cash',
+        'cash_equivalent',
         'inventory',
         'total_equity',
         'total_liabilities',

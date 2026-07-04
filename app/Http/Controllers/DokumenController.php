@@ -99,12 +99,14 @@ class DokumenController extends Controller
                     $bs = $extracted['balance_sheet'];
                     DB::table('neraca')->insert([
                         'dokumen_id' => $dokumen->id,
+                        'cash_equivalent'=> $bs['cash_equivalent'] ?? null,
+                        'inventory' => $bs['inventory'] ?? null,
                         'total_equity' => $bs['total_equity'] ?? null,
                         'total_liabilities' => $bs['total_liabilities'] ?? null,
                         'current_liabilities' => $bs['current_liabilities'] ?? null,
                         'total_assets' => $bs['total_assets'] ?? null,
                         'current_assets' => $bs['current_assets'] ?? null,
-                        'found_at' => json_encode($filterFoundAt(['total_equity', 'total_liabilities', 'current_liabilities', 'total_assets', 'current_assets'])),
+                        'found_at' => json_encode($filterFoundAt(['cash_equivalent','inventory','total_equity', 'total_liabilities', 'current_liabilities', 'total_assets', 'current_assets'])),
                         'created_at' => now(), 'updated_at' => now()
                     ]);
                 }
