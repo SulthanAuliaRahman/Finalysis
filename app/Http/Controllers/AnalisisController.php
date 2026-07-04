@@ -182,42 +182,15 @@ class AnalisisController extends Controller
 
         DB::transaction(function () use ($section, $analisis, $analysisFinancialService, $userPrompt) {
             switch ($section) {
-                case 'likuiditas':     $analysisFinancialService->prosesLikuiditas($analisis, $userPrompt); break;
-                case 'profitabilitas': $analysisFinancialService->prosesProfitabilitas($analisis, $userPrompt); break;
-                case 'solvabilitas':   $analysisFinancialService->prosesSolvabilitas($analisis, $userPrompt); break;
-                case 'aktivitas':      $analysisFinancialService->prosesAktivitas($analisis, $userPrompt); break;
-                case 'summary':        /* $analysisFinancialService->generateAISummary($analisis, $userPrompt); */ break;
-                case 'likuiditas':
-                    $analysisFinancialService->prosesLikuiditas($analisis, $neraca);
-                    break;
+                case 'likuiditas'       :$analysisFinancialService->prosesLikuiditas($analisis, $userPrompt); break;
+                case 'profitabilitas'   :$analysisFinancialService->prosesProfitabilitas($analisis, $userPrompt); break;
+                case 'solvabilitas'     :$analysisFinancialService->prosesSolvabilitas($analisis, $userPrompt); break;
+                case 'aktivitas'        :$analysisFinancialService->prosesAktivitas($analisis, $userPrompt); break;
 
-                case 'profitabilitas':
-                    $analysisFinancialService->prosesProfitabilitas($analisis, $neraca, $labaRugi);
-                    break;
-
-                case 'solvabilitas':
-                    $analysisFinancialService->prosesSolvabilitas($analisis, $neraca);
-                    break;
-
-                case 'aktivitas':
-                    $analysisFinancialService->prosesAktivitas($analisis, $neraca, $labaRugi);
-                    break;
-
-                case 'dupont':
-                    $analysisFinancialService->prosesDupont($analisis, $neraca, $labaRugi);
-                    break;
-
-                case 'commonsize':
-                    $analysisFinancialService->prosesCommonsize($analisis, $neraca, $labaRugi);
-                    break;
-
-                case 'trend':
-                    $analysisFinancialService->prosesTrend($analisis);
-                    break;
-
-                case 'summary':
-                    // TODO: Implementasi trigger prompt AI Agent (RAG) di sini Untuk Summary
-                    break;
+                // case 'dupont'        :$analysisFinancialService->prosesDupont($analisis, $neraca, $labaRugi); break;
+                // case 'commonsize'    :$analysisFinancialService->prosesCommonsize($analisis, $neraca, $labaRugi); break;
+                case 'trend': $analysisFinancialService->prosesTrend($analisis);break;
+                case 'summary':        /*$analysisFinancialService->generateAISummary($analisis, $userPrompt); */ break;
             }
 
             // 3. Update Status
