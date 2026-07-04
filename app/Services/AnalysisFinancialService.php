@@ -34,13 +34,10 @@ class AnalysisFinancialService
     //tanpa AI Generate
     public function hitungSemuaRasio(Analisis $analisis, Neraca $neraca, LabaRugi $labaRugi): void
     {
-        $inventarisDefault = 0;
-        $kasDefault = 0;
-
         // Likuiditas
         $cr = $this->financialService->currentRatio((float) $neraca->current_assets, (float) $neraca->current_liabilities);
-        $qr = $this->financialService->quickRatio((float) $neraca->current_assets, $inventarisDefault, (float) $neraca->current_liabilities);
-        $csr = $this->financialService->cashRatio($kasDefault, (float) $neraca->current_liabilities);
+        $qr = $this->financialService->quickRatio((float) $neraca->current_assets, (float) $neraca->inventory, (float) $neraca->current_liabilities);
+        $csr = $this->financialService->cashRatio((float) $neraca->cash_equivalent, (float) $neraca->current_liabilities);
 
         $analisis->likuiditas()->updateOrCreate(
             ['analisis_id' => $analisis->id],
@@ -136,7 +133,7 @@ class AnalysisFinancialService
         $data = $analisis->aktivitas;
 
         $Prompt = "Berikan narasi analisis aktivitas operasional berdasarkan data berikut: \n";
-        $Prompt .= "Total Asset Turnover (TATO): " . $data->total_asset_turnover . " kali\n";
+        $Prompt .= "Total Asset Turnover (TATO): " . $data->total_asset_turnover . "%\n";
 
         if ($userPrompt) {
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
