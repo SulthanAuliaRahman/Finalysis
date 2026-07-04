@@ -11,6 +11,8 @@ export default function Review({ perusahaan, dokumen, extractedData, foundAt }) 
         found_at: foundAt || {},
 
         neraca: {
+            cash_equivalent: extractedData?.neraca?.cash_equivalent ?? 0,
+            inventory: extractedData?.neraca?.inventory ?? 0,
             total_equity: extractedData?.neraca?.total_equity ?? 0,
             total_liabilities: extractedData?.neraca?.total_liabilities ?? 0,
             current_liabilities: extractedData?.neraca?.current_liabilities ?? 0,

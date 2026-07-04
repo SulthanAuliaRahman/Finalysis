@@ -22,7 +22,7 @@ export function InputFieldWithMetadata({ label, section, fieldKey, metadataKey, 
             <div className="mt-2 pt-2 border-t border-dashed border-slate-200 flex flex-col gap-1.5 text-[10px] text-slate-600">
                 <div className="flex items-center gap-1 font-medium text-blue-600 mb-0.5">
                     <MapPin className="w-2.5 h-2.5" />
-                    {hasMetadata ? "Metadata PDF (Terdeteksi):" : "Metadata PDF (Manual Entri):"}
+                    Metadata PDF
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -105,7 +105,7 @@ export function CashFlowInputWithBreakdown({ label, fieldKey, metadataKey, value
             <div className="mt-2 pt-2 border-t border-dashed border-slate-200 flex flex-col gap-1.5 text-[10px] text-slate-600">
                 <div className="flex items-center gap-1 font-medium text-blue-600 mb-0.5">
                     <MapPin className="w-2.5 h-2.5" />
-                    {hasMetadata ? "Metadata PDF (Terdeteksi):" : "Metadata PDF (Manual Entri):"}
+                    Metadata PDF
                 </div>
 
                 <div className="flex items-center gap-2">
