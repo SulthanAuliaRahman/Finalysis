@@ -57,11 +57,6 @@ export default function Detail({ perusahaan, analisis, dokumenPeriode, likuidita
                 </div>
             </div>
 
-            {/* Dupont */}
-
-            {/* commonsize */}
-
-            {/* Trend */}
 
             <div className="flex justify-center">
                 <div className="w-full max-w-4xl">
