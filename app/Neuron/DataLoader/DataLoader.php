@@ -2,7 +2,7 @@
 
 namespace App\Neuron\DataLoader;
 
-use App\Neuron\RAG\RagAgent;
+use App\Neuron\RAG\IndexerAgent; // Gunakan Agent yang baru dibuat
 use NeuronAI\RAG\DataLoader\StringDataLoader;
 use NeuronAI\RAG\Splitter\SentenceTextSplitter;
 use NeuronAI\RAG\Document;
@@ -14,11 +14,10 @@ class DataLoader
         'period',
         'statement_type',
         'source',
-        'page_start',
-        'page_end',
+        'found_page',
+        'found_at',
         'has_table',
     ];
-
 
     public static function embedChunks(array $chunks): int
     {
@@ -32,8 +31,9 @@ class DataLoader
                 continue;
             }
 
-            // StringDataLoader bisa menghasilkan >1 Document jika teks
-            $documents = StringDataLoader::for($text)->withSplitter(new SentenceTextSplitter(maxWords:10000))->getDocuments(); // biar chunk nya gak ke split
+            $documents = StringDataLoader::for($text)
+                ->withSplitter(new SentenceTextSplitter(maxWords: 10000))// Biar chunk nya gak ke-split
+                ->getDocuments();
 
             foreach ($documents as $document) {
                 self::attachMetadata($document, $metadata);
@@ -45,16 +45,12 @@ class DataLoader
             return 0;
         }
 
-        // RagAgent::addDocuments() menghasilkan embedding untuk setiap Document lalu menyimpannya ke FileVectorStore (lihat RagAgent.php).
-        RagAgent::make()->addDocuments($allDocuments);
+        IndexerAgent::make()->addDocuments($allDocuments);
 
         return count($allDocuments);
     }
 
-    /**
-     * Attach subset metadata chunk ke Document.
-     * Field yang tidak ada di $metadata akan diabaikan (tidak di-set null).
-     */
+
     private static function attachMetadata(Document $document, array $metadata): void
     {
         foreach (self::METADATA_KEYS as $key) {

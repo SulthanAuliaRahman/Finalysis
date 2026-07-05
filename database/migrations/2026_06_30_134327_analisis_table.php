@@ -37,9 +37,9 @@ return new class extends Migration
         Schema::create('analisis_likuiditas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
-            $table->decimal('current_ratio', 12, 6)->nullable();    // data = 2.534561     (FE  2.53x)
-            $table->decimal('quick_ratio', 12, 6)->nullable();      // data   = 1.732511     (FE  1.73x)
-            $table->decimal('cash_ratio', 12, 6)->nullable();       // data    = 0.654321     (FE  0.65x)
+            $table->decimal('current_ratio', 12, 2)->nullable();    // data = 2.53     (FE  2.53x)
+            $table->decimal('quick_ratio', 12, 2)->nullable();      // data   = 1.73     (FE  1.73x)
+            $table->decimal('cash_ratio', 12, 2)->nullable();       // data    = 0.65     (FE  0.65x)
             $table->text('narasi_likuiditas_AI')->nullable();
 
             $table->timestamps();
@@ -48,9 +48,9 @@ return new class extends Migration
         Schema::create('analisis_profitabilitas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
-            $table->decimal('ROE', 12, 6)->nullable(); // data = 0.154321     (FE  15.43%)
-            $table->decimal('ROA', 12, 6)->nullable(); // data = 0.087654     (FE  8.77%)
-            $table->decimal('net_profit_margin', 12, 6)->nullable(); // data = 0.054321     (FE  5.43%)
+            $table->decimal('ROE', 12, 2)->nullable(); // data = 0.15     (FE  15.43%)
+            $table->decimal('ROA', 12, 2)->nullable(); // data = 0.08     (FE  8.77%)
+            $table->decimal('net_profit_margin', 12, 2)->nullable(); // data = 0.05     (FE  5.43%)
             $table->text('narasi_profitabilitas_AI')->nullable();
 
             $table->timestamps();
@@ -59,8 +59,8 @@ return new class extends Migration
         Schema::create('analisis_solvabilitas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
-            $table->decimal('debt_to_equity', 12, 6)->nullable(); // data = 0.654321     (FE  65.43%)
-            $table->decimal('debt_to_asset', 12, 6)->nullable(); // data = 0.432109     (FE  43.21%)
+            $table->decimal('debt_to_equity', 12, 2)->nullable();   // data = 0.65     (FE  65.43%)
+            $table->decimal('debt_to_asset', 12, 2)->nullable();    // data = 0.43     (FE  43.21%)
             $table->text('narasi_solvabilitas_AI')->nullable();
 
             $table->timestamps();
@@ -69,7 +69,7 @@ return new class extends Migration
         Schema::create('analisis_aktivitas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
-            $table->decimal('total_asset_turnover', 12, 6)->nullable(); // data = 1.234567     (FE  1.23x)
+            $table->decimal('total_asset_turnover', 12, 2)->nullable(); // data = 1.23  (FE  1.23x)
             $table->text('narasi_aktivitas_AI')->nullable();
 
             $table->timestamps();
@@ -78,10 +78,10 @@ return new class extends Migration
         Schema::create('analisis_dupont', function (Blueprint $table) {
             $table->id();
             $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
-            $table->decimal('net_profit_margin', 12, 6)->nullable();    // data = 0.054321  (FE 5.43%)
-            $table->decimal('total_asset_turnover', 12, 6)->nullable(); // data = 1.234567  (FE 1.23x)
-            $table->decimal('leverage_multiplier', 12, 6)->nullable();  // data = 1.876543  (FE 1.88x)
-            $table->decimal('roe', 12, 6)->nullable();                  // data = 0.154321  (FE 15.43%)
+            $table->decimal('net_profit_margin', 12, 2)->nullable();    // data = 0.05  (FE 5.43%)
+            $table->decimal('total_asset_turnover', 12, 2)->nullable(); // data = 1.23  (FE 1.23x)
+            $table->decimal('leverage_multiplier', 12, 2)->nullable();  // data = 1.88  (FE 1.88x)
+            $table->decimal('roe', 12, 2)->nullable();                  // data = 0.15  (FE 15.43%)
             $table->text('narasi_dupont_AI')->nullable();
 
             $table->timestamps();

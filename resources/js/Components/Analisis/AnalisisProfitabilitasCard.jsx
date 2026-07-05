@@ -25,7 +25,7 @@ export function AnalisisProfitabilitasCard({ data, neraca, labaRugi, perusahaanI
             icon={<TrendingUp className="w-5 h-5" />}
             iconBgColor="bg-green-100"
             iconColor="text-green-600"
-            chartColor="#16a34a" // Warna Hijau Tailwind
+            chartColor="#16a34a"
             chartData={chartData}
             ratios={[
                 {
