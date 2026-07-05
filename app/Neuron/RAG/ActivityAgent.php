@@ -6,7 +6,6 @@ use NeuronAI\Agent\SystemPrompt;
 
 class ActivityAgent extends BaseRagAgent
 {
-
     protected function instructions(): string
     {
         return (string) new SystemPrompt(

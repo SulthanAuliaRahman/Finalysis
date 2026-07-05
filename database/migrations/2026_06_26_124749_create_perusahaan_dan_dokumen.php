@@ -35,7 +35,7 @@ return new class extends Migration
             $table->json('statement_types')->nullable(); // ["balance_sheet","income_statement","cash_flow"]
             $table->unsignedBigInteger('ukuran_file')->nullable();
             $table->enum('status', [
-                'menunggu', // butuh kah?
+                'menunggu',
                 'diekstrak',
                 'dichunk',
                 'diembed',

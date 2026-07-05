@@ -20,12 +20,25 @@ abstract class BaseRagAgent extends RAG
     protected string $providerName;
     protected string $apiKey;
     protected string $aiModel;
+
+    protected string $embeddingProviderName;
+    protected ?string $embeddingApiKey;
     protected string $embeddingModel;
 
-    public function __construct(?string $providerName = null,?string $apiKey = null,?string $aiModel = null,?string $embeddingModel = null) {
-        $this->providerName   = $providerName   ?? 'ollama';
-        $this->apiKey         = $apiKey         ?? '--';
-        $this->aiModel        = $aiModel        ?? 'qwen3:8b';
+    public function __construct(
+        ?string $providerName = null,
+        ?string $apiKey = null,
+        ?string $aiModel = null,
+        ?string $embeddingProviderName = null,
+        ?string $embeddingApiKey = null,
+        ?string $embeddingModel = null
+    ) {
+        $this->providerName   = $providerName   ?? 'gemini';
+        $this->apiKey         = $apiKey         ?? '#';
+        $this->aiModel        = $aiModel        ?? 'gemini-3.5-flash';
+
+        $this->embeddingProviderName = $embeddingProviderName ?? 'ollama';
+        $this->embeddingApiKey = $embeddingApiKey ?? $this->apiKey;
         $this->embeddingModel = $embeddingModel ?? 'qwen3-embedding:8b';
 
         parent::__construct();
@@ -38,12 +51,13 @@ abstract class BaseRagAgent extends RAG
                 key: $this->apiKey,
                 model: $this->aiModel
             ),
+
             'openai' => new OpenAI(
                 key: $this->apiKey,
                 model: $this->aiModel
             ),
+
             default => new Ollama(
-                // Hardcode sementara untuk Ollama (ini mending simpen di apikey kah? atau gimana?)
                 url: 'http://host.docker.internal:11434/api',
                 model: $this->aiModel
             ),
@@ -52,15 +66,17 @@ abstract class BaseRagAgent extends RAG
 
     protected function embeddings(): EmbeddingsProviderInterface
     {
-        return match (strtolower($this->providerName)) {
+        return match (strtolower($this->embeddingProviderName)) {
             'gemini' => new GeminiEmbeddingsProvider(
-                key: $this->apiKey,
+                key: $this->embeddingApiKey,
                 model: $this->embeddingModel
             ),
+
             'openai' => new OpenAIEmbeddingsProvider(
-                key: $this->apiKey,
+                key: $this->embeddingApiKey,
                 model: $this->embeddingModel
             ),
+
             default => new OllamaEmbeddingsProvider(
                 url: 'http://host.docker.internal:11434/api',
                 model: $this->embeddingModel

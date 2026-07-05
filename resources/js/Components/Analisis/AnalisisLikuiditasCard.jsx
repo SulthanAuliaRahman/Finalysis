@@ -19,7 +19,7 @@ export function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId 
             icon={<Droplet className="w-5 h-5" />}
             iconBgColor="bg-blue-100"
             iconColor="text-blue-600"
-            chartColor="#3b82f6" // Warna Biru Tailwind
+            chartColor="#3b82f6"
             chartData={chartData}
             ratios={[
                 {
