@@ -87,6 +87,7 @@ export default function Detail({ perusahaan, analisis, dokumenPeriode, likuidita
                 </div>
             </div>
 
+
             <div className="flex justify-center">
                 <div className="w-full max-w-4xl">
                     <AIInsightCard narasi={analisis.ai_summary_insight} perusahaanId={perusahaan.id} analisisId={analisis.id} />
