@@ -14,7 +14,7 @@ use App\Neuron\RAG\CommonsizeAgent;
 use App\Neuron\RAG\DupontAgent;        
 use App\Neuron\RAG\TrendAgent;         
 use App\Neuron\RAG\ConclusionAgent;
-use App\Services\FinancialService;
+use App\Services\CalculateFinancialService;   // ganti dari 'use App\Services\FinancialService;'
 
 class Agent extends Command
 {
@@ -56,7 +56,7 @@ class Agent extends Command
             'interest_expense' => 20000000, 'inventory' => 100000000, 'cash' => 150000000
         ];
 
-        $financialService = new FinancialService();
+        $financialService = new CalculateFinancialService();
 
         
         $currentRatio = $financialService->currentRatio($fin->current_assets, $fin->current_liabilities);

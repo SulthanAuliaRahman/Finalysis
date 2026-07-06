@@ -35,7 +35,7 @@ return new class extends Migration
             $table->json('statement_types')->nullable(); // ["balance_sheet","income_statement","cash_flow"]
             $table->unsignedBigInteger('ukuran_file')->nullable();
             $table->enum('status', [
-                'menunggu', // butuh kah?
+                'menunggu',
                 'diekstrak',
                 'dichunk',
                 'diembed',
@@ -47,8 +47,8 @@ return new class extends Migration
         Schema::create('neraca', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dokumen_id')->unique()->constrained('dokumen')->cascadeOnDelete();
-            $table->decimal('kas_setara_kas', 20, 2)->nullable();
-            $table->decimal('persediaan', 20, 2)->nullable();
+            $table->decimal('cash_equivalent', 20, 2)->nullable();
+            $table->decimal('inventory', 20, 2)->nullable();
             $table->decimal('total_equity', 20, 2)->nullable();
             $table->decimal('total_liabilities', 20, 2)->nullable();
             $table->decimal('current_liabilities', 20, 2)->nullable();
@@ -74,6 +74,9 @@ return new class extends Migration
         Schema::create('arus_kas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dokumen_id')->unique()->constrained('dokumen')->cascadeOnDelete();
+            $table->decimal('cash_flow_from_operations', 20, 2)->nullable();
+            $table->decimal('cash_flow_from_investing', 20, 2)->nullable();
+            $table->decimal('cash_flow_from_financing', 20, 2)->nullable();
             $table->decimal('kas_masuk', 20, 2)->nullable();
             $table->decimal('kas_keluar', 20, 2)->nullable();
 

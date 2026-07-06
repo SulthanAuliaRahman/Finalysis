@@ -13,6 +13,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd \
     && rm -rf /var/lib/apt/lists/*
 
+RUN echo "upload_max_filesize=10M\npost_max_size=11M\nmax_execution_time=300\nmemory_limit=256M" \
+    >> /usr/local/etc/php/php.ini
+
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

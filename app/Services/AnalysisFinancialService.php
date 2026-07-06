@@ -9,136 +9,204 @@ use Illuminate\Validation\ValidationException;
 use NeuronAI\Chat\Messages\UserMessage;
 
 use App\Neuron\RAG\ProfitabilityAgent;
-use App\Neuron\RAG\LiquidityAgent;
+use App\Neuron\RAG\LiquidityAnalystAgent;
 use App\Neuron\RAG\SolvencyAgent;
 use App\Neuron\RAG\ActivityAgent;
+use App\Neuron\RAG\CommonsizeAgent;
+use App\Neuron\RAG\DupontAgent;
+
+use App\Services\CalculateFinancialService;
+use App\Services\TrendAnalysisService;
 
 class AnalysisFinancialService
 {
-    protected FinancialService $financialService;
+    protected CalculateFinancialService $calculateFinancialService;
+    protected TrendAnalysisService $trendAnalysisService;
 
-    public function __construct(FinancialService $financialService)
-    {
-        $this->financialService = $financialService;
+    public function __construct(
+        CalculateFinancialService $calculateFinancialService,
+        TrendAnalysisService $trendAnalysisService
+    ) {
+        $this->calculateFinancialService = $calculateFinancialService;
+        $this->trendAnalysisService = $trendAnalysisService;
     }
 
-    public function validasiKelengkapanData(string $section, ?Neraca $neraca, ?LabaRugi $labaRugi): void
+    public function validasiKelengkapanData(?Neraca $neraca, ?LabaRugi $labaRugi): void
     {
-        if (in_array($section, ['likuiditas', 'solvabilitas']) && !$neraca) {
+        if (!$neraca || !$labaRugi) {
             throw ValidationException::withMessages([
-                'regenerasi' => "Data Neraca belum tersedia untuk menghitung rasio $section."
+                'hitung_rasio' => "Data Neraca dan Laba Rugi harus lengkap untuk menghitung seluruh rasio."
             ]);
         }
+    }
 
-        if (in_array($section, ['profitabilitas', 'aktivitas']) && (!$neraca || !$labaRugi)) {
-            throw ValidationException::withMessages([
-                'regenerasi' => "Data Neraca dan Laba Rugi harus lengkap untuk menghitung rasio $section."
-            ]);
+    // Delegasi ke CalculateFinancialService — controller tetap panggil method ini.
+    public function hitungSemuaRasio(Analisis $analisis, Neraca $neraca, LabaRugi $labaRugi): void
+    {
+        $this->calculateFinancialService->hitungSemuaRasio($analisis, $neraca, $labaRugi);
+    }
+
+    // Delegasi ke TrendAnalysisService — controller tetap panggil method ini.
+    public function prosesTrend(Analisis $analisis): void
+    {
+        $this->trendAnalysisService->prosesTrend($analisis);
+    }
+
+    // =====================================================================
+    // NARASI AI PER SECTION (baca dari data yang sudah dihitung, tidak
+    // menghitung ulang apapun — perhitungan dilakukan di CalculateFinancialService).
+    // Setiap hasil AI dibersihkan dari markdown sebelum disimpan.
+    // =====================================================================
+
+    public function prosesLikuiditas(Analisis $analisis, ?string $userPrompt = null): void
+    {
+        $data = $analisis->likuiditas;
+
+        $Prompt  = "Berikan narasi analisis likuiditas berdasarkan data berikut: \n";
+        $Prompt .= "Current Ratio (CR): " . $data->current_ratio . "%\n";
+        $Prompt .= "Quick Ratio (QR): " . $data->quick_ratio . "%\n";
+        $Prompt .= "Cash Ratio (CSR): " . $data->cash_ratio . "%\n";
+
+        if ($userPrompt) {
+            $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
         }
+
+        $response = LiquidityAnalystAgent::make()->chat(new UserMessage($Prompt));
+
+        $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
+        $narasi = TextCleanerService::bersihkanMarkdown($narasi);
+
+        $data->update(['narasi_likuiditas_AI' => $narasi]);
     }
 
-    public function prosesLikuiditas(Analisis $analisis, Neraca $neraca): void
+    public function prosesProfitabilitas(Analisis $analisis, ?string $userPrompt = null): void
     {
-        $inventarisDefault = 0;
-        $kasDefault = 0;
+        $data = $analisis->profitabilitas;
 
-        $cr = $this->financialService->currentRatio((float) $neraca->current_assets, (float) $neraca->current_liabilities);
-        $qr = $this->financialService->quickRatio((float) $neraca->current_assets, $inventarisDefault, (float) $neraca->current_liabilities);
-        $csr = $this->financialService->cashRatio($kasDefault, (float) $neraca->current_liabilities);
+        $Prompt  = "Berikan narasi analisis profitabilitas berdasarkan data berikut: \n";
+        $Prompt .= "Net Profit Margin (NPM): " . $data->net_profit_margin . "%\n";
+        $Prompt .= "Return on Assets (ROA): " . $data->ROA . "%\n";
+        $Prompt .= "Return on Equity (ROE): " . $data->ROE . "%\n";
 
-        // Build Prompt untuk LiquidityAgent
-        $Prompt = "Berikan narasi analisis likuiditas berdasarkan data berikut: \n";
-        $Prompt .= "Current Ratio (CR): " . round($cr * 100, 2) . "%\n";
-        $Prompt .= "Quick Ratio (QR): " . round($qr * 100, 2) . "%\n";
-        $Prompt .= "Cash Ratio (CSR): " . round($csr * 100, 2) . "%\n";
-
-        $response = LiquidityAgent::make()->chat(new UserMessage($Prompt));
-
-        $analisis->likuiditas()->updateOrCreate(
-            ['analisis_id' => $analisis->id],
-            [
-                'current_ratio' => round($cr * 100, 2),
-                'quick_ratio'   => round($qr * 100, 2),
-                'cash_ratio'    => round($csr * 100, 2),
-                'narasi_likuiditas_AI' => $response->getMessage()->getContent() ?? 'Tidak ada insight yang dihasilkan oleh AI.',
-            ]
-        );
-    }
-
-    public function prosesProfitabilitas(Analisis $analisis, Neraca $neraca, LabaRugi $labaRugi): void
-    {
-        $npm = $this->financialService->netProfitMargin((float) $labaRugi->laba_bersih, (float) $labaRugi->pendapatan);
-        $roa = $this->financialService->returnOnAssets((float) $labaRugi->laba_bersih, (float) $neraca->total_assets);
-        $roe = $this->financialService->returnOnEquity((float) $labaRugi->laba_bersih, (float) $neraca->total_equity);
-
-        $Prompt = "Berikan narasi analisis profitabilitas berdasarkan data berikut: \n";
-        $Prompt .= "Net Profit Margin (NPM): " . round($npm * 100, 2) . "%\n";
-        $Prompt .= "Return on Assets (ROA): " . round($roa * 100, 2) . "%\n";
-        $Prompt .= "Return on Equity (ROE): " . round($roe * 100, 2) . "%\n";
+        if ($userPrompt) {
+            $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
+        }
 
         $response = ProfitabilityAgent::make()->chat(new UserMessage($Prompt));
 
-        $analisis->profitabilitas()->updateOrCreate(
-            ['analisis_id' => $analisis->id],
-            [
-                'net_profit_margin' => round($npm * 100, 2),
-                'ROA'               => round($roa * 100, 2),
-                'ROE'               => round($roe * 100, 2),
-                'narasi_profitabilitas_AI' => $response->getMessage()->getContent() ?? 'Tidak ada insight yang dihasilkan oleh AI.',
-            ]
-        );
+        $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
+        $narasi = TextCleanerService::bersihkanMarkdown($narasi);
+
+        $data->update(['narasi_profitabilitas_AI' => $narasi]);
     }
 
-    public function prosesSolvabilitas(Analisis $analisis, Neraca $neraca): void
+    public function prosesSolvabilitas(Analisis $analisis, ?string $userPrompt = null): void
     {
-        $dte = $this->financialService->debtToEquity((float) $neraca->total_liabilities, (float) $neraca->total_equity);
-        $dta = $this->financialService->debtToAsset((float) $neraca->total_liabilities, (float) $neraca->total_assets);
+        $data = $analisis->solvabilitas;
 
-        // Build Prompt untuk SolvencyAgent
-        $Prompt = "Berikan narasi analisis solvabilitas berdasarkan data berikut: \n";
-        $Prompt .= "Debt to Equity Ratio (DTE): " . round($dte * 100, 2) . "%\n";
-        $Prompt .= "Debt to Asset Ratio (DTA): " . round($dta * 100, 2) . "%\n";
+        $Prompt  = "Berikan narasi analisis solvabilitas berdasarkan data berikut: \n";
+        $Prompt .= "Debt to Equity Ratio (DER): " . $data->debt_to_equity . "%\n";
+        $Prompt .= "Debt to Asset Ratio (DAR): " . $data->debt_to_asset . "%\n";
+
+        if ($userPrompt) {
+            $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
+        }
 
         $response = SolvencyAgent::make()->chat(new UserMessage($Prompt));
 
-        $analisis->solvabilitas()->updateOrCreate(
-            ['analisis_id' => $analisis->id],
-            [
-                'debt_to_equity' => round($dte * 100, 2),
-                'debt_to_asset'  => round($dta * 100, 2),
-                'narasi_solvabilitas_AI' => $response->getMessage()->getContent() ?? 'Tidak ada insight yang dihasilkan oleh AI.',
-            ]
-        );
+        $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
+        $narasi = TextCleanerService::bersihkanMarkdown($narasi);
+
+        $data->update(['narasi_solvabilitas_AI' => $narasi]);
     }
 
-    public function prosesAktivitas(Analisis $analisis, Neraca $neraca, LabaRugi $labaRugi): void
+    public function prosesAktivitas(Analisis $analisis, ?string $userPrompt = null): void
     {
-        $tato = $this->financialService->totalAssetTurnover((float) $labaRugi->pendapatan, (float) $neraca->total_assets);
+        $data = $analisis->aktivitas;
 
-        // Build Prompt untuk ActivityAgent
-        // Catatan: TATO biasanya diukur dalam satuan "kali" perputaran, bukan persentase
-        $Prompt = "Berikan narasi analisis aktivitas operasional berdasarkan data berikut: \n";
-        $Prompt .= "Total Asset Turnover (TATO): " . round($tato * 100, 2) . " kali\n";
+        $Prompt  = "Berikan narasi analisis aktivitas operasional berdasarkan data berikut: \n";
+        $Prompt .= "Total Asset Turnover (TATO): " . $data->total_asset_turnover . "x\n";
+
+        if ($userPrompt) {
+            $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
+        }
 
         $response = ActivityAgent::make()->chat(new UserMessage($Prompt));
 
-        $analisis->aktivitas()->updateOrCreate(
-            ['analisis_id' => $analisis->id],
-            [
-                'total_asset_turnover' => round($tato * 100, 2),
-                'narasi_aktivitas_AI' => $response->getMessage()->getContent() ?? 'Tidak ada insight yang dihasilkan oleh AI.',
-            ]
-        );
+        $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
+        $narasi = TextCleanerService::bersihkanMarkdown($narasi);
+
+        $data->update(['narasi_aktivitas_AI' => $narasi]);
     }
+
+    public function prosesDupont(Analisis $analisis, ?string $userPrompt = null): void
+    {
+        $data = $analisis->dupont;
+
+        $Prompt  = "Berikan narasi analisis DuPont berdasarkan data berikut: \n";
+        $Prompt .= "Net Profit Margin (NPM): " . $data->net_profit_margin . "%\n";
+        $Prompt .= "Total Asset Turnover (TATO): " . $data->total_asset_turnover . " kali\n";
+        $Prompt .= "Leverage Multiplier (Total Aset / Ekuitas): " . $data->leverage_multiplier . " kali\n";
+        $Prompt .= "Hasil ROE = NPM x TATO x Leverage: " . $data->roe . "%\n";
+
+        if ($userPrompt) {
+            $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
+        }
+
+        $response = DupontAgent::make()->chat(new UserMessage($Prompt));
+
+        $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight yang dihasilkan oleh AI.';
+        $narasi = TextCleanerService::bersihkanMarkdown($narasi);
+
+        $data->update(['narasi_dupont_AI' => $narasi]);
+    }
+
+    public function prosesCommonsize(Analisis $analisis, ?string $userPrompt = null): void
+    {
+        $data = $analisis->commonsize;
+
+        $Prompt  = "Berikan narasi analisis common-size berdasarkan data berikut: \n";
+        $Prompt .= "--- Common-Size Income Statement (basis Pendapatan = 100%) ---\n";
+        $Prompt .= "Pendapatan Usaha: 100%\n";
+        $Prompt .= "HPP: " . $data->hpp_persen . "%\n";
+        $Prompt .= "Laba Kotor: " . $data->laba_kotor_persen . "%\n";
+        $Prompt .= "Beban Lain-lain & Pajak (gabungan OpEx+Bunga+Pajak): " . $data->beban_lain_pajak_persen . "%\n";
+        $Prompt .= "Laba Bersih: " . $data->laba_bersih_persen . "%\n";
+        $Prompt .= "PENTING: sumber data hanya mencatat Pendapatan, Laba Kotor, dan Laba Bersih. OpEx, EBIT, dan Beban Bunga TIDAK tercatat terpisah, sehingga digabung jadi satu pos 'Beban Lain-lain & Pajak'. JANGAN memecah/mengarang angka OpEx, EBIT, atau Bunga secara individual — bahas pos gabungan ini apa adanya.\n";
+        $Prompt .= "--- Common-Size Balance Sheet (basis Total Aset = 100%) ---\n";
+        $Prompt .= "Aset Lancar: " . $data->aset_lancar_persen . "%\n";
+        $Prompt .= "Aset Tetap: " . $data->aset_tetap_persen . "%\n";
+        $Prompt .= "Liabilitas Lancar: " . $data->liabilitas_lancar_persen . "%\n";
+        $Prompt .= "Liabilitas Jangka Panjang: " . $data->liabilitas_panjang_persen . "%\n";
+        $Prompt .= "Ekuitas: " . $data->ekuitas_persen . "%\n";
+
+        if ($userPrompt) {
+            $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
+        }
+
+        $response = CommonsizeAgent::make()->chat(new UserMessage($Prompt));
+
+        $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight yang dihasilkan oleh AI.';
+        $narasi = TextCleanerService::bersihkanMarkdown($narasi);
+
+        $data->update(['narasi_commonsize_AI' => $narasi]);
+    }
+
+    // =====================================================================
+    // STATUS
+    // =====================================================================
 
     public function updateStatusJikaLengkap(Analisis $analisis): void
     {
         $lengkap = $analisis->likuiditas()->exists()
                 && $analisis->profitabilitas()->exists()
                 && $analisis->solvabilitas()->exists()
-                && $analisis->aktivitas()->exists();
+                && $analisis->aktivitas()->exists()
+                && $analisis->commonsize()->exists()
+                && $analisis->dupont()->exists()
+                && $analisis->trend()->exists();
 
-        if ($lengkap && $analisis->status === 'belum dianalisis') {
+        if ($lengkap) {
             $analisis->update(['status' => 'sudah dianalisis']);
         }
     }

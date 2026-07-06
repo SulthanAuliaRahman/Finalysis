@@ -49,6 +49,21 @@ class Analisis extends Model
         return $this->hasOne(AnalisisAktivitas::class, 'analisis_id');
     }
 
+    public function dupont()
+    {
+        return $this->hasOne(AnalisisDupont::class, 'analisis_id');
+    }
+
+    public function commonsize()
+    {
+        return $this->hasOne(AnalisisCommonsize::class, 'analisis_id');
+    }
+
+    public function trend()
+    {
+        return $this->hasOne(AnalisisTrend::class, 'analisis_id');
+    }
+
     // Accessor periode yang konsisten dengan model Dokumen
     public function getPeriodeAttribute()
     {

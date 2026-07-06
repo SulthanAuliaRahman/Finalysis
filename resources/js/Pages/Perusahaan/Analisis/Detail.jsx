@@ -4,13 +4,49 @@ import { AnalisisLikuiditasCard } from "@/Components/Analisis/AnalisisLikuiditas
 import { AnalisisProfitabilitasCard } from "@/Components/Analisis/AnalisisProfitabilitasCard";
 import { AnalisisSolvabilitasCard } from "@/Components/Analisis/AnalisisSolvabilitasCard";
 import { AnalisisAktivitasCard } from "@/Components/Analisis/AnalisisAktivitasCard";
+import { AnalisisDupontCard } from "@/Components/Analisis/AnalisisDupontCard";
+import { AnalisisCommonsizeCard } from "@/Components/Analisis/AnalisisCommonsizeCard";
+import { TrendAkunUtamaCard } from "@/Components/Analisis/TrendAkunUtamaCard";
+import { TrendRasioCard } from "@/Components/Analisis/TrendRasioCard";
+import { TrendDupontCard } from "@/Components/Analisis/TrendDupontCard";
+import { TrendCommonsizeCard } from "@/Components/Analisis/TrendCommonsizeCard";
 import { AIInsightCard } from "@/Components/Analisis/AIInsightCard";
-import { FileDown } from "lucide-react";
+import { FileDown, Calculator, Loader2 } from "lucide-react";
+import { router } from '@inertiajs/react';
+import { useState } from 'react';
+import { TrendArusKasCard } from "@/Components/Analisis/TrendArusKasCard";
+import { dummyTrendData } from '@/Components/Analisis/DummyTrendData';
 
-export default function Detail({ perusahaan, analisis, dokumenPeriode, likuiditas, profitabilitas, solvabilitas, aktivitas, neraca, labaRugi }) {
-    // TODO: hubungkan ke endpoint generate/download PDF laporan analisis saat backend siap.
+export default function Detail({
+    perusahaan,
+    analisis,
+    dokumenPeriode,
+    likuiditas,
+    profitabilitas,
+    solvabilitas,
+    aktivitas,
+    dupont,
+    commonsize,
+    trend,
+    neraca,
+    labaRugi,
+}) {
+    const [isCalculating, setIsCalculating] = useState(false);
+
     function handleDownloadPdf() {
         console.log(`Download PDF analisis periode ${analisis.periode_label} untuk perusahaan ${perusahaan.id}`);
+    }
+
+    function handleHitungRasio() {
+        setIsCalculating(true);
+        router.post(
+            `/perusahaan/${perusahaan.id}/analisis/${analisis.id}/hitung-rasio`,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setIsCalculating(false),
+            }
+        );
     }
 
     return (
@@ -20,33 +56,69 @@ export default function Detail({ perusahaan, analisis, dokumenPeriode, likuidita
                     <h2 className="text-3xl font-semibold text-slate-900">
                         Detail Analisis Pada Periode {analisis.periode_label}
                     </h2>
-                    <p className="text-slate-500 mt-1">Ringkasan dan insight keuangan perusahaan</p>
+                    <div className="flex items-center gap-3 mt-1">
+                        <p className="text-slate-500">Ringkasan dan insight keuangan perusahaan</p>
+                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
+                            Status: {analisis.status}
+                        </span>
+                    </div>
                 </div>
-                <button
-                    onClick={handleDownloadPdf}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium flex-shrink-0"
-                >
-                    <FileDown className="w-4 h-4" />
-                    Download PDF
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleHitungRasio}
+                        disabled={isCalculating}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex-shrink-0 disabled:opacity-50"
+                    >
+                        {isCalculating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
+                        Hitung Data Finansial
+                    </button>
+                    <button
+                        onClick={handleDownloadPdf}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium flex-shrink-0"
+                    >
+                        <FileDown className="w-4 h-4" />
+                        Download PDF
+                    </button>
+                </div>
             </div>
 
             <CompanyHeader perusahaan={perusahaan} dokumenPeriode={dokumenPeriode} />
 
+            {/* Rasio Keuangan */}
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Rasio Keuangan</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <AnalisisLikuiditasCard data={likuiditas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <AnalisisProfitabilitasCard data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <AnalisisSolvabilitasCard data={solvabilitas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <AnalisisAktivitasCard data={aktivitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    {/* Tambahkan prop sektor ke masing-masing Card */}
+                    <AnalisisLikuiditasCard data={likuiditas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
+                    <AnalisisProfitabilitasCard data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
+                    <AnalisisSolvabilitasCard data={solvabilitas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
+                    <AnalisisAktivitasCard data={aktivitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
                 </div>
             </div>
 
-            {/* Dupont */}
+            {/* Analisis Struktural */}
+            <div className="mb-8">
+                <h3 className="font-semibold text-slate-900 mb-4">Analisis Struktural</h3>
+                <div className="grid grid-cols-1 gap-6">
+                    <AnalisisDupontCard data={dupont} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <AnalisisCommonsizeCard data={commonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    {/* <AnalisisTrendCard data={trend} perusahaanId={perusahaan.id} analisisId={analisis.id} /> */}
+                </div>
+            </div>
 
-            {/* Trend */}
+            {/* Analisis Tren */}
+            <div className="mb-8">
+                <h3 className="font-semibold text-slate-900 mb-4">Analisis Tren</h3>
+                <div className="grid grid-cols-1 gap-6">
+                    <TrendAkunUtamaCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
+                    <TrendRasioCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
+                    <TrendDupontCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
+                    <TrendCommonsizeCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
+                    <TrendArusKasCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
+                </div>
+            </div>
 
+            {/* AI Summary */}
             <div className="flex justify-center">
                 <div className="w-full max-w-4xl">
                     <AIInsightCard narasi={analisis.ai_summary_insight} perusahaanId={perusahaan.id} analisisId={analisis.id} />

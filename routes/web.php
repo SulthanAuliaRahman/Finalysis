@@ -63,6 +63,8 @@ Route::prefix('settings')->name('settings.')->group(function () {
 
 // Alur Proses Generate Analisis RAG
 Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/regenerasi', [AnalisisController::class, 'regenerasi'])->name('perusahaan.analisis.regenerasi');
+Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/hitung-rasio', [AnalisisController::class, 'hitungRasio'])->name('perusahaan.analisis.hitung-rasio');
+
 
 // Ganti rute lama ini
 Route::get('/', function () {

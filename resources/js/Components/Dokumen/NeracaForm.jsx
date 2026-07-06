@@ -9,6 +9,16 @@ export default function NeracaForm({ data, foundAt, onDataChange, onMetadataChan
             </div>
             <div className="space-y-3">
                 <InputFieldWithMetadata
+                    label="Kas (Cash Equivalent)" section="neraca" fieldKey="cash_equivalent" metadataKey="cash_equivalent"
+                    value={data.neraca.cash_equivalent} onChange={onDataChange}
+                    metadata={foundAt?.cash_equivalent} onMetadataChange={onMetadataChange} disabled={disabled}
+                />
+                <InputFieldWithMetadata
+                    label="Persediaan (inventory)" section="neraca" fieldKey="inventory" metadataKey="inventory"
+                    value={data.neraca.inventory} onChange={onDataChange}
+                    metadata={foundAt?.inventory} onMetadataChange={onMetadataChange} disabled={disabled}
+                />
+                <InputFieldWithMetadata
                     label="Aset Lancar (Current Assets)" section="neraca" fieldKey="current_assets" metadataKey="current_assets"
                     value={data.neraca.current_assets} onChange={onDataChange}
                     metadata={foundAt?.current_assets} onMetadataChange={onMetadataChange} disabled={disabled}

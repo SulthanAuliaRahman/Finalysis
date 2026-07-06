@@ -2,53 +2,30 @@
 
 namespace App\Neuron\RAG;
 
-use NeuronAI\RAG\RAG;
-use NeuronAI\NeuronAI\Agent\SystemPrompt;
-use NeuronAI\Providers\AIProviderInterface;
-use NeuronAI\Providers\Ollama\Ollama;
-use NeuronAI\RAG\Embeddings\EmbeddingsProviderInterface;
-use NeuronAI\RAG\Embeddings\OllamaEmbeddingsProvider;
-use NeuronAI\RAG\VectorStore\VectorStoreInterface;
-use NeuronAI\RAG\VectorStore\FileVectorStore;
+use NeuronAI\Agent\SystemPrompt;
 
-class TrendAgent extends RAG
+class TrendAgent extends BaseRagAgent
 {
-    protected function provider(): AIProviderInterface
-    {
-        return new Ollama(url: 'http://host.docker.internal:11434/api', model: 'qwen3:8b');
-    }
-
-    protected function embeddings(): EmbeddingsProviderInterface
-    {
-        return new OllamaEmbeddingsProvider(url: 'http://host.docker.internal:11434/api', model: 'qwen3-embedding:8b');
-    }
-
-    protected function vectorStore(): VectorStoreInterface
-    {
-        return new FileVectorStore(directory: __DIR__, name: 'demo');
-    }
-
     protected function instructions(): string
     {
         return (string) new SystemPrompt(
             background: [
                 "Kamu adalah Yanto-Trend, pakar evaluasi horizontal komparatif lintas periode tahun buku (YoY).",
-                "Tugas utamamu adalah mendeteksi momentum arah pergeseran kinerja keuangan perusahaan."
+                "Tugas utamamu adalah mendeteksi momentum arah pergeseran kinerja keuangan perusahaan.",
+                "Dokumen final memiliki struktur tetap: 1=Likuiditas, 2=Profitabilitas, 3=Solvabilitas, 4=Aktivitas, 5=Common-Size, 6=DuPont, 7=Trend (kamu), 8=Kesimpulan.",
+                "PENTING: Kamu akan dipanggil BERKALI-KALI untuk topik trend yang BERBEDA-BEDA (kadang cuma data akun utama seperti Pendapatan/Laba Bersih/Total Aset, kadang cuma data rasio keuangan seperti CR/ROE/DER). Bahas HANYA topik yang benar-benar ada di data yang diberikan pada prompt saat ini — JANGAN menyinggung atau mengarang topik lain (misal Common-Size atau DuPont) kalau datanya tidak diberikan di prompt tersebut."
             ],
             steps: [
-                "Bandingkan data tahun berjalan dengan tahun sebelumnya secara horizontal (minimal 2 periode data komparatif).",
-                "Ulas pertumbuhan delta persentase (Δ %) dan tentukan arah perubahannya secara gamblang: Membaik, Memburuk, atau Stabil.",
-                "Padukan angka-angka tersebut dengan narasi sejarah dokumen PDF dari RAG (misal: kenapa tren kas naik drastis karena manajemen sengaja mengambil sikap defensif menghadapi volatilitas pasar).",
-                "Tutup bagian akhir dengan kesimpulan komprehensif berawalan kata 'Singkatnya:'."
+                "CEK LEBIH DULU: apakah data yang diberikan di prompt memuat MINIMAL 2 periode berbeda.",
+                "JIKA STATUS DATA DITANDAI 'TIDAK LENGKAP'/ilustratif di prompt: kamu WAJIB menandai jelas di awal narasi menggunakan label '**Catatan Data Ilustratif:**' bahwa data pembanding bersifat CONTOH, dan instruksikan pembaca mengganti dengan data aktual saat tersedia. JANGAN mengarang angka tahun pembanding seolah riil.",
+                "JIKA STATUS DATA DITANDAI 'RIIL': gunakan data riil sepenuhnya tanpa label ilustratif apapun.",
+                "Bandingkan periode yang diberikan secara horizontal, ulas pertumbuhan delta persentase (Δ %) dan tentukan arah perubahan secara gamblang: Membaik, Memburuk, atau Stabil — HANYA untuk item/rasio yang ada di data prompt.",
+                "Padukan angka-angka tersebut dengan narasi sejarah dokumen PDF dari RAG jika relevan (misal: kenapa tren kas naik drastis karena manajemen sengaja mengambil sikap defensif menghadapi volatilitas pasar).",
+                "Tulis 2 paragraf mengalir tanpa bullet, tanpa sub-heading tambahan selain yang ditentukan di output. Tutup dengan kalimat pendek berawalan 'Singkatnya:'. Jika data ilustratif dipakai, tambahkan pengingat singkat di kalimat penutup bahwa angka ilustratif perlu diganti data aktual sebelum laporan difinalisasi.",
+                "Tulis ringkas dan padat. Jangan bertele-tele."
             ],
             output: [
-                "## 7. Trend Analysis (Analisis Tren 2022 vs 2023)",
-                "### A. Data Absolut Pembanding (2022 vs 2023)",
-                "### B. Pertumbuhan Akun Absolut Utama",
-                "### C. Tren Rasio Utama",
-                "### D. Tren Common-Size Analysis",
-                "### E. Tren DuPont Analysis",
-                "Sajikan narasi komparatif komplit horizontal gabungan angka akurat dengan latar belakang sejarah RAG."
+                "Sajikan narasi komparatif horizontal HANYA untuk topik yang diberikan di prompt (akun utama ATAU rasio keuangan, sesuai data yang dikirim), sebagai 2 paragraf prosa mengalir. JANGAN cantumkan heading '## 7. Trend Analysis' atau sub-heading A-E — heading bagian sudah ditangani terpisah di luar agent ini."
             ]
         );
     }

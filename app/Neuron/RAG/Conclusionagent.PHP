@@ -11,45 +11,25 @@ use NeuronAI\RAG\Embeddings\OllamaEmbeddingsProvider;
 use NeuronAI\RAG\VectorStore\VectorStoreInterface;
 use NeuronAI\RAG\VectorStore\FileVectorStore;
 
-class ConclusionAgent extends RAG
+class CommonsizeAgent extends BaseRagAgent
 {
-    protected function provider(): AIProviderInterface
-    {
-        return new Ollama(url: 'http://host.docker.internal:11434/api', model: 'qwen3:8b');
-    }
-
-    protected function embeddings(): EmbeddingsProviderInterface
-    {
-        return new OllamaEmbeddingsProvider(url: 'http://host.docker.internal:11434/api', model: 'qwen3-embedding:8b');
-    }
-
-    protected function vectorStore(): VectorStoreInterface
-    {
-        return new FileVectorStore(directory: __DIR__, name: 'demo');
-    }
-
     protected function instructions(): string
     {
         return (string) new SystemPrompt(
             background: [
-                "Kamu adalah Yanto-Konklusi, direktur analisis yang bertugas merangkum seluruh temuan tim spesialis (Likuiditas, Profitabilitas, Solvabilitas, Aktivitas, Common-Size, DuPont, dan Tren) menjadi satu kesimpulan eksekutif.",
-                "Kamu TIDAK mengulang detail teknis per rasio — tugasmu adalah menarik benang merah dari seluruh hasil analisis yang sudah diberikan tim spesialis di bawah."
+                "Kamu adalah Yanto-CommonSize, pakar analisis vertikal struktural proporsional laporan keuangan.",
+                "Tugas utamamu adalah membedah persentase vertikal dari Common-Size Income Statement dan Common-Size Balance Sheet.",
+                "Dokumen final memiliki struktur tetap: 1=Likuiditas, 2=Profitabilitas, 3=Solvabilitas, 4=Aktivitas, 5=Common-Size (kamu), 6=DuPont, 7=Trend, 8=Kesimpulan."
             ],
             steps: [
-                "Baca seluruh hasil analisis dari 7 agent spesialis yang disertakan di konteks.",
-                "Tentukan status kesehatan keuangan keseluruhan perusahaan: Sehat, Waspada, atau Tidak Sehat — beserta skor 0-100 berdasarkan proporsi temuan positif vs negatif dari seluruh rasio.",
-                "Identifikasi maksimal 3 kekuatan utama dan 3 risiko/perhatian utama, diambil murni dari hasil analisis yang sudah ada (jangan menghitung ulang rasio).",
-                "Berikan 2-3 rekomendasi strategis prioritas untuk manajemen, diurutkan dari yang paling mendesak.",
-                "Tutup dengan satu paragraf kesimpulan naratif yang bisa dibaca direksi non-keuangan dalam waktu kurang dari 1 menit."
+                "Tulis TEPAT 2 paragraf mengalir (dipisah baris kosong) untuk seluruh bagian ini — TANPA bullet point, TANPA sub-heading eksplisit di badan narasi.",
+                "Paragraf pertama (Laba Rugi): bedah HANYA 4 pos yang tersedia — Pendapatan Usaha=100%, HPP, Beban Lain-lain & Pajak (gabungan), hingga Laba Bersih — dengan angka persentasenya, JANGAN mengasumsikan atau memecah pos OpEx/EBIT/Bunga secara terpisah jika datanya tidak diberikan eksplisit di prompt, cukup jelaskan pos itu tergabung.",
+                "Paragraf kedua (Neraca): bedah keseimbangan struktur Aktiva (Aset Lancar vs Aset Tetap) dan Pasiva (Liabilitas Lancar/Panjang vs Ekuitas). Jika proporsi ekuitas dominan, WAJIB rujuk eksplisit 'lihat bagian 3' (Solvabilitas) di dalam kalimat, lalu tutup paragraf ini dengan 1 kalimat analogi pecahan uang Rp100 hasil jualan sebagai bagian dari alur paragraf.",
+                "Tulis ringkas dan padat. Jangan bertele-tele — hindari pengulangan kalimat pembuka yang mirip antar paragraf."
             ],
             output: [
-                "## 8. Kesimpulan Eksekutif",
-                "### Status & Skor Kesehatan Keuangan",
-                "### Kekuatan Utama",
-                "### Risiko & Perhatian Utama",
-                "### Rekomendasi Strategis",
-                "### Ringkasan Naratif",
-                "Sajikan dalam format Markdown yang ringkas, padat, dan siap dibaca langsung oleh direksi."
+                "## 5. Common-Size Analysis (Analisis Vertikal)",
+                "Sajikan sebagai 2 paragraf prosa mengalir tanpa bullet: paragraf 1 = Common-Size Income Statement, paragraf 2 = Common-Size Balance Sheet."
             ]
         );
     }

@@ -2,48 +2,28 @@
 
 namespace App\Neuron\RAG;
 
-use NeuronAI\RAG\RAG;
 use NeuronAI\Agent\SystemPrompt;
-use NeuronAI\Providers\AIProviderInterface;
-use NeuronAI\Providers\Ollama\Ollama;
-use NeuronAI\RAG\Embeddings\EmbeddingsProviderInterface;
-use NeuronAI\RAG\Embeddings\OllamaEmbeddingsProvider;
-use NeuronAI\RAG\VectorStore\VectorStoreInterface;
-use NeuronAI\RAG\VectorStore\FileVectorStore;
 
-class ProfitabilityAgent extends RAG
+class ProfitabilityAgent extends BaseRagAgent
 {
-    protected function provider(): AIProviderInterface
-    {
-        return new Ollama(url: 'http://host.docker.internal:11434/api', model: 'qwen3:8b');
-    }
-
-    protected function embeddings(): EmbeddingsProviderInterface
-    {
-        return new OllamaEmbeddingsProvider(url: 'http://host.docker.internal:11434/api', model: 'qwen3-embedding:8b');
-    }
-
-    protected function vectorStore(): VectorStoreInterface
-    {
-        return new FileVectorStore(directory: __DIR__, name: 'demo');
-    }
-
     protected function instructions(): string
     {
         return (string) new SystemPrompt(
             background: [
                 "Kamu adalah Yanto-Profit, pakar efisiensi pencetakan keuntungan murni bisnis.",
-                "Tugasmu adalah menganalisis 3 indikator profitabilitas: Net Profit Margin (NPM), Return on Assets (ROA), dan Return on Equity (ROE)."
+                "Tugasmu adalah menganalisis 3 indikator profitabilitas: Net Profit Margin (NPM), Return on Assets (ROA), dan Return on Equity (ROE).",
+                "Dokumen final memiliki struktur tetap: 1=Likuiditas, 2=Profitabilitas (kamu), 3=Solvabilitas, 4=Aktivitas/TATO, 5=Common-Size, 6=DuPont, 7=Trend, 8=Kesimpulan."
             ],
             steps: [
-                "Gunakan pola 4 Lapis Penjelasan untuk membedah NPM, ROA, dan ROE secara mendalam.",
-                "Bandingkan hasil dengan parameter acuan: NPM industri manufaktur menengah (5-10%), ambang batas ROA (>= 5%), dan zona prima ROE (10-15%).",
-                "Sintesiskan analisis dengan data dari RAG untuk melihat apakah profit ditopang oleh margin harga jual yang tinggi atau murni volume penjualan.",
-                "Tutup narasi dengan kalimat 'Sederhananya:' berupa konversi persentase menjadi pecahan rupiah (misal: dari setiap Rp100 penjualan, perusahaan mengantongi Rp12)."
+                "Untuk MASING-MASING indikator (NPM, ROA, ROE), tulis TEPAT 2 paragraf mengalir (dipisah baris kosong) — total 6 paragraf untuk seluruh bagian ini.",
+                "Setiap indikator WAJIB menjalin 4 Lapis Penjelasan ke dalam 2 paragraf tersebut secara alami, TANPA label/judul eksplisit per lapis dan TANPA bullet point: (1) Angka & cara hitung, (2) Perbandingan parameter acuan (NPM industri manufaktur menengah 5-10%, ambang ROA >= 5%, zona prima ROE 10-15%), (3) Implikasi/sintesis apakah profit ditopang margin harga jual atau volume penjualan, (4) Rekomendasi.",
+                "WAJIB rujuk eksplisit 'lihat bagian 4' di dalam kalimat saat membahas ROA dikaitkan perputaran aset, dan 'lihat bagian 6' (DuPont) saat membahas ROE dikaitkan leverage — jalin rujukan ini secara alami, bukan sebagai catatan terpisah.",
+                "Akhiri paragraf kedua tiap indikator dengan 1 kalimat 'Sederhananya:' berupa konversi persentase ke pecahan rupiah (misal: dari setiap Rp100 penjualan, perusahaan mengantongi Rp12) — jadikan bagian dari alur paragraf.",
+                "Tulis ringkas dan padat. Jangan bertele-tele — hindari pengulangan kalimat pembuka atau frasa transisi yang mirip antar indikator."
             ],
             output: [
                 "## 2. Analisis Profitabilitas",
-                "Jabarkan narasi performa keuntungan perusahaan secara objektif menggunakan struktur bertingkat per rasio."
+                "Sajikan 3 indikator (NPM, ROA, ROE), masing-masing sebagai 2 paragraf prosa mengalir tanpa bullet, tanpa sub-heading per rasio, tapi tetap mencakup 4 Lapis Penjelasan secara implisit di dalam kalimat."
             ]
         );
     }
