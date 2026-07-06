@@ -176,28 +176,7 @@ class AnalisisController extends Controller
             return back()->withErrors(['message' => 'Silahkan Hitung Data Finansial terlebih dahulu.']);
         }
 
-        $neraca   = null;
-        $labaRugi = null;
 
-        if (in_array($section, ['commonsize'])) {
-            $neraca = Neraca::whereHas('dokumen', function ($query) use ($perusahaan, $analisis) {
-                $query->where('perusahaan_id', $perusahaan->id)
-                    ->where('periode_type', $analisis->periode_type)
-                    ->where('tahun', $analisis->tahun)
-                    ->where('quarter', $analisis->quarter)
-                    ->where('bulan', $analisis->bulan);
-            })->latest()->first();
-
-            $labaRugi = LabaRugi::whereHas('dokumen', function ($query) use ($perusahaan, $analisis) {
-                $query->where('perusahaan_id', $perusahaan->id)
-                    ->where('periode_type', $analisis->periode_type)
-                    ->where('tahun', $analisis->tahun)
-                    ->where('quarter', $analisis->quarter)
-                    ->where('bulan', $analisis->bulan);
-            })->latest()->first();
-
-            $analysisFinancialService->validasiKelengkapanData($neraca, $labaRugi);
-        }
 
         DB::transaction(function () use ($section, $analisis, $neraca, $labaRugi, $analysisFinancialService, $userPrompt) {
             switch ($section) {
@@ -217,7 +196,7 @@ class AnalisisController extends Controller
                     $analysisFinancialService->prosesDupont($analisis, $userPrompt);
                     break;
                 case 'commonsize':
-                    $analysisFinancialService->prosesCommonsize($analisis, $neraca, $labaRugi);
+                    $analysisFinancialService->prosesCommonsize($analisis, $userPrompt);
                     break;
                 case 'trend':
                     $analysisFinancialService->prosesTrend($analisis);

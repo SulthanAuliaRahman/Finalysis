@@ -81,9 +81,9 @@ export default function Detail({ perusahaan, analisis, dokumenPeriode, likuidita
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Analisis Struktural & Tren</h3>
                 <div className="grid grid-cols-1 gap-6">
-                    <AnalisisTrendCard data={trend} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                     <AnalisisDupontCard data={dupont} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                     <AnalisisCommonsizeCard data={commonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <AnalisisTrendCard data={trend} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                 </div>
             </div>
 

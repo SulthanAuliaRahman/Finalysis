@@ -133,10 +133,11 @@ class PerusahaanAnalisisSeeder extends Seeder
             ]);
 
             // ---------- 4. Neraca, Laba Rugi, Arus Kas ----------
+            // PENTING: kolom neraca sekarang pakai nama Inggris (migration sudah diubah teman Anda)
             DB::table('neraca')->insert([
                 'dokumen_id'          => $dokumenId,
-                'kas_setara_kas'      => $kasSetaraKas,
-                'persediaan'          => $persediaan,
+                'cash_equivalent'     => $kasSetaraKas,   // dulu 'kas_setara_kas'
+                'inventory'           => $persediaan,      // dulu 'persediaan'
                 'total_equity'        => $totalEquity,
                 'total_liabilities'   => $totalLiabilities,
                 'current_liabilities' => $currentLiabilities,
@@ -161,6 +162,8 @@ class PerusahaanAnalisisSeeder extends Seeder
                 'dokumen_id' => $dokumenId,
                 'kas_masuk'  => $kasMasuk,
                 'kas_keluar' => $kasKeluar,
+                // cash_flow_from_operations/investing/financing dibiarkan null,
+                // tidak dipakai di alur analisis kita saat ini.
                 'found_at'   => json_encode(['halaman' => 11]),
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -181,51 +184,53 @@ class PerusahaanAnalisisSeeder extends Seeder
                 'updated_at' => $now,
             ]);
 
-            $currentRatio = round($currentAssets / $currentLiabilities, 6);
-            $quickRatio   = round(($currentAssets - $persediaan) / $currentLiabilities, 6);
-            $cashRatio    = round($kasSetaraKas / $currentLiabilities, 6);
+            // ---------- Likuiditas (semua dikali 100, satuan %) ----------
+            $currentRatio = round(($currentAssets / $currentLiabilities) * 100, 2);
+            $quickRatio   = round((($currentAssets - $persediaan) / $currentLiabilities) * 100, 2);
+            $cashRatio    = round(($kasSetaraKas / $currentLiabilities) * 100, 2);
 
             DB::table('analisis_likuiditas')->insert([
                 'analisis_id'          => $analisisId,
                 'current_ratio'        => $currentRatio,
                 'quick_ratio'          => $quickRatio,
                 'cash_ratio'           => $cashRatio,
-                'narasi_likuiditas_AI' => "Current ratio sebesar {$currentRatio}x menunjukkan kemampuan perusahaan dalam memenuhi kewajiban jangka pendek "
-                    . ($currentRatio >= 1.5 ? 'sangat baik.' : 'cukup memadai namun perlu dipantau.'),
+                'narasi_likuiditas_AI' => "Current ratio sebesar {$currentRatio}% menunjukkan kemampuan perusahaan dalam memenuhi kewajiban jangka pendek "
+                    . ($currentRatio >= 150 ? 'sangat baik.' : 'cukup memadai namun perlu dipantau.'),
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
 
-            $roe             = round($labaBersih / $totalEquity, 6);
-            $roa             = round($labaBersih / $totalAssets, 6);
-            $netProfitMargin = round($labaBersih / $pendapatan, 6);
+            // ---------- Profitabilitas (semua dikali 100, satuan %) ----------
+            $roe             = round(($labaBersih / $totalEquity) * 100, 2);
+            $roa             = round(($labaBersih / $totalAssets) * 100, 2);
+            $netProfitMargin = round(($labaBersih / $pendapatan) * 100, 2);
 
             DB::table('analisis_profitabilitas')->insert([
                 'analisis_id'              => $analisisId,
                 'ROE'                      => $roe,
                 'ROA'                      => $roa,
                 'net_profit_margin'        => $netProfitMargin,
-                'narasi_profitabilitas_AI' => 'ROE sebesar ' . round($roe * 100, 2) . '% dan net profit margin sebesar '
-                    . round($netProfitMargin * 100, 2) . '% mengindikasikan efisiensi perusahaan dalam menghasilkan laba dari modal dan penjualan.',
+                'narasi_profitabilitas_AI' => "ROE sebesar {$roe}% dan net profit margin sebesar {$netProfitMargin}% mengindikasikan efisiensi perusahaan dalam menghasilkan laba dari modal dan penjualan.",
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
 
-            $debtToEquity = round($totalLiabilities / $totalEquity, 6);
-            $debtToAsset  = round($totalLiabilities / $totalAssets, 6);
+            // ---------- Solvabilitas (semua dikali 100, satuan %) ----------
+            $debtToEquity = round(($totalLiabilities / $totalEquity) * 100, 2);
+            $debtToAsset  = round(($totalLiabilities / $totalAssets) * 100, 2);
 
             DB::table('analisis_solvabilitas')->insert([
                 'analisis_id'            => $analisisId,
                 'debt_to_equity'         => $debtToEquity,
                 'debt_to_asset'          => $debtToAsset,
-                'narasi_solvabilitas_AI' => 'Rasio debt to asset sebesar ' . round($debtToAsset * 100, 2)
-                    . '% menunjukkan proporsi aset yang dibiayai oleh utang berada pada tingkat '
-                    . ($debtToAsset <= 0.5 ? 'yang sehat.' : 'yang perlu diwaspadai.'),
+                'narasi_solvabilitas_AI' => "Rasio debt to asset sebesar {$debtToAsset}% menunjukkan proporsi aset yang dibiayai oleh utang berada pada tingkat "
+                    . ($debtToAsset <= 50 ? 'yang sehat.' : 'yang perlu diwaspadai.'),
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
 
-            $totalAssetTurnover = round($pendapatan / $totalAssets, 6);
+            // ---------- Aktivitas — TATO satuan "x", TIDAK dikali 100 ----------
+            $totalAssetTurnover = round($pendapatan / $totalAssets, 2);
 
             DB::table('analisis_aktivitas')->insert([
                 'analisis_id'          => $analisisId,
@@ -235,25 +240,25 @@ class PerusahaanAnalisisSeeder extends Seeder
                 'updated_at' => $now,
             ]);
 
-            // ---------- 6. DuPont ----------
-            $leverageMultiplier = round($totalAssets / $totalEquity, 6);
-            $roeDupont          = round($netProfitMargin * $totalAssetTurnover * $leverageMultiplier, 6);
+            // ---------- DuPont ----------
+            // netProfitMargin di atas SUDAH dalam bentuk persen (mis. 9.74), bukan pecahan.
+            // TATO & Leverage tetap satuan "x", tidak dikali 100.
+            $leverageMultiplier = round($totalAssets / $totalEquity, 2);
+            $roeDupont          = round($netProfitMargin * $totalAssetTurnover * $leverageMultiplier, 2);
 
             DB::table('analisis_dupont')->insert([
                 'analisis_id'          => $analisisId,
-                'net_profit_margin'    => round($netProfitMargin * 100, 2),
-                'total_asset_turnover' => round($totalAssetTurnover, 2),
-                'leverage_multiplier'  => round($leverageMultiplier, 2),
-                'roe'                  => round($roeDupont * 100, 2),
-                'narasi_dupont_AI'     => "ROE sebesar " . round($roeDupont * 100, 2) . "% dibentuk dari perkalian NPM "
-                    . round($netProfitMargin * 100, 2) . "%, TATO " . round($totalAssetTurnover, 2)
-                    . "x, dan leverage " . round($leverageMultiplier, 2) . "x. Singkatnya: performa ROE saat ini "
+                'net_profit_margin'    => $netProfitMargin,
+                'total_asset_turnover' => $totalAssetTurnover,
+                'leverage_multiplier'  => $leverageMultiplier,
+                'roe'                  => $roeDupont,
+                'narasi_dupont_AI'     => "ROE sebesar {$roeDupont}% dibentuk dari perkalian NPM {$netProfitMargin}%, TATO {$totalAssetTurnover}x, dan leverage {$leverageMultiplier}x. Singkatnya: performa ROE saat ini "
                     . ($totalAssetTurnover >= 1.0 ? "lebih banyak ditopang oleh kecepatan perputaran aset." : "lebih banyak ditopang oleh margin keuntungan, bukan kecepatan perputaran aset."),
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
 
-            // ---------- 7. Common-Size ----------
+            // ---------- Common-Size ----------
             $hpp            = $pendapatan - $labaKotor;
             $bebanLainPajak = $labaKotor - $labaBersih;
             $asetTetap         = $totalAssets - $currentAssets;
@@ -302,11 +307,11 @@ class PerusahaanAnalisisSeeder extends Seeder
                 'total_equity'   => $totalEquity,
                 'net_cash_flow'  => $netCashFlow,
 
-                // Rasio (untuk narasi Tren Rasio)
+                // Rasio (untuk narasi Tren Rasio) — sudah dalam bentuk persen
                 'current_ratio'  => $currentRatio,
                 'roe'            => $roe,
 
-                // DuPont (untuk narasi Tren DuPont)
+                // DuPont (untuk narasi Tren DuPont) — sudah dalam bentuk persen
                 'leverage_multiplier' => $leverageMultiplier,
                 'roe_dupont'          => $roeDupont,
 
@@ -316,10 +321,8 @@ class PerusahaanAnalisisSeeder extends Seeder
             ];
         }
 
-        // ---------- 8. Trend (pass kedua, butuh seluruh riwayat di atas) ----------
+        // ---------- 6. Trend (pass kedua, butuh seluruh riwayat di atas) ----------
         foreach ($riwayatAnalisis as $index => $current) {
-            // Tentukan scope: quarterly -> semua Q di tahun yang sama dengan quarter <= saat ini.
-            //                  annual    -> semua tahun annual dengan tahun <= saat ini.
             $scopeData = array_filter($riwayatAnalisis, function ($item) use ($current) {
                 if ($item['periode_type'] !== $current['periode_type']) {
                     return false;
@@ -327,11 +330,9 @@ class PerusahaanAnalisisSeeder extends Seeder
                 if ($current['periode_type'] === 'quarterly') {
                     return $item['tahun'] === $current['tahun'] && $item['quarter'] <= $current['quarter'];
                 }
-                // annual
                 return $item['tahun'] <= $current['tahun'];
             });
 
-            // Urutkan kronologis
             usort($scopeData, function ($a, $b) {
                 if ($a['tahun'] !== $b['tahun']) {
                     return $a['tahun'] <=> $b['tahun'];
@@ -340,7 +341,7 @@ class PerusahaanAnalisisSeeder extends Seeder
             });
 
             $isIlustratif = count($scopeData) < 2;
-            $awal = $scopeData[0]; // titik data paling awal dalam scope, dipakai sebagai pembanding
+            $awal = $scopeData[0];
 
             $narasiTrend = $isIlustratif
                 ? "Periode ini belum punya data pembanding yang cukup, sehingga tren belum dapat dianalisis secara bermakna."
@@ -348,13 +349,13 @@ class PerusahaanAnalisisSeeder extends Seeder
 
             $narasiRasio = $isIlustratif
                 ? "Periode ini belum punya data pembanding yang cukup, sehingga tren rasio belum dapat dianalisis secara bermakna."
-                : "Return on Equity (ROE) bergerak dari " . round($awal['roe'] * 100, 2) . "% menjadi " . round($current['roe'] * 100, 2)
+                : "Return on Equity (ROE) bergerak dari " . round($awal['roe'], 2) . "% menjadi " . round($current['roe'], 2)
                     . "%, sementara Current Ratio " . ($current['current_ratio'] >= $awal['current_ratio'] ? 'menguat' : 'melemah')
-                    . " dari " . round($awal['current_ratio'], 2) . "x menjadi " . round($current['current_ratio'], 2) . "x dibandingkan awal periode dalam scope ini.";
+                    . " dari " . round($awal['current_ratio'], 2) . "% menjadi " . round($current['current_ratio'], 2) . "% dibandingkan awal periode dalam scope ini.";
 
             $narasiDupont = $isIlustratif
                 ? "Periode ini belum punya data pembanding yang cukup, sehingga tren DuPont belum dapat dianalisis secara bermakna."
-                : "ROE hasil dekomposisi DuPont bergerak dari " . round($awal['roe_dupont'] * 100, 2) . "% menjadi " . round($current['roe_dupont'] * 100, 2)
+                : "ROE hasil dekomposisi DuPont bergerak dari " . round($awal['roe_dupont'], 2) . "% menjadi " . round($current['roe_dupont'], 2)
                     . "%, dengan leverage multiplier " . ($current['leverage_multiplier'] >= $awal['leverage_multiplier'] ? 'meningkat' : 'menurun')
                     . " dari " . round($awal['leverage_multiplier'], 2) . "x menjadi " . round($current['leverage_multiplier'], 2) . "x.";
 
@@ -416,11 +417,9 @@ class PerusahaanAnalisisSeeder extends Seeder
         if ($periode['periode_type'] === 'annual') {
             return "Tahunan {$periode['tahun']}";
         }
-
         if ($periode['periode_type'] === 'quarterly') {
             return "Q{$periode['quarter']} {$periode['tahun']}";
         }
-
         return "Bulan {$periode['bulan']} {$periode['tahun']}";
     }
 }

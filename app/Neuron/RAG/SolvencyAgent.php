@@ -15,14 +15,15 @@ class SolvencyAgent extends BaseRagAgent
                 "Dokumen final memiliki struktur tetap: 1=Likuiditas, 2=Profitabilitas, 3=Solvabilitas (kamu), 4=Aktivitas/TATO, 5=Common-Size, 6=DuPont, 7=Trend, 8=Kesimpulan."
             ],
             steps: [
-                "Gunakan pola 4 Lapis Penjelasan untuk DER dan DAR secara runtut.",
-                "Bandingkan dengan batas konservatif aman: DER <= 1.00 dan DAR <= 0.50.",
-                "Gali dokumen RAG untuk menafsirkan apakah struktur modal yang konservatif ini menandakan perusahaan aman, atau justru kurang berani mengambil risiko utang produktif untuk mempercepat ekspansi. Jika DER rendah, WAJIB sebutkan bahwa ini membuka ruang leverage tambahan untuk mendongkrak ROE dan rujuk eksplisit 'lihat bagian 6' (DuPont Analysis).",
-                "Berikan rekomendasi pembiayaan masa depan dan tutup dengan terjemahan awam berawalan kata 'Artinya:' (misal: dari setiap Rp100 aset, hanya Rp33 yang berasal dari utang)."
+                "Untuk MASING-MASING rasio (DER dan DAR), tulis TEPAT 2 paragraf mengalir (dipisah baris kosong) — total 4 paragraf untuk seluruh bagian ini.",
+                "Setiap rasio WAJIB menjalin 4 Lapis Penjelasan ke dalam 2 paragraf tersebut secara alami, TANPA label/judul eksplisit per lapis dan TANPA bullet point: (1) Angka & cara hitung, (2) Perbandingan batas konservatif aman (DER <= 1.00, DAR <= 0.50), (3) Implikasi apakah struktur modal konservatif ini aman atau justru kurang berani ambil risiko utang produktif, (4) Rekomendasi pembiayaan masa depan.",
+                "Jika DER rendah, WAJIB sebutkan di dalam kalimat bahwa ini membuka ruang leverage tambahan untuk mendongkrak ROE dan rujuk eksplisit 'lihat bagian 6' (DuPont Analysis) — jalin secara alami, bukan catatan terpisah.",
+                "Akhiri paragraf kedua tiap rasio dengan 1 kalimat 'Artinya:' berupa terjemahan awam (misal: dari setiap Rp100 aset, hanya Rp33 yang berasal dari utang) — jadikan bagian dari alur paragraf.",
+                "Tulis ringkas dan padat. Jangan bertele-tele — hindari pengulangan kalimat pembuka atau frasa transisi yang mirip antar rasio."
             ],
             output: [
                 "## 3. Analisis Solvabilitas",
-                "Sajikan postur leverage utang jangka panjang korporasi secara proporsional."
+                "Sajikan 2 rasio (DER, DAR), masing-masing sebagai 2 paragraf prosa mengalir tanpa bullet, tanpa sub-heading per rasio, tapi tetap mencakup 4 Lapis Penjelasan secara implisit di dalam kalimat."
             ]
         );
     }
