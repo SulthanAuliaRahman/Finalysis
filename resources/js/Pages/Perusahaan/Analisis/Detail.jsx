@@ -6,14 +6,31 @@ import { AnalisisSolvabilitasCard } from "@/Components/Analisis/AnalisisSolvabil
 import { AnalisisAktivitasCard } from "@/Components/Analisis/AnalisisAktivitasCard";
 import { AnalisisDupontCard } from "@/Components/Analisis/AnalisisDupontCard";
 import { AnalisisCommonsizeCard } from "@/Components/Analisis/AnalisisCommonsizeCard";
-import { AnalisisTrendCard } from "@/Components/Analisis/AnalisisTrendCard";
-
+import { TrendAkunUtamaCard } from "@/Components/Analisis/TrendAkunUtamaCard";
+import { TrendRasioCard } from "@/Components/Analisis/TrendRasioCard";
+import { TrendDupontCard } from "@/Components/Analisis/TrendDupontCard";
+import { TrendCommonsizeCard } from "@/Components/Analisis/TrendCommonsizeCard";
 import { AIInsightCard } from "@/Components/Analisis/AIInsightCard";
 import { FileDown, Calculator, Loader2 } from "lucide-react";
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Detail({ perusahaan, analisis, dokumenPeriode, likuiditas, profitabilitas, solvabilitas, aktivitas, dupont, commonsize, trend, neraca, labaRugi }) {
+import { dummyTrendData } from '@/Components/Analisis/DummyTrendData';
+
+export default function Detail({
+    perusahaan,
+    analisis,
+    dokumenPeriode,
+    likuiditas,
+    profitabilitas,
+    solvabilitas,
+    aktivitas,
+    dupont,
+    commonsize,
+    trend,
+    neraca,
+    labaRugi,
+}) {
     const [isCalculating, setIsCalculating] = useState(false);
 
     function handleDownloadPdf() {
@@ -27,7 +44,7 @@ export default function Detail({ perusahaan, analisis, dokumenPeriode, likuidita
             {},
             {
                 preserveScroll: true,
-                onFinish: () => setIsCalculating(false)
+                onFinish: () => setIsCalculating(false),
             }
         );
     }
@@ -67,6 +84,7 @@ export default function Detail({ perusahaan, analisis, dokumenPeriode, likuidita
 
             <CompanyHeader perusahaan={perusahaan} dokumenPeriode={dokumenPeriode} />
 
+            {/* Rasio Keuangan */}
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Rasio Keuangan</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -78,16 +96,28 @@ export default function Detail({ perusahaan, analisis, dokumenPeriode, likuidita
                 </div>
             </div>
 
+            {/* Analisis Struktural */}
             <div className="mb-8">
-                <h3 className="font-semibold text-slate-900 mb-4">Analisis Struktural & Tren</h3>
+                <h3 className="font-semibold text-slate-900 mb-4">Analisis Struktural</h3>
                 <div className="grid grid-cols-1 gap-6">
                     <AnalisisDupontCard data={dupont} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                     <AnalisisCommonsizeCard data={commonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <AnalisisTrendCard data={trend} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    {/* <AnalisisTrendCard data={trend} perusahaanId={perusahaan.id} analisisId={analisis.id} /> */}
                 </div>
             </div>
 
+            {/* Analisis Tren */}
+            <div className="mb-8">
+                <h3 className="font-semibold text-slate-900 mb-4">Analisis Tren</h3>
+                <div className="grid grid-cols-1 gap-6">
+                    <TrendAkunUtamaCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
+                    <TrendRasioCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
+                    <TrendDupontCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
+                    <TrendCommonsizeCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
+                </div>
+            </div>
 
+            {/* AI Summary */}
             <div className="flex justify-center">
                 <div className="w-full max-w-4xl">
                     <AIInsightCard narasi={analisis.ai_summary_insight} perusahaanId={perusahaan.id} analisisId={analisis.id} />

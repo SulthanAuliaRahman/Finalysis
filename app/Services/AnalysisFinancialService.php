@@ -15,6 +15,9 @@ use App\Neuron\RAG\ActivityAgent;
 use App\Neuron\RAG\CommonsizeAgent;
 use App\Neuron\RAG\DupontAgent;
 
+use App\Services\CalculateFinancialService;
+use App\Services\TrendAnalysisService;
+
 class AnalysisFinancialService
 {
     protected CalculateFinancialService $calculateFinancialService;
