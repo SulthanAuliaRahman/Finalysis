@@ -2,6 +2,8 @@
 
 namespace App\Neuron\RAG;
 
+use App\Services\AiConfigurationService;
+use App\Models\AiConfiguration;
 
 use NeuronAI\RAG\RAG;
 use NeuronAI\NeuronAI\Agent\SystemPrompt;
@@ -23,32 +25,36 @@ class RagAgent extends RAG
         'localai' => 'cross-encoder',
     ];
 
-    public function __construct()
+    private AiConfiguration $config;
+
+    public function __construct(AiConfigurationService $service)
     {
+        $this->config = $service->get();
+
         $this->setPostProcessors([$this->buildReranker()]);
     }
 
     protected function provider(): AIProviderInterface
     {
         return new Ollama(
-            url: 'http://host.docker.internal:11434/api',
-            model: 'qwen3:8b',
+            url: $this->config->llm_url,
+            model: $this->config->llm_model,
         );
     }
 
     protected function embeddings(): EmbeddingsProviderInterface
     {
         return new OllamaEmbeddingsProvider(
-            url: 'http://host.docker.internal:11434/api',
-            model: 'qwen3-embedding:8b',
+            url: $this->config->embedding_url,
+            model: $this->config->embedding_model
         );
     }
 
     protected function vectorStore(): VectorStoreInterface
     {
         return new FileVectorStore(
-            directory: __DIR__,
-            name: 'demo'
+            directory: $this->config->vector_store_path,
+            name: $this->config->vector_store_name
         );
     }
 
@@ -68,29 +74,30 @@ class RagAgent extends RAG
 
     private function buildReranker(): FallbackRerankerProcessor
     {
-        $config   = config('services.reranker');
-        $provider = $config['provider'] ?? 'localai';
-        $topN     = $config['top_n'] ?? 3;
-        $model    = $config['model'] ?: (self::DEFAULT_MODELS[$provider] ?? null);
+        
+        $provider = $this->config->reranker_provider;
+        $topN     = $this->config->reranker_top_n;
+        $model    = $this->config->reranker_model;
 
-        $this->validateConfig($config, $provider, $topN);
+
+        $this->validateConfig();
 
         $inner = match ($provider) {
             'cohere'  => new CohereRerankerPostProcessor(
-                key:   $config['cohere_api_key'],
+                key:   $this->config->reranker_api_key,
                 model: $model,
-                topN:  (int) $topN,
+                topN:  $topN,
             ),
             'jina'    => new JinaRerankerPostProcessor(
-                key:   $config['jina_api_key'],
+                key:   $this->config->reranker_api_key,
                 model: $model,
-                topN:  (int) $topN,
+                topN:  $topN,
             ),
             'localai' => new LocalAIRerankerPostProcessor(
-                key:   '',
+                key:   $this->config->reranker_api_key,
                 model: $model,
-                topN:  (int) $topN,
-                host:  $config['localai_url'],
+                topN:  $topN,
+                host:  $this->config->localai_url,
             ),
         };
 
@@ -104,8 +111,10 @@ class RagAgent extends RAG
      * strings, so casting to int before this check would silently coerce invalid
      * values (e.g. "abc" → 0) and hide the real error.
      */
-    private function validateConfig(array $config, string $provider, mixed $topN): void
+    private function validateConfig(): void
     {
+        $provider = $this->config->reranker_provider;
+        $topN = $this->config->reranker_top_n;
         $allowed = ['cohere', 'jina', 'localai'];
 
         if (!in_array($provider, $allowed, true)) {

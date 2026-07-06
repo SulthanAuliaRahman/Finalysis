@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\PythonTesterController;
-
+use App\Http\Controllers\AiConfigurationController;
 use App\Http\Controllers\HomeController;
 
 // Real Not Test
@@ -62,6 +62,16 @@ Route::get('/python-health', [DokumenController::class, 'checkPythonHealth'])->n
 Route::get('/documents/upload', [DocumentController::class, 'create'])->name('documents.create');
 Route::post('/documents',       [DocumentController::class, 'store'])->name('documents.store');
 Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
+
+//Settings
+Route::prefix('settings')->name('settings.')->group(function () {
+
+    //Ai Configuration
+    Route::get('/ai',[AiConfigurationController::class, 'index'])->name('ai.view');
+    Route::get('/ai/edit',[AiConfigurationController::class, 'edit'])->name('ai.edit');
+    Route::put('/ai',[AiConfigurationController::class, 'update'])->name('ai.update');
+
+});
 
 
 Route::get('/', function () {

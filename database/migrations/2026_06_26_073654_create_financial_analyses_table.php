@@ -20,6 +20,8 @@ return new class extends Migration
 
             $table->longText('analysis_result');
 
+            $table->json('ratio_results')->nullable();
+
             $table->timestamps();
         });
     }

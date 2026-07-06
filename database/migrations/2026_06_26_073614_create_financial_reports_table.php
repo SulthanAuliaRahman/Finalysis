@@ -18,9 +18,11 @@ return new class extends Migration
             ->constrained()
             ->cascadeOnDelete();
 
-            $table->foreignId('report_type_id')
-            ->constrained('financial_report_types')
-            ->cascadeOnDelete();
+            $table->enum('report_type', [
+                'neraca',
+                'laba_rugi',
+                'arus_kas',
+            ]);
 
             $table->string('report_title');
 
@@ -37,9 +39,11 @@ return new class extends Migration
 
             $table->string('url_path');
 
+            $table->json('financial_data')->nullable();
+
             $table->unique([
                 'company_id',
-                'report_type_id',
+                'report_type',
                 'period_start',
                 'period_end',
                 'period_type'
