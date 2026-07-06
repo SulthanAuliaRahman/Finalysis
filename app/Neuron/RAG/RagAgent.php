@@ -6,7 +6,7 @@ use App\Services\AiConfigurationService;
 use App\Models\AiConfiguration;
 
 use NeuronAI\RAG\RAG;
-use NeuronAI\NeuronAI\Agent\SystemPrompt;
+use NeuronAI\Agent\SystemPrompt;
 use NeuronAI\RAG\VectorStore\VectorStoreInterface;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\Providers\Ollama\Ollama;
@@ -58,19 +58,19 @@ class RagAgent extends RAG
         );
     }
 
-    // protected function instructions(): string
-    // {
-    //     return (string) new SystemPrompt(
-    //         background:[
-    //             "Kamu adalah analis keuangan profesional",
-    //         ],
-    //         steps:[
-    //             "Gunakan data dari knowledge base",
-    //             "Jika tidak ada data, katakan tidak tersedia",
-    //             "Jangan halusinasi"
-    //         ]
-    //     );
-    // }
+    protected function instructions(): string
+    {
+        return (string) new SystemPrompt(
+            background:[
+                "Kamu adalah analis keuangan profesional",
+            ],
+            steps:[
+                "Gunakan data dari knowledge base",
+                "Jika tidak ada data, katakan tidak tersedia",
+                "Jangan halusinasi"
+            ]
+        );
+    }
 
     private function buildReranker(): FallbackRerankerProcessor
     {
