@@ -4,8 +4,7 @@ export const dummyTrendData = {
     narasi_rasio_AI: "Rasio profitabilitas (NPM, ROA, ROE) sangat fluktuatif, anjlok di 2021 lalu memuncak di 2023, sebelum kembali melandai. Sebaliknya, rasio likuiditas (Current Ratio) terus dipertahankan di atas 130%, menunjukkan manajemen kas yang cukup berhati-hati di tengah guncangan operasional.",
     narasi_dupont_AI: "Dari kacamata DuPont, volatilitas ROE sangat didikte oleh fluktuasi Net Profit Margin (NPM). Ketika NPM anjlok ke 8% di 2021, ROE ikut terpuruk. Leverage (utang) sempat dinaikkan di 2021-2022 untuk menopang arus kas selama masa sulit, sebelum perlahan diturunkan kembali.",
     narasi_commonsize_AI: "Struktur Common-size mengungkap akar masalah pada tahun 2021 dan 2024: porsi HPP terhadap pendapatan membengkak melewati 60%. Pada neraca, porsi utang lancar sempat membesar di masa krisis (2021) namun saat ini ekuitas kembali mendominasi struktur modal perusahaan.",
-
-    // ← PERUBAHAN: "periodedata" → "periode_data"
+    narasi_arus_kas_AI: "Tren kas masuk secara konsisten melampaui kas keluar pada periode 2022-2023, mencerminkan likuiditas operasional yang prima. Namun, terjadi penyempitan jarak (net cash flow menipis) pada tahun 2024 akibat lonjakan kas keluar untuk pelunasan utang dan ekspansi aset tetap.",
     periode_data: [
         {
             urutan: 1,
@@ -16,6 +15,8 @@ export const dummyTrendData = {
             kas_setara_kas: 2000000000, growth_kas_setara_kas: null,
             total_equity: 8000000000, growth_total_equity: null,
             net_cash_flow: 500000000, growth_net_cash_flow: null,
+            kas_masuk: 12500000000,
+            kas_keluar: 12000000000,
             analisis: {
                 periode_type: "annual", tahun: 2020,
                 likuiditas: { current_ratio: 150.0, quick_ratio: 120.0, cash_ratio: 80.0 },
@@ -24,7 +25,7 @@ export const dummyTrendData = {
                 aktivitas: { total_asset_turnover: 0.67 },
                 dupont: { net_profit_margin: 15.0, total_asset_turnover: 0.67, leverage_multiplier: 1.87, roe: 18.7 },
                 commonsize: {
-                    hpp_persen: 60.0, laba_kotor_persen: 40.0, // ← DITAMBAH
+                    hpp_persen: 60.0, laba_kotor_persen: 40.0,
                     beban_lain_pajak_persen: 25.0, laba_bersih_persen: 15.0,
                     aset_lancar_persen: 40.0, aset_tetap_persen: 60.0,
                     liabilitas_lancar_persen: 25.0, liabilitas_panjang_persen: 21.6, ekuitas_persen: 53.4,
@@ -40,6 +41,8 @@ export const dummyTrendData = {
             kas_setara_kas: 1200000000, growth_kas_setara_kas: -40.0,
             total_equity: 7500000000, growth_total_equity: -6.2,
             net_cash_flow: -300000000, growth_net_cash_flow: -160.0,
+            kas_masuk: 10000000000,
+            kas_keluar: 10300000000,
             analisis: {
                 periode_type: "annual", tahun: 2021,
                 likuiditas: { current_ratio: 135.0, quick_ratio: 95.0, cash_ratio: 45.0 },
@@ -48,7 +51,7 @@ export const dummyTrendData = {
                 aktivitas: { total_asset_turnover: 0.60 },
                 dupont: { net_profit_margin: 8.0, total_asset_turnover: 0.60, leverage_multiplier: 1.86, roe: 9.0 },
                 commonsize: {
-                    hpp_persen: 64.0, laba_kotor_persen: 36.0, // ← DITAMBAH
+                    hpp_persen: 64.0, laba_kotor_persen: 36.0,
                     beban_lain_pajak_persen: 28.0, laba_bersih_persen: 8.0,
                     aset_lancar_persen: 35.0, aset_tetap_persen: 65.0,
                     liabilitas_lancar_persen: 30.0, liabilitas_panjang_persen: 16.4, ekuitas_persen: 53.6,
@@ -64,6 +67,8 @@ export const dummyTrendData = {
             kas_setara_kas: 2100000000, growth_kas_setara_kas: 75.0,
             total_equity: 8500000000, growth_total_equity: 13.3,
             net_cash_flow: 900000000, growth_net_cash_flow: 400.0,
+            kas_masuk: 9000000000,
+            kas_keluar: 11300000000,
             analisis: {
                 periode_type: "annual", tahun: 2022,
                 likuiditas: { current_ratio: 145.5, quick_ratio: 110.2, cash_ratio: 75.5 },
@@ -72,7 +77,7 @@ export const dummyTrendData = {
                 aktivitas: { total_asset_turnover: 0.71 },
                 dupont: { net_profit_margin: 12.0, total_asset_turnover: 0.71, leverage_multiplier: 1.82, roe: 15.5 },
                 commonsize: {
-                    hpp_persen: 60.0, laba_kotor_persen: 40.0, // ← DITAMBAH
+                    hpp_persen: 60.0, laba_kotor_persen: 40.0,
                     beban_lain_pajak_persen: 28.0, laba_bersih_persen: 12.0,
                     aset_lancar_persen: 42.0, aset_tetap_persen: 58.0,
                     liabilitas_lancar_persen: 26.0, liabilitas_panjang_persen: 19.1, ekuitas_persen: 54.9,
@@ -88,6 +93,8 @@ export const dummyTrendData = {
             kas_setara_kas: 3200000000, growth_kas_setara_kas: 52.3,
             total_equity: 10000000000, growth_total_equity: 17.6,
             net_cash_flow: 1100000000, growth_net_cash_flow: 22.2,
+            kas_masuk: 12000000000,
+            kas_keluar: 10000000000,
             analisis: {
                 periode_type: "annual", tahun: 2023,
                 likuiditas: { current_ratio: 170.0, quick_ratio: 135.0, cash_ratio: 100.0 },
@@ -96,7 +103,7 @@ export const dummyTrendData = {
                 aktivitas: { total_asset_turnover: 0.79 },
                 dupont: { net_profit_margin: 16.0, total_asset_turnover: 0.79, leverage_multiplier: 1.70, roe: 21.6 },
                 commonsize: {
-                    hpp_persen: 56.0, laba_kotor_persen: 44.0, // ← DITAMBAH
+                    hpp_persen: 56.0, laba_kotor_persen: 44.0,
                     beban_lain_pajak_persen: 28.0, laba_bersih_persen: 16.0,
                     aset_lancar_persen: 48.0, aset_tetap_persen: 52.0,
                     liabilitas_lancar_persen: 22.0, liabilitas_panjang_persen: 19.1, ekuitas_persen: 58.9,
@@ -112,6 +119,8 @@ export const dummyTrendData = {
             kas_setara_kas: 2800000000, growth_kas_setara_kas: -12.5,
             total_equity: 11200000000, growth_total_equity: 12.0,
             net_cash_flow: -400000000, growth_net_cash_flow: -136.3,
+            kas_masuk   : 11000000000,
+            kas_keluar  : 11000000000,
             analisis: {
                 periode_type: "annual", tahun: 2024,
                 likuiditas: { current_ratio: 155.0, quick_ratio: 120.0, cash_ratio: 85.0 },
@@ -120,7 +129,7 @@ export const dummyTrendData = {
                 aktivitas: { total_asset_turnover: 0.79 },
                 dupont: { net_profit_margin: 12.0, total_asset_turnover: 0.79, leverage_multiplier: 1.62, roe: 15.5 },
                 commonsize: {
-                    hpp_persen: 61.0, laba_kotor_persen: 39.0, // ← DITAMBAH
+                    hpp_persen: 61.0, laba_kotor_persen: 39.0,
                     beban_lain_pajak_persen: 27.0, laba_bersih_persen: 12.0,
                     aset_lancar_persen: 44.0, aset_tetap_persen: 56.0,
                     liabilitas_lancar_persen: 24.0, liabilitas_panjang_persen: 14.4, ekuitas_persen: 61.6,

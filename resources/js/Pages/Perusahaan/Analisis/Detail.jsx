@@ -14,7 +14,7 @@ import { AIInsightCard } from "@/Components/Analisis/AIInsightCard";
 import { FileDown, Calculator, Loader2 } from "lucide-react";
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
-
+import { TrendArusKasCard } from "@/Components/Analisis/TrendArusKasCard";
 import { dummyTrendData } from '@/Components/Analisis/DummyTrendData';
 
 export default function Detail({
@@ -114,6 +114,7 @@ export default function Detail({
                     <TrendRasioCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
                     <TrendDupontCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
                     <TrendCommonsizeCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
+                    <TrendArusKasCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
                 </div>
             </div>
 

@@ -178,7 +178,7 @@ class AnalisisController extends Controller
 
 
 
-        DB::transaction(function () use ($section, $analisis, $neraca, $labaRugi, $analysisFinancialService, $userPrompt) {
+        DB::transaction(function () use ($section, $analisis, $analysisFinancialService, $userPrompt) {
             switch ($section) {
                 case 'likuiditas':
                     $analysisFinancialService->prosesLikuiditas($analisis, $userPrompt);
