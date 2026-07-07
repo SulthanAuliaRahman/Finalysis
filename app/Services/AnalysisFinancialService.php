@@ -63,12 +63,12 @@ class AnalysisFinancialService
         $data = $analisis->likuiditas;
         $perusahaan = $analisis->perusahaan;
 
-        $prompt  = "Informasi Perusahaan\n";
-        $prompt .= "Nama Perusahaan: {$perusahaan->nama}\n";
-        $prompt .= "Sektor: {$perusahaan->sektor}\n";
-        $prompt .= "Deskripsi: {$perusahaan->deskripsi}\n";
+        $Prompt  = "Informasi Perusahaan\n";
+        $Prompt .= "Nama Perusahaan: {$perusahaan->nama}\n";
+        $Prompt .= "Sektor: {$perusahaan->sektor}\n";
+        $Prompt .= "Deskripsi: {$perusahaan->deskripsi}\n";
 
-        $Prompt  = "Berikan narasi analisis likuiditas berdasarkan data berikut: \n";
+        $Prompt  .= "Berikan narasi analisis likuiditas berdasarkan data berikut: \n";
         $Prompt .= "Current Ratio (CR): " . $data->current_ratio . "%\n";
         $Prompt .= "Quick Ratio (QR): " . $data->quick_ratio . "%\n";
         $Prompt .= "Cash Ratio (CSR): " . $data->cash_ratio . "%\n";
