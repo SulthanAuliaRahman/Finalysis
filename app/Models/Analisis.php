@@ -88,12 +88,11 @@ class Analisis extends Model
         };
     }
 
-    public function getRasioTrend(): array
+    private function buildPeriodeQuery()
     {
         $query = Analisis::where('perusahaan_id', $this->perusahaan_id)
             ->where('periode_type', $this->periode_type);
 
-        // Filter "periode <= analisis saat ini" sesuai periode_type
         match ($this->periode_type) {
             'annual' => $query->where('tahun', '<=', $this->tahun),
 
@@ -114,12 +113,18 @@ class Analisis extends Model
             }),
         };
 
-        // Urutkan kronologis ASC, ambil 5 terakhir via subquery DESC lalu balik
-        $periodeList = $query
+        return $query
             ->orderByDesc('tahun')
             ->orderByDesc('quarter')
             ->orderByDesc('bulan')
-            ->limit(5)
+            ->limit(5);
+    }
+
+    public function getRasioTrend(): array
+    {
+        $this->loadMissing('trend');
+
+        $periodeList = $this->buildPeriodeQuery()
             ->with([
                 'likuiditas:analisis_id,current_ratio,quick_ratio,cash_ratio',
                 'profitabilitas:analisis_id,ROE,ROA,net_profit_margin',
@@ -127,43 +132,41 @@ class Analisis extends Model
                 'aktivitas:analisis_id,total_asset_turnover',
             ])
             ->get()
-            ->reverse()   // balik ke ASC setelah limit
+            ->reverse()
             ->values();
 
-        // Deteksi gap: periode yang ada di tengah tapi semua rasionya null
-        $hasGap = $periodeList->contains(function ($a) {
-            return $a->likuiditas === null
-                && $a->profitabilitas === null
-                && $a->solvabilitas === null
-                && $a->aktivitas === null;
+        $hasGap = $periodeList->contains(function ($analisisPeriode) {
+            return $analisisPeriode->likuiditas === null
+                && $analisisPeriode->profitabilitas === null
+                && $analisisPeriode->solvabilitas === null
+                && $analisisPeriode->aktivitas === null;
         });
 
-        // Map ke shape yang dibutuhkan FE
-        $periodeData = $periodeList->map(function ($a, $index) {
+        $periodeData = $periodeList->map(function ($analisisPeriode, $index) {
             return [
-                'urutan'  => $index + 1,
+                'urutan'   => $index + 1,
                 'analisis' => [
-                    'id'           => $a->id,
-                    'periode_type' => $a->periode_type,
-                    'tahun'        => $a->tahun,
-                    'quarter'      => $a->quarter,
-                    'bulan'        => $a->bulan,
-                    'likuiditas'   => $a->likuiditas ? [
-                        'current_ratio' => $a->likuiditas->current_ratio,
-                        'quick_ratio'   => $a->likuiditas->quick_ratio,
-                        'cash_ratio'    => $a->likuiditas->cash_ratio,
+                    'id'             => $analisisPeriode->id,
+                    'periode_type'   => $analisisPeriode->periode_type,
+                    'tahun'          => $analisisPeriode->tahun,
+                    'quarter'        => $analisisPeriode->quarter,
+                    'bulan'          => $analisisPeriode->bulan,
+                    'likuiditas'     => $analisisPeriode->likuiditas ? [
+                        'current_ratio' => $analisisPeriode->likuiditas->current_ratio,
+                        'quick_ratio'   => $analisisPeriode->likuiditas->quick_ratio,
+                        'cash_ratio'    => $analisisPeriode->likuiditas->cash_ratio,
                     ] : null,
-                    'profitabilitas' => $a->profitabilitas ? [
-                        'net_profit_margin' => $a->profitabilitas->net_profit_margin,
-                        'ROA'               => $a->profitabilitas->ROA,
-                        'ROE'               => $a->profitabilitas->ROE,
+                    'profitabilitas' => $analisisPeriode->profitabilitas ? [
+                        'net_profit_margin' => $analisisPeriode->profitabilitas->net_profit_margin,
+                        'ROA'               => $analisisPeriode->profitabilitas->ROA,
+                        'ROE'               => $analisisPeriode->profitabilitas->ROE,
                     ] : null,
-                    'solvabilitas' => $a->solvabilitas ? [
-                        'debt_to_equity' => $a->solvabilitas->debt_to_equity,
-                        'debt_to_asset'  => $a->solvabilitas->debt_to_asset,
+                    'solvabilitas'   => $analisisPeriode->solvabilitas ? [
+                        'debt_to_equity' => $analisisPeriode->solvabilitas->debt_to_equity,
+                        'debt_to_asset'  => $analisisPeriode->solvabilitas->debt_to_asset,
                     ] : null,
-                    'aktivitas' => $a->aktivitas ? [
-                        'total_asset_turnover' => $a->aktivitas->total_asset_turnover,
+                    'aktivitas'      => $analisisPeriode->aktivitas ? [
+                        'total_asset_turnover' => $analisisPeriode->aktivitas->total_asset_turnover,
                     ] : null,
                 ],
             ];
@@ -175,4 +178,203 @@ class Analisis extends Model
             'periode_data'          => $periodeData,
         ];
     }
+
+    public function getDupontTrend(): array
+    {
+        $this->loadMissing('trend');
+
+        $periodeList = $this->buildPeriodeQuery()
+            ->with([
+                'dupont:analisis_id,net_profit_margin,total_asset_turnover,leverage_multiplier,roe',
+            ])
+            ->get()
+            ->reverse()
+            ->values();
+
+        $hasGap = $periodeList->contains(function ($analisisPeriode) {
+            return $analisisPeriode->dupont === null;
+        });
+
+        $periodeData = $periodeList->map(function ($analisisPeriode, $index) {
+            return [
+                'urutan'   => $index + 1,
+                'analisis' => [
+                    'id'           => $analisisPeriode->id,
+                    'periode_type' => $analisisPeriode->periode_type,
+                    'tahun'        => $analisisPeriode->tahun,
+                    'quarter'      => $analisisPeriode->quarter,
+                    'bulan'        => $analisisPeriode->bulan,
+                    'dupont'       => $analisisPeriode->dupont ? [
+                        'net_profit_margin'    => $analisisPeriode->dupont->net_profit_margin,
+                        'total_asset_turnover' => $analisisPeriode->dupont->total_asset_turnover,
+                        'leverage_multiplier'  => $analisisPeriode->dupont->leverage_multiplier,
+                        'roe'                  => $analisisPeriode->dupont->roe,
+                    ] : null,
+                ],
+            ];
+        })->all();
+
+        return [
+            'narasi_trend_dupont_AI' => $this->trend?->narasi_trend_dupont_AI,
+            'has_gap'                => $hasGap,
+            'periode_data'           => $periodeData,
+        ];
+    }
+
+    public function getCommonsizeTrend(): array
+    {
+        $this->loadMissing('trend');
+
+        $periodeList = $this->buildPeriodeQuery()
+            ->with([
+                'commonsize:analisis_id,hpp_persen,laba_kotor_persen,beban_lain_pajak_persen,laba_bersih_persen,aset_lancar_persen,aset_tetap_persen,liabilitas_lancar_persen,liabilitas_panjang_persen,ekuitas_persen',
+            ])
+            ->get()
+            ->reverse()
+            ->values();
+
+        $hasGap = $periodeList->contains(function ($analisisPeriode) {
+            return $analisisPeriode->commonsize === null;
+        });
+
+        $periodeData = $periodeList->map(function ($analisisPeriode, $index) {
+            return [
+                'urutan'   => $index + 1,
+                'analisis' => [
+                    'id'           => $analisisPeriode->id,
+                    'periode_type' => $analisisPeriode->periode_type,
+                    'tahun'        => $analisisPeriode->tahun,
+                    'quarter'      => $analisisPeriode->quarter,
+                    'bulan'        => $analisisPeriode->bulan,
+                    'commonsize'   => $analisisPeriode->commonsize ? [
+                        'hpp_persen'                => $analisisPeriode->commonsize->hpp_persen,
+                        'laba_kotor_persen'         => $analisisPeriode->commonsize->laba_kotor_persen,
+                        'beban_lain_pajak_persen'   => $analisisPeriode->commonsize->beban_lain_pajak_persen,
+                        'laba_bersih_persen'        => $analisisPeriode->commonsize->laba_bersih_persen,
+                        'aset_lancar_persen'        => $analisisPeriode->commonsize->aset_lancar_persen,
+                        'aset_tetap_persen'         => $analisisPeriode->commonsize->aset_tetap_persen,
+                        'liabilitas_lancar_persen'  => $analisisPeriode->commonsize->liabilitas_lancar_persen,
+                        'liabilitas_panjang_persen' => $analisisPeriode->commonsize->liabilitas_panjang_persen,
+                        'ekuitas_persen'            => $analisisPeriode->commonsize->ekuitas_persen,
+                    ] : null,
+                ],
+            ];
+        })->all();
+
+        return [
+            'narasi_trend_commonsize_AI' => $this->trend?->narasi_trend_commonsize_AI,
+            'has_gap'                    => $hasGap,
+            'periode_data'               => $periodeData,
+        ];
+    }
+    
+    public function getAkunUtamaTrend(): array
+    {
+        $this->loadMissing('trend');
+
+        $periodeList = $this->buildPeriodeQuery()->get()->reverse()->values();
+        $hasGap = false;
+
+        $periodeData = $periodeList->map(function ($analisisPeriode, $index) use (&$hasGap) {
+            $dokumen = Dokumen::with(['neraca', 'labaRugi', 'arusKas'])
+                ->where('perusahaan_id', $analisisPeriode->perusahaan_id)
+                ->where('periode_type', $analisisPeriode->periode_type)
+                ->where('tahun', $analisisPeriode->tahun)
+                ->where('quarter', $analisisPeriode->quarter)
+                ->where('bulan', $analisisPeriode->bulan)
+                ->latest()
+                ->first();
+
+            if (!$dokumen || (!$dokumen->neraca && !$dokumen->labaRugi && !$dokumen->arusKas)) {
+                $hasGap = true;
+            }
+
+            $neraca = $dokumen?->neraca;
+            $labaRugi = $dokumen?->labaRugi;
+            $arusKas = $dokumen?->arusKas;
+
+            return [
+                'urutan'         => $index + 1,
+                'analisis'       => [
+                    'id'           => $analisisPeriode->id,
+                    'periode_type' => $analisisPeriode->periode_type,
+                    'tahun'        => $analisisPeriode->tahun,
+                    'quarter'      => $analisisPeriode->quarter,
+                    'bulan'        => $analisisPeriode->bulan,
+                ],
+                'pendapatan'     => $labaRugi?->pendapatan,
+                'laba_kotor'     => $labaRugi?->laba_kotor,
+                'laba_bersih'    => $labaRugi?->laba_bersih,
+                'total_assets'   => $neraca?->total_assets,
+                'kas_setara_kas' => $neraca?->cash_equivalent,
+                'total_equity'   => $neraca?->total_equity,
+                'net_cash_flow'  => $arusKas ? ($arusKas->kas_masuk - $arusKas->kas_keluar) : null,
+            ];
+        })->all();
+
+        foreach ($periodeData as $i => &$data) {
+            $prev = $i > 0 ? $periodeData[$i - 1] : null;
+            $keys = ['pendapatan', 'laba_kotor', 'laba_bersih', 'total_assets', 'kas_setara_kas', 'total_equity', 'net_cash_flow'];
+
+            foreach ($keys as $key) {
+                $growthKey = 'growth_' . $key;
+                if ($prev && isset($prev[$key]) && $prev[$key] != 0 && isset($data[$key])) {
+                    $data[$growthKey] = (($data[$key] - $prev[$key]) / abs($prev[$key])) * 100;
+                } else {
+                    $data[$growthKey] = null;
+                }
+            }
+        }
+
+        return [
+            'narasi_trend_AI' => $this->trend?->narasi_trend_akun_utama_AI,
+            'has_gap'         => $hasGap,
+            'periode_data'    => $periodeData,
+        ];
+    }
+
+    public function getArusKasTrend(): array
+    {
+        $this->loadMissing('trend');
+
+        $periodeList = $this->buildPeriodeQuery()->get()->reverse()->values();
+        $hasGap = false;
+
+        $periodeData = $periodeList->map(function ($analisisPeriode, $index) use (&$hasGap) {
+            $dokumen = Dokumen::with(['arusKas'])
+                ->where('perusahaan_id', $analisisPeriode->perusahaan_id)
+                ->where('periode_type', $analisisPeriode->periode_type)
+                ->where('tahun', $analisisPeriode->tahun)
+                ->where('quarter', $analisisPeriode->quarter)
+                ->where('bulan', $analisisPeriode->bulan)
+                ->latest()
+                ->first();
+
+            if (!$dokumen || !$dokumen->arusKas) {
+                $hasGap = true;
+            }
+
+            $arusKas = $dokumen?->arusKas;
+
+            return [
+                'urutan'         => $index + 1,
+                'analisis'       => [
+                    'id'           => $analisisPeriode->id,
+                    'periode_type' => $analisisPeriode->periode_type,
+                    'tahun'        => $analisisPeriode->tahun,
+                    'quarter'      => $analisisPeriode->quarter,
+                    'bulan'        => $analisisPeriode->bulan,
+                ],
+                'kas_masuk'  => $arusKas?->kas_masuk,
+                'kas_keluar' => $arusKas?->kas_keluar,
+            ];
+        })->all();
+
+        return [
+            'narasi_arus_kas_AI' => $this->trend?->narasi_trend_arus_kas_AI,
+            'has_gap'            => $hasGap,
+            'periode_data'       => $periodeData,
+        ];
+    }
+
 }

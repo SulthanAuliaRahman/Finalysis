@@ -112,10 +112,11 @@ return new class extends Migration
         Schema::create('analisis_trend', function (Blueprint $table) {
             $table->id();
             $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
-            $table->text('narasi_trend_AI')->nullable();
+            $table->text('narasi_trend_akun_utama_AI')->nullable();
             $table->text('narasi_trend_rasio_AI')->nullable();
             $table->text('narasi_trend_dupont_AI')->nullable();
             $table->text('narasi_trend_commonsize_AI')->nullable();
+            $table->text('narasi_trend_arus_kas_AI')->nullable();
 
             $table->timestamps();
         });

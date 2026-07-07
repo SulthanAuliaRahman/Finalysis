@@ -13,6 +13,9 @@ class ArusKas extends Model
 
     protected $fillable = [
         'dokumen_id',
+        'cash_flow_from_operations',
+        'cash_flow_from_investing',
+        'cash_flow_from_financing',
         'kas_masuk',
         'kas_keluar',
         'found_at',

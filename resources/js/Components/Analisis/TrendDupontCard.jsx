@@ -4,10 +4,10 @@ import { TabelPeriode, LineChartBlock } from './trendHelpers';
 
 // Tabel row definitions
 const DUPONT_ROWS = [
-    { label: 'Net Profit Margin',   get: (a) => a?.dupont?.net_profit_margin,   suffix: '%' },
-    { label: 'Total Asset Turnover',get: (a) => a?.dupont?.total_asset_turnover,suffix: 'x' },
-    { label: 'Leverage Multiplier', get: (a) => a?.dupont?.leverage_multiplier, suffix: 'x' },
-    { label: 'ROE',                 get: (a) => a?.dupont?.roe,                  suffix: '%' },
+    { label: 'Net Profit Margin',    get: (a) => a?.dupont?.net_profit_margin,    suffix: '%' },
+    { label: 'Total Asset Turnover', get: (a) => a?.dupont?.total_asset_turnover, suffix: 'x' },
+    { label: 'Leverage Multiplier',  get: (a) => a?.dupont?.leverage_multiplier,  suffix: 'x' },
+    { label: 'ROE',                  get: (a) => a?.dupont?.roe,                  suffix: '%' },
 ].map((r) => ({
     label: r.label,
     render: (p) => {
@@ -20,7 +20,6 @@ const DUPONT_ROWS = [
     },
 }));
 
-// Chart line definitions
 // NPM & ROE -> sumbu kiri (%)
 // TATO & Leverage -> sumbu kanan (x)
 const DUPONT_LINES = [
@@ -30,10 +29,10 @@ const DUPONT_LINES = [
     { key: 'leverage', label: 'Leverage', color: '#ea580c', axis: 'right', get: (a) => a?.dupont?.leverage_multiplier },
 ];
 
-// Component
 export function TrendDupontCard({ data, perusahaanId, analisisId }) {
     const periodeData = data?.periode_data ?? [];
-    const dataKurang = periodeData.length < 2;
+    const dataKurang  = periodeData.length < 2;
+    const hasGap      = data?.has_gap ?? false;
 
     return (
         <TrendCardBase
@@ -42,21 +41,19 @@ export function TrendDupontCard({ data, perusahaanId, analisisId }) {
             iconBgColor="bg-orange-100"
             iconColor="text-orange-600"
             section="trend_dupont"
-            narasi={data?.narasi_dupont_AI}
+            narasi={data?.narasi_trend_dupont_AI}
             narasiLabel="DuPont"
-            isDataIlustratif={data?.is_data_ilustratif ?? false}
+            hasGap={hasGap}
             dataKurang={dataKurang}
             perusahaanId={perusahaanId}
             analisisId={analisisId}
         >
-            {/* Tabel 4 komponen DuPont */}
             <TabelPeriode
                 title="Komponen DuPont"
                 rows={DUPONT_ROWS}
                 periodeData={periodeData}
             />
 
-            {/* Dual-axis line chart */}
             <LineChartBlock
                 title="Tren DuPont — NPM & ROE (kiri %) vs TATO & Leverage (kanan x)"
                 periodeData={periodeData}

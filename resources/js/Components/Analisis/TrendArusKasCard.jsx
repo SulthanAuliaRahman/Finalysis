@@ -1,6 +1,6 @@
 import { Wallet } from 'lucide-react';
 import { TrendCardBase } from './TrendCardBase';
-import { TabelPeriode, LineChartBlock, formatNum } from './trendHelpers'; // Import formatNum dari helper kamu
+import { TabelPeriode, LineChartBlock, formatNum } from './trendHelpers';
 
 // Tabel row definitions
 const ARUS_KAS_ROWS = [
@@ -62,6 +62,8 @@ const ARUS_KAS_LINES = [
 export function TrendArusKasCard({ data, perusahaanId, analisisId }) {
     const periodeData = data?.periode_data ?? [];
     const dataKurang = periodeData.length < 2;
+    const hasGap      = data?.has_gap ?? false;
+
     const chartDataMapped = periodeData.map(p => ({
         ...p,
         analisis: {
@@ -78,9 +80,10 @@ export function TrendArusKasCard({ data, perusahaanId, analisisId }) {
             iconBgColor="bg-blue-100"
             iconColor="text-blue-600"
             section="trend_arus_kas"
-            narasi={data?.narasi_arus_kas_AI}
+            narasi={data?.narasi_trend_arus_kas_AI}
             narasiLabel="Arus Kas"
             isDataIlustratif={data?.is_data_ilustratif ?? false}
+            hasGap={hasGap}
             dataKurang={dataKurang}
             perusahaanId={perusahaanId}
             analisisId={analisisId}

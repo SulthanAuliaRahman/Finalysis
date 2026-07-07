@@ -27,7 +27,11 @@ export default function Detail({
     aktivitas,
     dupont,
     commonsize,
-    trend,
+    trendRasio,
+    trendDupont,
+    trendCommonsize,
+    trendAkunUtama,
+    trendArusKas,
     neraca,
     labaRugi,
 }) {
@@ -108,14 +112,11 @@ export default function Detail({
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Analisis Tren</h3>
                 <div className="grid grid-cols-1 gap-6">
-                    {/* TrendRasioCard sudah terintegrasi dengan data real */}
-                    <TrendRasioCard data={trend} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-
-                    {/* Card berikut masih menggunakan dummy data, akan diintegrasikan bertahap */}
-                    <TrendAkunUtamaCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <TrendDupontCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <TrendCommonsizeCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <TrendArusKasCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <TrendAkunUtamaCard data={trendAkunUtama} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <TrendRasioCard data={trendRasio} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <TrendDupontCard data={trendDupont} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <TrendCommonsizeCard data={trendCommonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <TrendArusKasCard data={trendArusKas} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                 </div>
             </div>
 

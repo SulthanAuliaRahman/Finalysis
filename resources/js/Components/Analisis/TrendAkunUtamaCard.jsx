@@ -27,6 +27,7 @@ const ROWS = AKUN_UTAMA.map((akun) => ({
 export function TrendAkunUtamaCard({ data, perusahaanId, analisisId }) {
     const periodeData = data?.periode_data ?? [];
     const dataKurang = periodeData.length < 2;
+    const hasGap      = data?.has_gap ?? false;
 
     return (
         <TrendCardBase
@@ -35,9 +36,9 @@ export function TrendAkunUtamaCard({ data, perusahaanId, analisisId }) {
             iconBgColor="bg-violet-100"
             iconColor="text-violet-600"
             section="trend_akun_utama"
-            narasi={data?.narasi_trend_AI}
+            narasi={data?.narasi_trend_akun_utama_AI}
             narasiLabel="Akun Utama"
-            isDataIlustratif={data?.is_data_ilustratif ?? false}
+            hasGap={hasGap}
             dataKurang={dataKurang}
             perusahaanId={perusahaanId}
             analisisId={analisisId}

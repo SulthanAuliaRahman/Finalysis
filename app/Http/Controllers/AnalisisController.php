@@ -78,7 +78,6 @@ class AnalisisController extends Controller
             'aktivitas',
             'dupont',
             'commonsize',
-            'trend',
         ]);
 
         $dokumenPeriode = $perusahaan->dokumen()
@@ -107,23 +106,27 @@ class AnalisisController extends Controller
         })->latest()->first();
 
         return Inertia::render('Perusahaan/Analisis/Detail', [
-            'perusahaan'    => $perusahaan,
-            'analisis'      => [
+            'perusahaan'      => $perusahaan,
+            'analisis'        => [
                 'id'                 => $analisis->id,
                 'periode_label'      => $analisis->periode,
                 'status'             => $analisis->status,
                 'ai_summary_insight' => $analisis->AI_summary_insight,
             ],
-            'dokumenPeriode' => $dokumenPeriode,
-            'likuiditas'     => $analisis->likuiditas,
-            'profitabilitas' => $analisis->profitabilitas,
-            'solvabilitas'   => $analisis->solvabilitas,
-            'aktivitas'      => $analisis->aktivitas,
-            'dupont'         => $analisis->dupont,
-            'commonsize'     => $analisis->commonsize,
-            'trend'          => $analisis->getRasioTrend(),
-            'neraca'         => $neraca,
-            'labaRugi'       => $labaRugi,
+            'dokumenPeriode'  => $dokumenPeriode,
+            'likuiditas'      => $analisis->likuiditas,
+            'profitabilitas'  => $analisis->profitabilitas,
+            'solvabilitas'    => $analisis->solvabilitas,
+            'aktivitas'       => $analisis->aktivitas,
+            'dupont'          => $analisis->dupont,
+            'commonsize'      => $analisis->commonsize,
+            'trendAkunUtama'  => $analisis->getAkunUtamaTrend(),
+            'trendRasio'      => $analisis->getRasioTrend(),
+            'trendDupont'     => $analisis->getDupontTrend(),
+            'trendCommonsize' => $analisis->getCommonsizeTrend(),
+            'trendArusKas'    => $analisis->getArusKasTrend(),
+            'neraca'          => $neraca,
+            'labaRugi'        => $labaRugi,
         ]);
     }
 
@@ -157,7 +160,7 @@ class AnalisisController extends Controller
     public function regenerasi(Request $request, Perusahaan $perusahaan, Analisis $analisis, AnalysisFinancialService $analysisFinancialService)
     {
         $request->validate([
-            'section'     => 'required|string|in:likuiditas,profitabilitas,solvabilitas,aktivitas,dupont,commonsize,trend,summary',
+            'section'     => 'required|string|in:likuiditas,profitabilitas,solvabilitas,aktivitas,dupont,commonsize,trend_rasio,trend_dupont,trend_commonsize,summary',
             'user_prompt' => 'nullable|string|max:1000',
         ]);
 
@@ -188,8 +191,14 @@ class AnalisisController extends Controller
                 case 'commonsize':
                     $analysisFinancialService->prosesCommonsize($analisis, $userPrompt);
                     break;
-                case 'trend':
-                    $analysisFinancialService->prosesTrend($analisis, $userPrompt);
+                case 'trend_rasio':
+                    // $analysisFinancialService->prosesTrendRasio($analisis, $userPrompt);
+                    break;
+                case 'trend_dupont':
+                    // $analysisFinancialService->prosesTrendDupont($analisis, $userPrompt);
+                    break;
+                case 'trend_commonsize':
+                    // $analysisFinancialService->prosesTrendCommonsize($analisis, $userPrompt);
                     break;
                 case 'summary':
                     // TODO: generateAISummary
