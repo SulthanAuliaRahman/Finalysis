@@ -4,6 +4,12 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\PythonTesterController;
+use App\Http\Controllers\AiConfigurationController;
+use App\Http\Controllers\HomeController;
+
+// Real Not Test
 
 use App\Http\Controllers\PerusahaanController;
 use App\Http\Controllers\DokumenController;
@@ -44,6 +50,16 @@ Route::delete('/perusahaan/{perusahaan}/dokumen/{dokumen}', [DokumenController::
 // Rute Pengelolaan Analisis Perusahaan
 Route::get('/perusahaan/{perusahaan}/analisis', [AnalisisController::class, 'index'])->name('perusahaan.analisis.index');
 Route::get('/perusahaan/{perusahaan}/analisis/{analisis}', [AnalisisController::class, 'analisis'])->name('perusahaan.analisis.detail');
+
+//Settings
+Route::prefix('settings')->name('settings.')->group(function () {
+
+    //Ai Configuration
+    Route::get('/ai',[AiConfigurationController::class, 'index'])->name('ai.view');
+    Route::get('/ai/edit',[AiConfigurationController::class, 'edit'])->name('ai.edit');
+    Route::put('/ai',[AiConfigurationController::class, 'update'])->name('ai.update');
+
+});
 
 // Alur Proses Generate Analisis RAG
 Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/regenerasi', [AnalisisController::class, 'regenerasi'])->name('perusahaan.analisis.regenerasi');

@@ -13,15 +13,10 @@ class AnalisisTrend extends Model
 
     protected $fillable = [
         'analisis_id',
-        'is_data_ilustratif',
         'narasi_trend_AI',
-        'narasi_rasio_AI',
-        'narasi_dupont_AI',
-        'narasi_commonsize_AI',
-    ];
-
-    protected $casts = [
-        'is_data_ilustratif' => 'boolean',
+        'narasi_trend_rasio_AI',
+        'narasi_trend_dupont_AI',
+        'narasi_trend_commonsize_AI',
     ];
 
     public function analisis()
@@ -29,9 +24,4 @@ class AnalisisTrend extends Model
         return $this->belongsTo(Analisis::class, 'analisis_id');
     }
 
-    // Titik-titik data periode, diurutkan kronologis
-    public function periodeData()
-    {
-        return $this->hasMany(AnalisisTrendPeriode::class, 'analisis_trend_id')->orderBy('urutan');
-    }
 }

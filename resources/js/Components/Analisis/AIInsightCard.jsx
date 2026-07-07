@@ -25,7 +25,7 @@ export function AIInsightCard({ narasi, perusahaanId, analisisId }) {
                     <div className="p-2 bg-white rounded-lg shadow-xs">
                         <Sparkles className="w-5 h-5 text-blue-600" />
                     </div>
-                    <h3 className="font-semibold text-slate-900">AI Summary & Insight</h3>
+                    <h3 className="font-semibold text-slate-900">Summary & Insight</h3>
                 </div>
                 <button
                     onClick={handleTrigger}
@@ -44,7 +44,7 @@ export function AIInsightCard({ narasi, perusahaanId, analisisId }) {
             {belumDianalisis ? (
                 <div className="bg-white/60 border border-dashed border-blue-200 rounded-lg p-5 text-center">
                     <p className="text-sm text-slate-400 italic">
-                        Ringkasan AI akan tersedia setelah keempat rasio di atas selesai dianalisis.
+                        Ringkasan akan tersedia setelah terdapat analisi.
                     </p>
                 </div>
             ) : (
