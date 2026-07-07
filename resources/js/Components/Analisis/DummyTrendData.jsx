@@ -1,10 +1,10 @@
 export const dummyTrendData = {
-    is_data_ilustratif: false,
     narasi_trend_AI: "Pergerakan tren menunjukkan fluktuasi yang dinamis. Setelah mengalami penurunan tajam di tahun 2021 (laba bersih turun -54.6%), perusahaan berhasil melakukan pemulihan bentuk V (V-shape recovery) pada 2022-2023. Namun di tahun 2024, laba bersih kembali terkoreksi meski pendapatan naik tipis, mengindikasikan adanya pembengkakan beban.",
-    narasi_rasio_AI: "Rasio profitabilitas (NPM, ROA, ROE) sangat fluktuatif, anjlok di 2021 lalu memuncak di 2023, sebelum kembali melandai. Sebaliknya, rasio likuiditas (Current Ratio) terus dipertahankan di atas 130%, menunjukkan manajemen kas yang cukup berhati-hati di tengah guncangan operasional.",
-    narasi_dupont_AI: "Dari kacamata DuPont, volatilitas ROE sangat didikte oleh fluktuasi Net Profit Margin (NPM). Ketika NPM anjlok ke 8% di 2021, ROE ikut terpuruk. Leverage (utang) sempat dinaikkan di 2021-2022 untuk menopang arus kas selama masa sulit, sebelum perlahan diturunkan kembali.",
-    narasi_commonsize_AI: "Struktur Common-size mengungkap akar masalah pada tahun 2021 dan 2024: porsi HPP terhadap pendapatan membengkak melewati 60%. Pada neraca, porsi utang lancar sempat membesar di masa krisis (2021) namun saat ini ekuitas kembali mendominasi struktur modal perusahaan.",
+    narasi_trend_rasio_AI: "Rasio profitabilitas (NPM, ROA, ROE) sangat fluktuatif, anjlok di 2021 lalu memuncak di 2023, sebelum kembali melandai. Sebaliknya, rasio likuiditas (Current Ratio) terus dipertahankan di atas 130%, menunjukkan manajemen kas yang cukup berhati-hati di tengah guncangan operasional.",
+    narasi_trend_dupont_AI: "Dari kacamata DuPont, volatilitas ROE sangat didikte oleh fluktuasi Net Profit Margin (NPM). Ketika NPM anjlok ke 8% di 2021, ROE ikut terpuruk. Leverage (utang) sempat dinaikkan di 2021-2022 untuk menopang arus kas selama masa sulit, sebelum perlahan diturunkan kembali.",
+    narasi_trend_commonsize_AI: "Struktur Common-size mengungkap akar masalah pada tahun 2021 dan 2024: porsi HPP terhadap pendapatan membengkak melewati 60%. Pada neraca, porsi utang lancar sempat membesar di masa krisis (2021) namun saat ini ekuitas kembali mendominasi struktur modal perusahaan.",
     narasi_arus_kas_AI: "Tren kas masuk secara konsisten melampaui kas keluar pada periode 2022-2023, mencerminkan likuiditas operasional yang prima. Namun, terjadi penyempitan jarak (net cash flow menipis) pada tahun 2024 akibat lonjakan kas keluar untuk pelunasan utang dan ekspansi aset tetap.",
+    has_gap: false,
     periode_data: [
         {
             urutan: 1,
@@ -18,7 +18,8 @@ export const dummyTrendData = {
             kas_masuk: 12500000000,
             kas_keluar: 12000000000,
             analisis: {
-                periode_type: "annual", tahun: 2020,
+                id: 1,
+                periode_type: "annual", tahun: 2020, quarter: null, bulan: null,
                 likuiditas: { current_ratio: 150.0, quick_ratio: 120.0, cash_ratio: 80.0 },
                 profitabilitas: { net_profit_margin: 15.0, ROA: 10.0, ROE: 18.7 },
                 solvabilitas: { debt_to_equity: 87.5, debt_to_asset: 46.6 },
@@ -44,7 +45,8 @@ export const dummyTrendData = {
             kas_masuk: 10000000000,
             kas_keluar: 10300000000,
             analisis: {
-                periode_type: "annual", tahun: 2021,
+                id: 2,
+                periode_type: "annual", tahun: 2021, quarter: null, bulan: null,
                 likuiditas: { current_ratio: 135.0, quick_ratio: 95.0, cash_ratio: 45.0 },
                 profitabilitas: { net_profit_margin: 8.0, ROA: 4.8, ROE: 9.0 },
                 solvabilitas: { debt_to_equity: 86.6, debt_to_asset: 46.4 },
@@ -70,7 +72,8 @@ export const dummyTrendData = {
             kas_masuk: 9000000000,
             kas_keluar: 11300000000,
             analisis: {
-                periode_type: "annual", tahun: 2022,
+                id: 3,
+                periode_type: "annual", tahun: 2022, quarter: null, bulan: null,
                 likuiditas: { current_ratio: 145.5, quick_ratio: 110.2, cash_ratio: 75.5 },
                 profitabilitas: { net_profit_margin: 12.0, ROA: 8.5, ROE: 15.5 },
                 solvabilitas: { debt_to_equity: 82.3, debt_to_asset: 45.1 },
@@ -96,7 +99,8 @@ export const dummyTrendData = {
             kas_masuk: 12000000000,
             kas_keluar: 10000000000,
             analisis: {
-                periode_type: "annual", tahun: 2023,
+                id: 4,
+                periode_type: "annual", tahun: 2023, quarter: null, bulan: null,
                 likuiditas: { current_ratio: 170.0, quick_ratio: 135.0, cash_ratio: 100.0 },
                 profitabilitas: { net_profit_margin: 16.0, ROA: 12.7, ROE: 21.6 },
                 solvabilitas: { debt_to_equity: 70.0, debt_to_asset: 41.1 },
@@ -119,10 +123,11 @@ export const dummyTrendData = {
             kas_setara_kas: 2800000000, growth_kas_setara_kas: -12.5,
             total_equity: 11200000000, growth_total_equity: 12.0,
             net_cash_flow: -400000000, growth_net_cash_flow: -136.3,
-            kas_masuk   : 11000000000,
-            kas_keluar  : 11000000000,
+            kas_masuk: 11000000000,
+            kas_keluar: 11000000000,
             analisis: {
-                periode_type: "annual", tahun: 2024,
+                id: 5,
+                periode_type: "annual", tahun: 2024, quarter: null, bulan: null,
                 likuiditas: { current_ratio: 155.0, quick_ratio: 120.0, cash_ratio: 85.0 },
                 profitabilitas: { net_profit_margin: 12.0, ROA: 9.5, ROE: 15.5 },
                 solvabilitas: { debt_to_equity: 62.5, debt_to_asset: 38.4 },

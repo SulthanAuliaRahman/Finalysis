@@ -111,42 +111,15 @@ return new class extends Migration
 
         Schema::create('analisis_trend', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete(); // pemilik trend (mis. Q4 2024)
-            $table->boolean('is_data_ilustratif')->default(false); // true jika cuma 1 titik data (belum ada pembanding)
+            $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
             $table->text('narasi_trend_AI')->nullable();
-            $table->text('narasi_rasio_AI')->nullable()->after('narasi_trend_AI');
-            $table->text('narasi_dupont_AI')->nullable()->after('narasi_rasio_AI');
-            $table->text('narasi_commonsize_AI')->nullable()->after('narasi_dupont_AI');
+            $table->text('narasi_trend_rasio_AI')->nullable();
+            $table->text('narasi_trend_dupont_AI')->nullable();
+            $table->text('narasi_trend_commonsize_AI')->nullable();
 
             $table->timestamps();
         });
 
-        Schema::create('analisis_trend_periode', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('analisis_trend_id')->constrained('analisis_trend')->cascadeOnDelete();
-            $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete(); // periode historis yang dirujuk
-            $table->unsignedTinyInteger('urutan'); // 1,2,3,4... urutan kronologis dalam scope trend ini
-
-            // 7 Akun Utama (snapshot absolut per periode)
-            $table->decimal('pendapatan', 20, 2)->nullable();
-            $table->decimal('laba_kotor', 20, 2)->nullable();
-            $table->decimal('laba_bersih', 20, 2)->nullable();
-            $table->decimal('total_assets', 20, 2)->nullable();
-            $table->decimal('kas_setara_kas', 20, 2)->nullable();
-            $table->decimal('total_equity', 20, 2)->nullable();
-            $table->decimal('net_cash_flow', 20, 2)->nullable();
-
-            // Growth % dari titik sebelumnya (null untuk titik data pertama)
-            $table->decimal('growth_pendapatan', 12, 6)->nullable();
-            $table->decimal('growth_laba_kotor', 12, 6)->nullable();
-            $table->decimal('growth_laba_bersih', 12, 6)->nullable();
-            $table->decimal('growth_total_assets', 12, 6)->nullable();
-            $table->decimal('growth_kas_setara_kas', 12, 6)->nullable();
-            $table->decimal('growth_total_equity', 12, 6)->nullable();
-            $table->decimal('growth_net_cash_flow', 12, 6)->nullable();
-
-            $table->timestamps();
-        });
     }
 
     /**
@@ -154,11 +127,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('analisis_trend_periode');
-        Schema::table('analisis_trend', function (Blueprint $table) {
-            $table->dropColumn(['narasi_rasio_AI', 'narasi_dupont_AI', 'narasi_commonsize_AI']);
-        });
-
+        Schema::dropIfExists('analisis_trend');
         Schema::dropIfExists('analisis_commonsize');
         Schema::dropIfExists('analisis_dupont');
         Schema::dropIfExists('analisis_likuiditas');

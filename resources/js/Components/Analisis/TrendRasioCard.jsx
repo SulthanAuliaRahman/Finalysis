@@ -26,7 +26,6 @@ const RASIO_ROWS = [
 }));
 
 // Chart line definitions
-
 const LIKUIDITAS_LINES = [
     { key: 'cr',  label: 'Current Ratio', color: '#0ea5e9', get: (a) => a?.likuiditas?.current_ratio },
     { key: 'qr',  label: 'Quick Ratio',   color: '#6366f1', get: (a) => a?.likuiditas?.quick_ratio },
@@ -50,7 +49,8 @@ const AKTIVITAS_LINES = [
 
 export function TrendRasioCard({ data, perusahaanId, analisisId }) {
     const periodeData = data?.periode_data ?? [];
-    const dataKurang = periodeData.length < 2;
+    const dataKurang  = periodeData.length < 2;
+    const hasGap      = data?.has_gap ?? false;
 
     return (
         <TrendCardBase
@@ -59,9 +59,9 @@ export function TrendRasioCard({ data, perusahaanId, analisisId }) {
             iconBgColor="bg-emerald-100"
             iconColor="text-emerald-600"
             section="trend_rasio"
-            narasi={data?.narasi_rasio_AI}
+            narasi={data?.narasi_trend_rasio_AI}
             narasiLabel="Rasio"
-            isDataIlustratif={data?.is_data_ilustratif ?? false}
+            hasGap={hasGap}
             dataKurang={dataKurang}
             perusahaanId={perusahaanId}
             analisisId={analisisId}

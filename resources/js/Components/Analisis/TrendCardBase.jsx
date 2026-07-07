@@ -31,7 +31,7 @@ export function TrendCardBase({
     section,
     narasi,
     narasiLabel,
-    isDataIlustratif = false,
+    hasGap = false,
     dataKurang = false,
     perusahaanId,
     analisisId,
@@ -90,13 +90,13 @@ export function TrendCardBase({
                 </button>
             </div>
 
-            {/* Warning: data ilustratif */}
-            {isDataIlustratif && (
+            {/* Warning: ada gap data di tengah periode */}
+            {hasGap && !dataKurang && (
                 <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-2.5 mb-4">
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
                     <p className="text-[11px] text-amber-700 leading-relaxed">
-                        Belum ada cukup periode pembanding untuk tren yang bermakna. Data di bawah bersifat{' '}
-                        <span className="font-semibold">ilustratif/baseline</span>.
+                        Terdapat periode yang belum dihitung rasionya di antara data tren.
+                        Hasil analisis mungkin tidak mencerminkan tren yang sesungguhnya.
                     </p>
                 </div>
             )}

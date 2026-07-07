@@ -10,11 +10,11 @@ import { TrendAkunUtamaCard } from "@/Components/Analisis/TrendAkunUtamaCard";
 import { TrendRasioCard } from "@/Components/Analisis/TrendRasioCard";
 import { TrendDupontCard } from "@/Components/Analisis/TrendDupontCard";
 import { TrendCommonsizeCard } from "@/Components/Analisis/TrendCommonsizeCard";
+import { TrendArusKasCard } from "@/Components/Analisis/TrendArusKasCard";
 import { AIInsightCard } from "@/Components/Analisis/AIInsightCard";
 import { FileDown, Calculator, Loader2 } from "lucide-react";
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
-import { TrendArusKasCard } from "@/Components/Analisis/TrendArusKasCard";
 import { dummyTrendData } from '@/Components/Analisis/DummyTrendData';
 
 export default function Detail({
@@ -88,7 +88,6 @@ export default function Detail({
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Rasio Keuangan</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Tambahkan prop sektor ke masing-masing Card */}
                     <AnalisisLikuiditasCard data={likuiditas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
                     <AnalisisProfitabilitasCard data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
                     <AnalisisSolvabilitasCard data={solvabilitas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
@@ -102,7 +101,6 @@ export default function Detail({
                 <div className="grid grid-cols-1 gap-6">
                     <AnalisisDupontCard data={dupont} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                     <AnalisisCommonsizeCard data={commonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    {/* <AnalisisTrendCard data={trend} perusahaanId={perusahaan.id} analisisId={analisis.id} /> */}
                 </div>
             </div>
 
@@ -110,11 +108,14 @@ export default function Detail({
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Analisis Tren</h3>
                 <div className="grid grid-cols-1 gap-6">
-                    <TrendAkunUtamaCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
-                    <TrendRasioCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
-                    <TrendDupontCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
-                    <TrendCommonsizeCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
-                    <TrendArusKasCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
+                    {/* TrendRasioCard sudah terintegrasi dengan data real */}
+                    <TrendRasioCard data={trend} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+
+                    {/* Card berikut masih menggunakan dummy data, akan diintegrasikan bertahap */}
+                    <TrendAkunUtamaCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <TrendDupontCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <TrendCommonsizeCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <TrendArusKasCard data={dummyTrendData} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                 </div>
             </div>
 

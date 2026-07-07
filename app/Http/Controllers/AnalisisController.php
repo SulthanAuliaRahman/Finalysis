@@ -62,7 +62,7 @@ class AnalisisController extends Controller
         ->values();
 
         return Inertia::render('Perusahaan/Analisis/Index', [
-            'perusahaan'  => $perusahaan,
+            'perusahaan'   => $perusahaan,
             'analisisList' => $analisisList,
         ]);
     }
@@ -78,12 +78,7 @@ class AnalisisController extends Controller
             'aktivitas',
             'dupont',
             'commonsize',
-            'trend.periodeData.analisis.likuiditas',
-            'trend.periodeData.analisis.profitabilitas',
-            'trend.periodeData.analisis.solvabilitas',
-            'trend.periodeData.analisis.aktivitas',
-            'trend.periodeData.analisis.dupont',
-            'trend.periodeData.analisis.commonsize'
+            'trend',
         ]);
 
         $dokumenPeriode = $perusahaan->dokumen()
@@ -111,9 +106,6 @@ class AnalisisController extends Controller
                 ->where('bulan', $analisis->bulan);
         })->latest()->first();
 
-
-        // dd($analisis->solvabilitas, $analisis->aktivitas,);
-
         return Inertia::render('Perusahaan/Analisis/Detail', [
             'perusahaan'    => $perusahaan,
             'analisis'      => [
@@ -129,7 +121,7 @@ class AnalisisController extends Controller
             'aktivitas'      => $analisis->aktivitas,
             'dupont'         => $analisis->dupont,
             'commonsize'     => $analisis->commonsize,
-            'trend'          => $analisis->trend,
+            'trend'          => $analisis->getRasioTrend(),
             'neraca'         => $neraca,
             'labaRugi'       => $labaRugi,
         ]);
@@ -176,8 +168,6 @@ class AnalisisController extends Controller
             return back()->withErrors(['message' => 'Silahkan Hitung Data Finansial terlebih dahulu.']);
         }
 
-
-
         DB::transaction(function () use ($section, $analisis, $analysisFinancialService, $userPrompt) {
             switch ($section) {
                 case 'likuiditas':
@@ -199,7 +189,7 @@ class AnalisisController extends Controller
                     $analysisFinancialService->prosesCommonsize($analisis, $userPrompt);
                     break;
                 case 'trend':
-                    $analysisFinancialService->prosesTrend($analisis);
+                    $analysisFinancialService->prosesTrend($analisis, $userPrompt);
                     break;
                 case 'summary':
                     // TODO: generateAISummary
