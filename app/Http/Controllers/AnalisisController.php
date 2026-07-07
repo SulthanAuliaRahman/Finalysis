@@ -67,6 +67,7 @@ class AnalisisController extends Controller
         ]);
     }
 
+    // ke page analisis detail
     public function analisis(Perusahaan $perusahaan, Analisis $analisis)
     {
         abort_if($analisis->perusahaan_id !== $perusahaan->id, 404);
@@ -191,6 +192,9 @@ class AnalisisController extends Controller
                 case 'commonsize':
                     $analysisFinancialService->prosesCommonsize($analisis, $userPrompt);
                     break;
+                case 'trend_akun_utama':
+                    // $analysisFinancialService->prosesTrendAkunUtama($analisis, $userPrompt);
+                    break;
                 case 'trend_rasio':
                     // $analysisFinancialService->prosesTrendRasio($analisis, $userPrompt);
                     break;
@@ -199,6 +203,9 @@ class AnalisisController extends Controller
                     break;
                 case 'trend_commonsize':
                     // $analysisFinancialService->prosesTrendCommonsize($analisis, $userPrompt);
+                    break;
+                case 'trend_arus_kas':
+                    // $analysisFinancialService->prosesTrendArusKas($analisis, $userPrompt);
                     break;
                 case 'summary':
                     // TODO: generateAISummary
