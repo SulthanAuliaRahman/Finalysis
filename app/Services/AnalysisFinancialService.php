@@ -55,6 +55,21 @@ class AnalysisFinancialService
     // Setiap hasil AI dibersihkan dari markdown sebelum disimpan.
     // =====================================================================
 
+
+    private function npmBenchmarkUntukSektor(?string $sektor): string
+    {
+        $sektor = strtolower(trim((string) $sektor));
+
+        return match(true) {
+            str_contains($sektor, 'jasa') => 'Jasa (umumnya > 10%)',
+            str_contains($sektor, 'dagang') || str_contains($sektor, 'ritel') || str_contains($sektor, 'retail')
+                => 'Dagang/Ritel (umumnya 2-5%)',
+            str_contains($sektor, 'manufaktur') || str_contains($sektor, 'industri')
+                => 'Manufaktur (umumnya 5-10%)',
+            default => 'Umum/tidak teridentifikasi (bandingkan terutama antar periode perusahaan ini sendiri sebagai acuan utama, bukan angka mutlak)',
+        };
+    }
+
     public function prosesLikuiditas(Analisis $analisis, ?string $userPrompt = null): void
     {
         $data = $analisis->likuiditas;
@@ -79,8 +94,12 @@ class AnalysisFinancialService
     public function prosesProfitabilitas(Analisis $analisis, ?string $userPrompt = null): void
     {
         $data = $analisis->profitabilitas;
+        $sektor = $analisis->perusahaan->sektor;
+        $benchmarkNpm = $this->npmBenchmarkUntukSektor($sektor);
 
         $Prompt  = "Berikan narasi analisis profitabilitas berdasarkan data berikut: \n";
+        $Prompt .= "Sektor Perusahaan: " . ($sektor ?: 'Tidak diketahui') . "\n";
+        $Prompt .= "Benchmark NPM untuk sektor ini: {$benchmarkNpm}\n";
         $Prompt .= "Net Profit Margin (NPM): " . $data->net_profit_margin . "%\n";
         $Prompt .= "Return on Assets (ROA): " . $data->ROA . "%\n";
         $Prompt .= "Return on Equity (ROE): " . $data->ROE . "%\n";
