@@ -76,11 +76,21 @@ class AnalysisFinancialService
     public function prosesLikuiditas(Analisis $analisis, ?string $userPrompt = null): void
     {
         $data = $analisis->likuiditas;
+        $perusahaan = $analisis->perusahaan;
 
-        $Prompt  = "Berikan narasi analisis likuiditas berdasarkan data berikut: \n";
+        $Prompt  = "Informasi Perusahaan\n";
+        $Prompt .= "Nama Perusahaan: {$perusahaan->nama}\n";
+        $Prompt .= "Sektor: {$perusahaan->sektor}\n";
+        $Prompt .= "Deskripsi: {$perusahaan->deskripsi}\n";
+
+        $Prompt  .= "Berikan narasi analisis likuiditas berdasarkan data berikut: \n";
         $Prompt .= "Current Ratio (CR): " . $data->current_ratio . "%\n";
         $Prompt .= "Quick Ratio (QR): " . $data->quick_ratio . "%\n";
         $Prompt .= "Cash Ratio (CSR): " . $data->cash_ratio . "%\n";
+
+        if ($data->narasi_likuiditas_AI) {
+            $Prompt .= "\n ini adalah analisis hasil prompt sebelumnya " . $data->narasi_likuiditas_AI . "\n";
+        }
 
         if ($userPrompt) {
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
