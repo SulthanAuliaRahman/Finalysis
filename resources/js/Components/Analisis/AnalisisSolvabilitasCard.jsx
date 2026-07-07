@@ -22,15 +22,19 @@ export function AnalisisSolvabilitasCard({ data, neraca, perusahaanId, analisisI
             ratios={[
                 {
                     label: 'Debt to Equity (DER)',
-                    value: data?.debt_to_equity ?? null, suffix: '%',
+                    value: data?.debt_to_equity != null ? parseVal(data.debt_to_equity) : null,
+                    suffix: 'x',
                     formula: 'Total Kewajiban / Total Ekuitas',
-                    breakdown: neraca ? `${formatNum(neraca.total_liabilities)} / ${formatNum(neraca.total_equity)}` : null
+                    breakdown: neraca ? `${formatNum(neraca.total_liabilities)} / ${formatNum(neraca.total_equity)}` : null,
+                    rawResult: data?.debt_to_equity != null ? parseVal(data.debt_to_equity) : null
                 },
                 {
                     label: 'Debt to Asset (DAR)',
-                    value: data?.debt_to_asset ?? null, suffix: '%',
+                    value: data?.debt_to_asset != null ? parseVal(data.debt_to_asset): null,
+                    suffix: 'x',
                     formula: 'Total Kewajiban / Total Aset',
-                    breakdown: neraca ? `${formatNum(neraca.total_liabilities)} / ${formatNum(neraca.total_assets)}` : null
+                    breakdown: neraca ? `${formatNum(neraca.total_liabilities)} / ${formatNum(neraca.total_assets)}` : null,
+                    rawResult: data?.debt_to_asset != null ? parseVal(data.debt_to_asset): null,
                 },
             ]}
             narasi={data?.narasi_solvabilitas_AI}

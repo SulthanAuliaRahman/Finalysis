@@ -66,9 +66,9 @@ export default function Review({ perusahaan, dokumen, extractedData, foundAt }) 
 
             <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-6">
                 <div>
-                    <h2 className="text-lg font-bold text-slate-900">Langkah 2: Tinjau & Verifikasi Struktur Ekstraksi</h2>
+                    <h2 className="text-lg font-bold text-slate-900">Tinjau & Verifikasi</h2>
                     <p className="text-xs text-slate-500 mt-0.5">
-                        Verifikasi ketepatan nilai numerik di sebelah kanan berdasarkan letak koordinat pada dokumen PDF di sebelah kiri. Kamu juga dapat menyesuaikan metadata halaman dan label.
+                        Verifikasi ketepatan nilai numerik yang di extract secara otomatis.
                     </p>
                 </div>
 

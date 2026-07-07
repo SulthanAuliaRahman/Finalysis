@@ -62,7 +62,7 @@ export default function Create({ perusahaan }) {
                     disabled
                     className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-500 font-medium animate-pulse"
                 >
-                    <Loader2 className="w-3 h-3 animate-spin text-slate-400" /> Mengecek Layanan AI...
+                    <Loader2 className="w-3 h-3 animate-spin text-slate-400" /> Mengecek Python Service
                 </button>
             );
         }
@@ -163,7 +163,6 @@ export default function Create({ perusahaan }) {
                         {errors.file && <p className="text-xs text-red-500">{errors.file}</p>}
                     </div>
 
-                    {/* Input Periode Tahun */}
                     {/* Input Periode Tahun */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* Tipe Periode */}
@@ -287,7 +286,7 @@ export default function Create({ perusahaan }) {
                             className="min-w-[160px]"
                         >
                             {processing ? (
-                                <><Loader2 className="w-4 h-4 animate-spin mr-1.5" /> Mengekstrak AI...</>
+                                <><Loader2 className="w-4 h-4 animate-spin mr-1.5" /> Mengekstrak...</>
                             ) : (
                                 "Unggah & Ekstrak"
                             )}

@@ -77,16 +77,27 @@ export function RatioCardBase({
                                 </span>
                             </div>
 
+                            {/* --- AREA BREAKDOWN YANG DIPERBARUI --- */}
                             {ratio.breakdown && ratio.value !== null && ratio.value !== undefined && (
-                                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[11px] font-mono text-slate-500 space-y-1">
+                                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[11px] font-mono text-slate-500 space-y-1.5">
                                     <div className="flex gap-2">
-                                        <span className="text-slate-400 font-sans w-12 shrink-0">Rumus:</span>
+                                        <span className="text-slate-400 font-sans w-14 shrink-0">Rumus:</span>
                                         <span className="text-blue-600">{ratio.formula}</span>
                                     </div>
                                     <div className="flex gap-2">
-                                        <span className="text-slate-400 font-sans w-12 shrink-0">Data:</span>
+                                        <span className="text-slate-400 font-sans w-14 shrink-0">Angka:</span>
                                         <span className="text-slate-700">{ratio.breakdown}</span>
                                     </div>
+
+                                    {/* Menambahkan Row Hasil Raw jika ada */}
+                                    {ratio.rawResult && (
+                                        <div className="flex gap-2 mt-1 pt-1.5 border-t border-slate-200 border-dashed">
+                                            <span className="text-slate-500 font-sans font-medium w-14 shrink-0">Hasil:</span>
+                                            <span className="text-slate-800 font-bold bg-white px-1.5 rounded border border-slate-200">
+                                                {ratio.rawResult}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -114,7 +125,7 @@ export function RatioCardBase({
                 </div>
             )}
 
-            <div className="mt-auto">
+            <div className="mt">
                 {rasioBelumDihitung ? (
                     <div className="bg-amber-50/70 border border-amber-200 rounded-lg p-3 flex gap-2 items-start text-amber-700">
                         <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />

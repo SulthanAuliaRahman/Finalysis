@@ -95,8 +95,7 @@ export function TrendCardBase({
                 <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-2.5 mb-4">
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
                     <p className="text-[11px] text-amber-700 leading-relaxed">
-                        Terdapat periode yang belum dihitung rasionya di antara data tren.
-                        Hasil analisis mungkin tidak mencerminkan tren yang sesungguhnya.
+                        Terdapat periode tidak memiliki data. Hasil analisis mungkin tidak mencerminkan tren yang sesungguhnya.
                     </p>
                 </div>
             )}

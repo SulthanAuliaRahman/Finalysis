@@ -2,7 +2,7 @@ import { Droplet } from 'lucide-react';
 import { RatioCardBase } from './RatioCardBase';
 
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
-// Helper: Ubah kembali persentase database (253.45) menjadi format desimal murni (2.53) untuk chart
+// Helper: Mengubah angka database (persentase) menjadi desimal murni kelipatan
 const parseVal = (val) => val ? Number((val / 100).toFixed(2)) : 0;
 
 export function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId }) {
@@ -24,21 +24,27 @@ export function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId 
             ratios={[
                 {
                     label: 'Current Ratio',
-                    value: data?.current_ratio ?? null, suffix: '%',
+                    value: data?.current_ratio != null ? parseVal(data.current_ratio) : null,
+                    suffix: 'x',
                     formula: 'Aset Lancar / Kewajiban Lancar',
-                    breakdown: neraca ? `${formatNum(neraca.current_assets)} / ${formatNum(neraca.current_liabilities)}` : null
+                    breakdown: neraca ? `${formatNum(neraca.current_assets)} / ${formatNum(neraca.current_liabilities)}` : null,
+                    rawResult: data?.current_ratio != null ? `${parseVal(data.current_ratio)}` : null
                 },
                 {
                     label: 'Quick Ratio',
-                    value: data?.quick_ratio ?? null, suffix: '%',
+                    value: data?.quick_ratio != null ? parseVal(data.quick_ratio) : null,
+                    suffix: 'x',
                     formula: '(Aset Lancar - Persediaan) / Kewajiban Lancar',
-                    breakdown: neraca ? `(${formatNum(neraca.current_assets)} - ${formatNum(neraca.inventory)} ) / ${formatNum(neraca.current_liabilities)}` : null
+                    breakdown: neraca ? `(${formatNum(neraca.current_assets)} - ${formatNum(neraca.inventory)} ) / ${formatNum(neraca.current_liabilities)}` : null,
+                    rawResult: data?.quick_ratio != null ? `${parseVal(data.quick_ratio)}` : null
                 },
                 {
                     label: 'Cash Ratio',
-                    value: data?.cash_ratio ?? null, suffix: '%',
+                    value: data?.cash_ratio != null ? parseVal(data.cash_ratio) : null,
+                    suffix: 'x',
                     formula: 'Kas / Kewajiban Lancar',
-                    breakdown: neraca ? `${formatNum(neraca.cash_equivalent)} / ${formatNum(neraca.current_liabilities)}` : null
+                    breakdown: neraca ? `${formatNum(neraca.cash_equivalent)} / ${formatNum(neraca.current_liabilities)}` : null,
+                    rawResult: data?.cash_ratio != null ? `${parseVal(data.cash_ratio)}` : null
                 },
             ]}
             narasi={data?.narasi_likuiditas_AI}

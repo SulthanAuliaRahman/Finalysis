@@ -25,7 +25,7 @@ export default function Embed({ perusahaan, dokumen, chunks }) {
             <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        Langkah 3: Pratinjau Teks (Chunking) & Embedding
+                        Pratinjau Teks (Chunking) & Embedding
                     </h2>
                     <p className="text-xs text-slate-500 mt-1">
                         Verifikasi potongan teks (*chunks*) yang telah digenerasi dari data numerik sebelum dimasukkan ke dalam Vector Database RAG.

@@ -33,10 +33,13 @@ export function GrowthBadge({ value }) {
 
     if (!hasValue) return <span className="text-slate-300 text-[11px]">—</span>;
 
+    // FIX: Membatasi persentase menjadi 2 angka di belakang koma dengan format id-ID
+    const formattedValue = Number(Math.abs(value)).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
     return (
         <span className={`inline-flex items-center gap-0.5 text-[11px] font-medium ${color}`}>
             <Icon className="w-3 h-3" />
-            {value > 0 ? '+' : ''}{value}%
+            {value > 0 ? '+' : value < 0 ? '-' : ''}{formattedValue}%
         </span>
     );
 }
@@ -126,7 +129,15 @@ export function LineChartBlock({
                                     width={45}
                                 />
                             )}
-                            <Tooltip formatter={(val, name) => [val, name]} />
+
+                            {/* FIX: Tooltip dikonfigurasi agar pakai koma gaya Indonesia */}
+                            <Tooltip
+                                formatter={(val, name) => [
+                                    Number(val).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+                                    name
+                                ]}
+                            />
+
                             <Legend wrapperStyle={{ fontSize: '11px' }} />
                             {lines.map((line) => (
                                 <Line

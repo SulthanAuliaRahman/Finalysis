@@ -2,8 +2,14 @@ import { BarChart2 } from 'lucide-react';
 import { TrendCardBase } from './TrendCardBase';
 import { formatNum, GrowthBadge, TabelPeriode } from './trendHelpers';
 
-// Row definitions
+// Helper baru untuk membulatkan desimal persentase
+const formatPercentStr = (val) => {
+    if (val === null || val === undefined) return null;
+    // Ubah string/angka menjadi number, batasi 2 desimal
+    return Number(val).toFixed(2);
+};
 
+// Row definitions
 const AKUN_UTAMA = [
     { key: 'pendapatan',      growthKey: 'growth_pendapatan',      label: 'Pendapatan' },
     { key: 'laba_kotor',      growthKey: 'growth_laba_kotor',      label: 'Laba Kotor' },
@@ -19,7 +25,7 @@ const ROWS = AKUN_UTAMA.map((akun) => ({
     render: (p) => (
         <>
             <div className="text-slate-800 font-medium">{formatNum(p[akun.key])}</div>
-            <GrowthBadge value={p[akun.growthKey]} />
+            <GrowthBadge value={formatPercentStr(p[akun.growthKey])} />
         </>
     ),
 }));

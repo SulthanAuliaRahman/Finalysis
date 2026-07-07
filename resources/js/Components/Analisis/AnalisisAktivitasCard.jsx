@@ -29,9 +29,11 @@ export function AnalisisAktivitasCard({ data, neraca, labaRugi, perusahaanId, an
             ratios={[
                 {
                     label: 'Total Asset Turnover (TATO)',
-                    value: data?.total_asset_turnover ?? null, suffix: 'x', // Changed suffix to 'x' instead of '%'
+                    value:  data?.total_asset_turnover != null ? parseVal(data.total_asset_turnover) : null,
+                    suffix: 'x',
                     formula: 'Pendapatan / Total Aset',
-                    breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.pendapatan)} / ${formatNum(neraca.total_assets)}` : null
+                    breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.pendapatan)} / ${formatNum(neraca.total_assets)}` : null,
+                    rawResult: data?.total_asset_turnover != null ? parseVal(data.total_asset_turnover) : null,
                 },
             ]}
             narasi={data?.narasi_aktivitas_AI}
