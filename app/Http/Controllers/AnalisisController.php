@@ -161,7 +161,7 @@ class AnalisisController extends Controller
     public function regenerasi(Request $request, Perusahaan $perusahaan, Analisis $analisis, AnalysisFinancialService $analysisFinancialService)
     {
         $request->validate([
-            'section'     => 'required|string|in:likuiditas,profitabilitas,solvabilitas,aktivitas,dupont,commonsize,trend_rasio,trend_dupont,trend_commonsize,summary',
+            'section'     => 'required|string|in:likuiditas,profitabilitas,solvabilitas,aktivitas,dupont,commonsize,trend_akun_utama,trend_rasio,trend_dupont,trend_commonsize,trend_arus_kas,summary',
             'user_prompt' => 'nullable|string|max:1000',
         ]);
 
@@ -193,19 +193,19 @@ class AnalisisController extends Controller
                     $analysisFinancialService->prosesCommonsize($analisis, $userPrompt);
                     break;
                 case 'trend_akun_utama':
-                    // $analysisFinancialService->prosesTrendAkunUtama($analisis, $userPrompt);
+                    $analysisFinancialService->prosesTrendAkunUtama($analisis, $userPrompt);
                     break;
                 case 'trend_rasio':
-                    // $analysisFinancialService->prosesTrendRasio($analisis, $userPrompt);
+                    $analysisFinancialService->prosesTrendRasio($analisis, $userPrompt);
                     break;
                 case 'trend_dupont':
-                    // $analysisFinancialService->prosesTrendDupont($analisis, $userPrompt);
+                    $analysisFinancialService->prosesTrendDupont($analisis, $userPrompt);
                     break;
                 case 'trend_commonsize':
-                    // $analysisFinancialService->prosesTrendCommonsize($analisis, $userPrompt);
+                    $analysisFinancialService->prosesTrendCommonsize($analisis, $userPrompt);
                     break;
                 case 'trend_arus_kas':
-                    // $analysisFinancialService->prosesTrendArusKas($analisis, $userPrompt);
+                    $analysisFinancialService->prosesTrendArusKas($analisis, $userPrompt);
                     break;
                 case 'summary':
                     // TODO: generateAISummary
