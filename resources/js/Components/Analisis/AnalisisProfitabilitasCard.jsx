@@ -18,7 +18,7 @@ export function AnalisisProfitabilitasCard({ data, neraca, labaRugi, perusahaanI
     let npmBenchmark = null;
     if (sektor === "Jasa") npmBenchmark = 10;
     else if (sektor === "Manufaktur") npmBenchmark = 7.5;
-    else if (sektor === "Perdangan" || sektor === "Perdagangan") npmBenchmark = 3.5;
+    else if (sektor === "Perdagangan") npmBenchmark = 3.5;
 
     const chartData = [
         { name: 'NPM', value: parseVal(data?.net_profit_margin), benchmark: npmBenchmark },

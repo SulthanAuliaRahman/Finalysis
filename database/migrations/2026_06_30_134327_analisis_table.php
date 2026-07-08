@@ -24,11 +24,10 @@ return new class extends Migration
             $table->unsignedTinyInteger('quarter')->nullable();// NULL jika annual
             $table->unsignedTinyInteger('bulan')->nullable(); // NULL jika annual / quarterly
             $table->enum('status', [
-                'belum dianalisis',
-                'rasio tersedia',
-                'sudah dianalisis',
+                'belum dihitung',
+                'sudah dihitung',
                 'Terjadi Perubahan Data!',
-            ])->default('belum dianalisis');
+            ])->default('belum dihitung');
 
             $table->text('AI_summary_insight')->nullable();
             $table->timestamps();
@@ -92,17 +91,17 @@ return new class extends Migration
             $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
 
             // Common-size Income Statement (basis Pendapatan = 100%)
-            $table->decimal('hpp_persen', 12, 6)->nullable();
-            $table->decimal('laba_kotor_persen', 12, 6)->nullable();
-            $table->decimal('beban_lain_pajak_persen', 12, 6)->nullable(); // gabungan OpEx+Bunga+Pajak
-            $table->decimal('laba_bersih_persen', 12, 6)->nullable();
+            $table->decimal('hpp_persen', 12, 2)->nullable();
+            $table->decimal('laba_kotor_persen', 12, 2)->nullable();
+            $table->decimal('beban_lain_pajak_persen', 12, 2)->nullable(); // gabungan OpEx+Bunga+Pajak
+            $table->decimal('laba_bersih_persen', 12, 2)->nullable();
 
             // Common-size Balance Sheet (basis Total Aset = 100%)
-            $table->decimal('aset_lancar_persen', 12, 6)->nullable();
-            $table->decimal('aset_tetap_persen', 12, 6)->nullable();
-            $table->decimal('liabilitas_lancar_persen', 12, 6)->nullable();
-            $table->decimal('liabilitas_panjang_persen', 12, 6)->nullable();
-            $table->decimal('ekuitas_persen', 12, 6)->nullable();
+            $table->decimal('aset_lancar_persen', 12, 2)->nullable();
+            $table->decimal('aset_tetap_persen', 12, 2)->nullable();
+            $table->decimal('liabilitas_lancar_persen', 12, 2)->nullable();
+            $table->decimal('liabilitas_panjang_persen', 12, 2)->nullable();
+            $table->decimal('ekuitas_persen', 12, 2)->nullable();
 
             $table->text('narasi_commonsize_AI')->nullable();
 
