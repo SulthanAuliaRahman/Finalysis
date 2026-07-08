@@ -2,7 +2,7 @@ import NeracaForm from "./NeracaForm";
 import LabaRugiForm from "./LabaRugiForm";
 import ArusKasForm from "./ArusKasForm";
 
-export default function ExtractionForm({ data, foundAt, onDataChange, onMetadataChange, disabled }) {
+export default function ExtractionForm({ data, foundAt, onDataChange, onMetadataChange, onCashFlowComponentChange, disabled }) {
     return (
         <div className="grid grid-cols-1 gap-5">
             <NeracaForm
@@ -26,6 +26,7 @@ export default function ExtractionForm({ data, foundAt, onDataChange, onMetadata
                 foundAt={foundAt}
                 onDataChange={onDataChange}
                 onMetadataChange={onMetadataChange}
+                onCashFlowComponentChange={onCashFlowComponentChange}
                 disabled={disabled}
             />
         </div>

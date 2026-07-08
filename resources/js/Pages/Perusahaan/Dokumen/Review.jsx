@@ -6,7 +6,6 @@ import PdfViewer from "@/Components/Dokumen/PdfViewer";
 import ExtractionForm from "@/Components/Dokumen/ExtractionForm";
 
 export default function Review({ perusahaan, dokumen, extractedData, foundAt }) {
-    // Menyimpan found_at sebagai Object, bukan JSON string agar mudah dimanipulasi
     const { data, setData, post, processing } = useForm({
         found_at: foundAt || {},
 
@@ -25,12 +24,16 @@ export default function Review({ perusahaan, dokumen, extractedData, foundAt }) 
             laba_bersih: extractedData?.laba_rugi?.laba_bersih ?? 0,
         },
         arus_kas: {
-            kas_masuk: extractedData?.arus_kas?.kas_masuk ?? 0,
+            // Komponen detail (nullable — hanya diisi kalau user aktifkan toggle)
+            cash_flow_from_operations: extractedData?.arus_kas?.cash_flow_from_operations ?? null,
+            cash_flow_from_investing:  extractedData?.arus_kas?.cash_flow_from_investing  ?? null,
+            cash_flow_from_financing:  extractedData?.arus_kas?.cash_flow_from_financing  ?? null,
+            // Hasil akhir
+            kas_masuk:  extractedData?.arus_kas?.kas_masuk  ?? 0,
             kas_keluar: extractedData?.arus_kas?.kas_keluar ?? 0,
         }
     });
 
-    // Handler untuk mengubah nilai angka finansial
     const handleDataChange = (section, key, value) => {
         setData(section, {
             ...data[section],
@@ -38,7 +41,27 @@ export default function Review({ perusahaan, dokumen, extractedData, foundAt }) 
         });
     };
 
-    // Handler untuk mengubah nilai metadata (Halaman & Label)
+    // Handler khusus arus kas: kalau CFO/CFI/CFF berubah, auto-kalkulasi kas masuk/keluar
+    // tapi tetap bisa di-override manual lewat handleDataChange biasa
+    const handleCashFlowComponentChange = (key, value) => {
+        const parsed = value === "" ? null : parseFloat(value);
+
+        const updated = {
+            ...data.arus_kas,
+            [key]: parsed,
+        };
+
+        // Kalkulasi realtime kas masuk & keluar dari komponen
+        const cfo = updated.cash_flow_from_operations ?? 0;
+        const cfi = updated.cash_flow_from_investing  ?? 0;
+        const cff = updated.cash_flow_from_financing  ?? 0;
+
+        updated.kas_masuk  = Math.max(0, cfo) + Math.max(0, cfi) + Math.max(0, cff);
+        updated.kas_keluar = Math.abs(Math.min(0, cfo)) + Math.abs(Math.min(0, cfi)) + Math.abs(Math.min(0, cff));
+
+        setData('arus_kas', updated);
+    };
+
     const handleMetaChange = (metaKey, keyToUpdate, value) => {
         setData('found_at', {
             ...data.found_at,
@@ -51,11 +74,9 @@ export default function Review({ perusahaan, dokumen, extractedData, foundAt }) 
 
     function handleSubmit(e) {
         e.preventDefault();
-        // Backend sudah menangani JSON decode/array, jadi post object found_at langsung aman
         post(`/perusahaan/${perusahaan.id}/dokumen/${dokumen.id}/chunk`);
     }
 
-    // URL PDF (Sesuaikan dengan endpoint controller backend Anda yang melakukan serve/stream PDF)
     const pdfUrl = `/perusahaan/${perusahaan.id}/dokumen/${dokumen.id}/view-pdf`;
 
     return (
@@ -73,24 +94,21 @@ export default function Review({ perusahaan, dokumen, extractedData, foundAt }) 
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                    {/* Kolom Kiri: PDF Viewer */}
                     <div className="sticky top-6">
                         <PdfViewer fileUrl={pdfUrl} title={dokumen.nama_file} />
                     </div>
 
-                    {/* Kolom Kanan: Form Ekstraksi & Metadata */}
                     <div>
                         <form onSubmit={handleSubmit} className="space-y-6">
-
                             <ExtractionForm
                                 data={data}
                                 foundAt={data.found_at}
                                 onDataChange={handleDataChange}
                                 onMetadataChange={handleMetaChange}
+                                onCashFlowComponentChange={handleCashFlowComponentChange}
                                 disabled={processing}
                             />
 
-                            {/* Footer Kontrol Kirim Form */}
                             <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 sticky bottom-0 bg-white py-4 z-10">
                                 <Link href={`/perusahaan/${perusahaan.id}/dokumen`}>
                                     <Button type="button" variant="outline" disabled={processing}>Batal</Button>

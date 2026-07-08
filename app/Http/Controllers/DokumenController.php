@@ -129,17 +129,21 @@ class DokumenController extends Controller
                 if (isset($extracted['cash_flow'])) {
                     $cf = $extracted['cash_flow'];
 
-                    $cfo = $cf['cash_flow_from_operations'] ?? 0;
-                    $cfi = $cf['cash_flow_from_investing']  ?? 0;
-                    $cff = $cf['cash_flow_from_financing']  ?? 0;
+                    $cfo = $cf['cash_flow_from_operations'] ?? null;
+                    $cfi = $cf['cash_flow_from_investing']  ?? null;
+                    $cff = $cf['cash_flow_from_financing']  ?? null;
 
-                    $kasMasuk  = max(0, $cfo) + max(0, $cfi) + max(0, $cff);
-                    $kasKeluar = abs(min(0, $cfo)) + abs(min(0, $cfi)) + abs(min(0, $cff));
+                    // Hitung kas masuk/keluar dari komponen (default 0 kalau null)
+                    $kasMasuk  = max(0, $cfo ?? 0) + max(0, $cfi ?? 0) + max(0, $cff ?? 0);
+                    $kasKeluar = abs(min(0, $cfo ?? 0)) + abs(min(0, $cfi ?? 0)) + abs(min(0, $cff ?? 0));
 
                     DB::table('arus_kas')->insert([
-                        'dokumen_id' => $dokumen->id,
-                        'kas_masuk'  => $kasMasuk,
-                        'kas_keluar' => $kasKeluar,
+                        'dokumen_id'                  => $dokumen->id,
+                        'cash_flow_from_operations'   => $cfo,
+                        'cash_flow_from_investing'    => $cfi,
+                        'cash_flow_from_financing'    => $cff,
+                        'kas_masuk'                   => $kasMasuk,
+                        'kas_keluar'                  => $kasKeluar,
                         'found_at' => json_encode($filterFoundAt([
                             'cash_flow_from_operations',
                             'cash_flow_from_investing',
@@ -218,7 +222,6 @@ class DokumenController extends Controller
                     'current_liabilities' => $request->input('neraca.current_liabilities'),
                     'total_liabilities' => $request->input('neraca.total_liabilities'),
                     'total_equity' => $request->input('neraca.total_equity'),
-                    // Ikut simpan koordinat/metadata baru hasil manipulasi manual
                     'found_at' => json_encode($filterFoundAt(['total_equity', 'total_liabilities', 'current_liabilities', 'total_assets', 'current_assets'])),
                     'updated_at' => now()
                 ]);
@@ -228,16 +231,17 @@ class DokumenController extends Controller
                     'pendapatan' => $request->input('laba_rugi.pendapatan'),
                     'laba_kotor' => $request->input('laba_rugi.laba_kotor'),
                     'laba_bersih' => $request->input('laba_rugi.laba_bersih'),
-                    // Ikut simpan koordinat/metadata baru hasil manipulasi manual
                     'found_at' => json_encode($filterFoundAt(['revenue', 'gross_profit', 'net_profit'])),
                     'updated_at' => now()
                 ]);
             }
             if ($request->has('arus_kas')) {
                 DB::table('arus_kas')->where('dokumen_id', $dokumen->id)->update([
-                    'kas_masuk' => $request->input('arus_kas.kas_masuk'),
+                    'cash_flow_from_operations' => $request->input('arus_kas.cash_flow_from_operations'), // nullable
+                    'cash_flow_from_investing'  => $request->input('arus_kas.cash_flow_from_investing'),  // nullable
+                    'cash_flow_from_financing'  => $request->input('arus_kas.cash_flow_from_financing'),  // nullable
+                    'kas_masuk'  => $request->input('arus_kas.kas_masuk'),
                     'kas_keluar' => $request->input('arus_kas.kas_keluar'),
-                    // Ikut simpan koordinat/metadata baru termasuk key kas_masuk & kas_keluar manual
                     'found_at' => json_encode($filterFoundAt([
                         'cash_flow_from_operations',
                         'cash_flow_from_investing',
@@ -273,7 +277,6 @@ class DokumenController extends Controller
                     'chunk_index'  => $c['metadata']['chunk_index'] ?? 0,
                     'text'         => $c['text'],
                     'metadata'     => json_encode($c['metadata']),
-                    'has_table'    => $c['metadata']['has_table'] ?? false,
                     'created_at'   => now()
                 ];
             }
@@ -396,5 +399,63 @@ class DokumenController extends Controller
         }
 
         return $disk->response($dokumen->storage_path);
+    }
+
+    public function edit(Perusahaan $perusahaan, Dokumen $dokumen)
+    {
+        $neraca   = DB::table('neraca')->where('dokumen_id', $dokumen->id)->first();
+        $labaRugi = DB::table('laba_rugi')->where('dokumen_id', $dokumen->id)->first();
+        $arusKas  = DB::table('arus_kas')->where('dokumen_id', $dokumen->id)->first();
+
+        return Inertia::render('Perusahaan/Dokumen/EditDokumen', [
+            'perusahaan' => $perusahaan,
+            'dokumen'    => $dokumen,
+            'extractedData' => [
+                'neraca'    => $neraca,
+                'laba_rugi' => $labaRugi,
+                'arus_kas'  => $arusKas,
+            ],
+        ]);
+    }
+
+    public function update(Request $request, Perusahaan $perusahaan, Dokumen $dokumen)
+    {
+        DB::transaction(function () use ($dokumen, $request) {
+            if ($request->has('neraca')) {
+                DB::table('neraca')->where('dokumen_id', $dokumen->id)->update([
+                    'cash_equivalent'    => $request->input('neraca.cash_equivalent'),
+                    'inventory'          => $request->input('neraca.inventory'),
+                    'current_assets'     => $request->input('neraca.current_assets'),
+                    'total_assets'       => $request->input('neraca.total_assets'),
+                    'current_liabilities'=> $request->input('neraca.current_liabilities'),
+                    'total_liabilities'  => $request->input('neraca.total_liabilities'),
+                    'total_equity'       => $request->input('neraca.total_equity'),
+                    'updated_at'         => now(),
+                ]);
+            }
+
+            if ($request->has('laba_rugi')) {
+                DB::table('laba_rugi')->where('dokumen_id', $dokumen->id)->update([
+                    'pendapatan'  => $request->input('laba_rugi.pendapatan'),
+                    'laba_kotor'  => $request->input('laba_rugi.laba_kotor'),
+                    'laba_bersih' => $request->input('laba_rugi.laba_bersih'),
+                    'updated_at'  => now(),
+                ]);
+            }
+
+            if ($request->has('arus_kas')) {
+                DB::table('arus_kas')->where('dokumen_id', $dokumen->id)->update([
+                    'cash_flow_from_operations' => $request->input('arus_kas.cash_flow_from_operations'),
+                    'cash_flow_from_investing'  => $request->input('arus_kas.cash_flow_from_investing'),
+                    'cash_flow_from_financing'  => $request->input('arus_kas.cash_flow_from_financing'),
+                    'kas_masuk'                 => $request->input('arus_kas.kas_masuk'),
+                    'kas_keluar'                => $request->input('arus_kas.kas_keluar'),
+                    'updated_at'                => now(),
+                ]);
+            }
+        });
+
+        return redirect()->route('perusahaan.dokumen.index', $perusahaan->id)
+            ->with('success', 'Data dokumen berhasil diperbarui.');
     }
 }

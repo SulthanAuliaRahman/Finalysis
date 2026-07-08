@@ -16,7 +16,6 @@ class DataLoader
         'source',
         'found_page',
         'found_at',
-        'has_table',
     ];
 
     public static function embedChunks(array $chunks): int

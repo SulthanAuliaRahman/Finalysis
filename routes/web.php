@@ -38,6 +38,9 @@ Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/view-pdf', [DokumenContro
 Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/review', [DokumenController::class, 'review'])->name('perusahaan.dokumen.review');
 Route::post('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunk', [DokumenController::class, 'chunk'])->name('perusahaan.dokumen.chunk');
 
+Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/edit', [DokumenController::class, 'edit'])->name('perusahaan.dokumen.edit');
+Route::put('/perusahaan/{perusahaan}/dokumen/{dokumen}', [DokumenController::class, 'update'])->name('perusahaan.dokumen.update');
+
 // Start Embedding
 Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'embedPage'])->name('perusahaan.dokumen.embed');
 Route::post('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'startEmbedding'])->name('perusahaan.dokumen.embed.run');

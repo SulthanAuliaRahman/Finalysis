@@ -91,7 +91,6 @@ return new class extends Migration
             $table->longText('text');
             // $table->vector('embedding', 1536)->nullable();
             $table->json('metadata')->nullable();
-            $table->boolean('has_table')->default(false);
             $table->timestamp('created_at')->useCurrent();
         });
     }

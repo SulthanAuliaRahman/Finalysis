@@ -1,8 +1,9 @@
+// resources/js/Components/Dokumen/EditArusKasForm.jsx
 import { useState } from "react";
 import { Wallet, ChevronDown, ChevronUp } from "lucide-react";
-import { CashFlowInputWithBreakdown, CashFlowComponentInput } from "./FormInputs";
+import { EditInputField, EditCashFlowComponentInput } from "./EditFormInputs";
 
-export default function ArusKasForm({ data, foundAt, onDataChange, onMetadataChange, onCashFlowComponentChange, disabled }) {
+export default function EditArusKasForm({ data, onDataChange, onCashFlowComponentChange, disabled }) {
     const hasExistingComponents =
         data.arus_kas.cash_flow_from_operations !== null ||
         data.arus_kas.cash_flow_from_investing  !== null ||
@@ -14,10 +15,8 @@ export default function ArusKasForm({ data, foundAt, onDataChange, onMetadataCha
         <div className="border border-slate-100 rounded-xl p-4 bg-slate-50/40 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
                 <div className="flex items-center gap-1.5 text-slate-800 font-bold text-sm">
-                    <Wallet className="w-4 h-4 text-indigo-600" /> Tabel Arus Kas
+                    <Wallet className="w-4 h-4 text-indigo-600" /> Arus Kas
                 </div>
-
-                {/* Toggle komponen detail */}
                 <button
                     type="button"
                     onClick={() => setShowComponents(prev => !prev)}
@@ -30,70 +29,38 @@ export default function ArusKasForm({ data, foundAt, onDataChange, onMetadataCha
                 </button>
             </div>
 
-            {/* Panel CFO / CFI / CFF — hanya muncul kalau toggle aktif */}
             {showComponents && (
                 <div className="space-y-3 pb-3 border-b border-dashed border-slate-200">
                     <p className="text-[10px] text-slate-500 italic">
                         Kas masuk & keluar dikalkulasi otomatis dari komponen di bawah. Anda tetap bisa ubah manual di bawah.
                     </p>
-
-                    <CashFlowComponentInput
+                    <EditCashFlowComponentInput
                         label="Arus Kas Operasi (CFO)"
                         fieldKey="cash_flow_from_operations"
-                        metadataKey="cash_flow_from_operations"
                         value={data.arus_kas.cash_flow_from_operations}
                         onChange={onCashFlowComponentChange}
-                        metadata={foundAt?.cash_flow_from_operations}
-                        onMetadataChange={onMetadataChange}
                         disabled={disabled}
                     />
-                    <CashFlowComponentInput
+                    <EditCashFlowComponentInput
                         label="Arus Kas Investasi (CFI)"
                         fieldKey="cash_flow_from_investing"
-                        metadataKey="cash_flow_from_investing"
                         value={data.arus_kas.cash_flow_from_investing}
                         onChange={onCashFlowComponentChange}
-                        metadata={foundAt?.cash_flow_from_investing}
-                        onMetadataChange={onMetadataChange}
                         disabled={disabled}
                     />
-                    <CashFlowComponentInput
+                    <EditCashFlowComponentInput
                         label="Arus Kas Pendanaan (CFF)"
                         fieldKey="cash_flow_from_financing"
-                        metadataKey="cash_flow_from_financing"
                         value={data.arus_kas.cash_flow_from_financing}
                         onChange={onCashFlowComponentChange}
-                        metadata={foundAt?.cash_flow_from_financing}
-                        onMetadataChange={onMetadataChange}
                         disabled={disabled}
                     />
                 </div>
             )}
 
-            {/* Kas Masuk & Keluar — selalu tampil, bisa override */}
-            <div className="space-y-3">
-                <CashFlowInputWithBreakdown
-                    label="Kas Masuk (Cash Inflow)"
-                    fieldKey="kas_masuk"
-                    metadataKey="kas_masuk"
-                    value={data.arus_kas.kas_masuk}
-                    onChange={onDataChange}
-                    metadata={foundAt?.kas_masuk}
-                    onMetadataChange={onMetadataChange}
-                    foundAt={foundAt}
-                    disabled={disabled}
-                />
-                <CashFlowInputWithBreakdown
-                    label="Kas Keluar (Cash Outflow)"
-                    fieldKey="kas_keluar"
-                    metadataKey="kas_keluar"
-                    value={data.arus_kas.kas_keluar}
-                    onChange={onDataChange}
-                    metadata={foundAt?.kas_keluar}
-                    onMetadataChange={onMetadataChange}
-                    foundAt={foundAt}
-                    disabled={disabled}
-                />
+            <div className="grid grid-cols-1 gap-3">
+                <EditInputField label="Kas Masuk (Cash Inflow)" section="arus_kas" fieldKey="kas_masuk" value={data.arus_kas.kas_masuk} onChange={onDataChange} disabled={disabled} />
+                <EditInputField label="Kas Keluar (Cash Outflow)" section="arus_kas" fieldKey="kas_keluar" value={data.arus_kas.kas_keluar} onChange={onDataChange} disabled={disabled} />
             </div>
         </div>
     );

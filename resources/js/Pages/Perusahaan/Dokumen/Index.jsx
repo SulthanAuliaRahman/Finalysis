@@ -4,7 +4,7 @@ import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import {
     Upload, FileText, Trash2, CheckCircle2,
-    Clock, Loader2, Building2, ArrowRight, Eye
+    Clock, Loader2, Building2, ArrowRight, Eye, Pencil
 } from "lucide-react";
 
 function StatusBadge({ status }) {
@@ -33,36 +33,53 @@ export default function Index({ perusahaan, dokumenList }) {
 
     // Fungsi Render Tombol Aksi Dinamis Kontekstual Berdasarkan Status Dokumen
     function renderActionButtons(dokumenData) {
+        const editButton = (
+            <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/edit`}>
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-slate-500 hover:text-slate-700 gap-1">
+                    <Pencil className="w-3 h-3" /> Edit
+                </Button>
+            </Link>
+        );
+
         switch (dokumenData.status) {
             case "menunggu":
                 return null;
 
             case "diekstrak":
                 return (
-                    <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/review`}>
-                        <Button size="sm" variant="outline" className="h-7 text-xs text-blue-600 border-blue-200 bg-blue-50/50 hover:bg-blue-50 gap-1">
-                            Lanjut Review <ArrowRight className="w-3 h-3" />
-                        </Button>
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                        {editButton}
+                        <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/review`}>
+                            <Button size="sm" variant="outline" className="h-7 text-xs text-blue-600 border-blue-200 bg-blue-50/50 hover:bg-blue-50 gap-1">
+                                Lanjut Review <ArrowRight className="w-3 h-3" />
+                            </Button>
+                        </Link>
+                    </div>
                 );
 
             case "dichunk":
                 return (
-                    <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/embed`}>
-                        <Button size="sm" variant="outline" className="h-7 text-xs text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-50 gap-1">
-                            Lanjut Embed <ArrowRight className="w-3 h-3" />
-                        </Button>
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                        {editButton}
+                        <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/embed`}>
+                            <Button size="sm" variant="outline" className="h-7 text-xs text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-50 gap-1">
+                                Lanjut Embed <ArrowRight className="w-3 h-3" />
+                            </Button>
+                        </Link>
+                    </div>
                 );
 
             case "diembed":
             case "selesai":
                 return (
-                    <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/chunks`}>
-                        <Button size="sm" variant="outline" className="h-7 text-xs text-slate-700 gap-1">
-                            <Eye className="w-3 h-3" /> Lihat Chunks
-                        </Button>
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                        {editButton}
+                        <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/chunks`}>
+                            <Button size="sm" variant="outline" className="h-7 text-xs text-slate-700 gap-1">
+                                <Eye className="w-3 h-3" /> Lihat Chunks
+                            </Button>
+                        </Link>
+                    </div>
                 );
 
             default:

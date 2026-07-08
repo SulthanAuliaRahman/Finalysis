@@ -18,12 +18,10 @@ class Chunk extends Model
         'chunk_index',
         'text',
         'metadata',
-        'has_table',
     ];
 
     protected $casts = [
         'metadata' => 'array',
-        'has_table' => 'boolean',
     ];
 
     public function dokumen()
