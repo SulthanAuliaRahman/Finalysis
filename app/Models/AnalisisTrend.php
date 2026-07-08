@@ -13,10 +13,11 @@ class AnalisisTrend extends Model
 
     protected $fillable = [
         'analisis_id',
-        'narasi_trend_AI',
+        'narasi_trend_akun_utama_AI',
         'narasi_trend_rasio_AI',
         'narasi_trend_dupont_AI',
         'narasi_trend_commonsize_AI',
+        'narasi_trend_arus_kas_AI',
     ];
 
     public function analisis()

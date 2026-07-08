@@ -4,9 +4,9 @@ import { TabelPeriode, LineChartBlock } from './trendHelpers';
 
 // Tabel row definitions
 const RASIO_ROWS = [
-    { label: 'Current Ratio', get: (a) => a?.likuiditas?.current_ratio,         suffix: 'x' },
-    { label: 'Quick Ratio',   get: (a) => a?.likuiditas?.quick_ratio,            suffix: 'x' },
-    { label: 'Cash Ratio',    get: (a) => a?.likuiditas?.cash_ratio,             suffix: 'x' },
+    { label: 'Current Ratio', get: (a) => a?.likuiditas?.current_ratio,        suffix: '%' },
+    { label: 'Quick Ratio',   get: (a) => a?.likuiditas?.quick_ratio,           suffix: '%' },
+    { label: 'Cash Ratio',    get: (a) => a?.likuiditas?.cash_ratio,            suffix: '%' },
     { label: 'NPM',           get: (a) => a?.profitabilitas?.net_profit_margin,  suffix: '%' },
     { label: 'ROA',           get: (a) => a?.profitabilitas?.ROA,                suffix: '%' },
     { label: 'ROE',           get: (a) => a?.profitabilitas?.ROE,                suffix: '%' },
