@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\AiConfiguration;
 
@@ -14,27 +13,19 @@ class AiConfigurationSeeder extends Seeder
     public function run(): void
     {
         AiConfiguration::create([
+            'llm_provider'       => 'openai',
+            'llm_url'            => 'https://api.openai.com/v1',
+            'llm_model'          => 'gpt-5.5',
 
-            'llm_provider' => env('LLM_PROVIDER'),
+            'embedding_provider' => 'openai',
+            'embedding_url'      => 'https://api.openai.com/v1',
+            'embedding_model'    => 'text-embedding-3-small',
 
-            'llm_url' => env('LLM_URL'),
+            'reranker_provider'  => 'jina',
+            'reranker_model'     => 'jina-reranker-v2-base-multilingual',
+            'reranker_top_n'     => 5,
 
-            'llm_model' => env('LLM_MODEL'),
-
-            'embedding_provider' => env('EMBEDDING_PROVIDER'),
-
-            'embedding_url' => env('EMBEDDING_URL'),
-
-            'embedding_model' => env('EMBEDDING_MODEL'),
-
-            'reranker_provider' => env('RERANKER_PROVIDER'),
-
-            'reranker_model' => env('RERANKER_MODEL'),
-
-            'reranker_top_n' => env('RERANKER_TOP_N'),
-
-            'localai_url' => env('LOCALAI_URL'),
-
+            'localai_url'        => 'http://localhost:8080',
         ]);
     }
 }

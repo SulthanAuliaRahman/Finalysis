@@ -8,19 +8,19 @@ import {
     ChevronLeft,
     ChevronRight,
     BrainCircuit,
+    Users,
 } from "lucide-react"
 
-// Centralized navigation items for cleaner code
-const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/perusahaan", label: "Perusahaan", icon: Building2 },
-    // { href: "/dokumen", label: "Dokumen", icon: FileText },
-    // { href: "/analisis", label: "Analisis", icon: BarChart3 },
-    { href: "/settings/ai", label: "Konfigurasi AI", icon: Settings2 },
-];
-
 export default function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
-    const { url } = usePage();
+    const { url, props } = usePage();
+    const userRole = props.auth?.user?.role;
+
+    const navItems = [
+        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        ...(userRole === 'super_admin' ? [{ href: "/perusahaan", label: "Perusahaan", icon: Building2 }] : []),
+        ...(userRole === 'super_admin' || userRole === 'manager' ? [{ href: "/users", label: "Kelola User", icon: Users }] : []),
+        { href: "/settings/ai", label: "Konfigurasi AI", icon: Settings2 },
+    ];
 
     return (
         <>
