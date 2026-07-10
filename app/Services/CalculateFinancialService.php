@@ -80,8 +80,8 @@ class CalculateFinancialService
         $this->hitungDupont($analisis, $neraca, $labaRugi);
         $this->hitungCommonsize($analisis, $neraca, $labaRugi);
 
-        if (in_array($analisis->status, ['belum dianalisis', 'Terjadi Perubahan Data!'])) {
-            $analisis->update(['status' => 'rasio tersedia']);
+        if (in_array($analisis->status, ['belum dihitung', 'Terjadi Perubahan Data!'])) {
+            $analisis->update(['status' => 'sudah dihitung']);
         }
     }
 

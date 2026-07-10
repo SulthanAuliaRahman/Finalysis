@@ -9,15 +9,15 @@ import {
 
 function StatusBadge({ status }) {
     const badges = {
-        'belum dianalisis': {
+        'belum dihitung': {
             bg: "bg-slate-100 border-slate-200 text-slate-600",
             icon: <Circle className="w-3 h-3" />,
-            label: "Belum Dianalisis"
+            label: "Belum Dihitung"
         },
-        'sudah dianalisis': {
+        'sudah dihitung': {
             bg: "bg-green-50 border-green-200 text-green-700",
             icon: <CheckCircle2 className="w-3 h-3" />,
-            label: "Sudah Dianalisis"
+            label: "Sudah Dihitung"
         },
         'Terjadi Perubahan Data!': {
             bg: "bg-orange-50 border-orange-200 text-orange-700",
@@ -25,7 +25,9 @@ function StatusBadge({ status }) {
             label: "Terjadi Perubahan Data!"
         }
     };
-    const current = badges[status] || badges['belum dianalisis'];
+
+    const current = badges[status] || badges['belum dihitung'];
+
     return (
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-xs font-medium ${current.bg}`}>
             {current.icon} {current.label}
@@ -108,12 +110,9 @@ export default function Index({ perusahaan, analisisList }) {
                                             <div className="flex items-center justify-end gap-1.5">
                                                 <Link href={`/perusahaan/${perusahaan.id}/analisis/${analisis.id}`}>
                                                     <Button size="sm" variant="outline" className="h-7 text-xs gap-1">
-                                                        <Eye className="w-3 h-3" /> Lihat Detail
+                                                        <Eye className="w-3 h-3" /> Lihat Analisis
                                                     </Button>
                                                 </Link>
-                                                <Button variant="ghost" size="icon" onClick={() => handleDelete(analisis.id)}>
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </Button>
                                             </div>
                                         </td>
                                     </tr>

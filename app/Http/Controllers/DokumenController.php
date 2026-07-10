@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Perusahaan;
 use App\Models\Dokumen;
+use App\Models\Analisis;
 use App\Services\PythonDocumentService;
 use App\Neuron\DataLoader\DataLoader;
 use Illuminate\Http\Request;
@@ -25,9 +26,9 @@ class DokumenController extends Controller
 
     public function index(Perusahaan $perusahaan)
     {
-        $dokumen = $perusahaan->dokumen()
+       $dokumen = $perusahaan->dokumen()
             ->select('id', 'nama_file', 'periode_type', 'tahun', 'quarter', 'bulan', 'ukuran_file', 'status', 'created_at')
-            ->latest()
+            ->orderBy('tahun', 'desc')
             ->get();
 
         return Inertia::render('Perusahaan/Dokumen/Index', [
@@ -453,6 +454,14 @@ class DokumenController extends Controller
                     'updated_at'                => now(),
                 ]);
             }
+
+            Analisis::where('perusahaan_id', $dokumen->perusahaan_id)
+                ->where('periode_type', $dokumen->periode_type)
+                ->where('tahun', $dokumen->tahun)
+                ->where('quarter', $dokumen->quarter)
+                ->where('bulan', $dokumen->bulan)
+                ->update(['status' => 'Terjadi Perubahan Data!']);
+
         });
 
         return redirect()->route('perusahaan.dokumen.index', $perusahaan->id)

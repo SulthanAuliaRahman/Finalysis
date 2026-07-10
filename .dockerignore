@@ -1,0 +1,13 @@
+.git
+.gitignore
+
+vendor
+node_modules
+
+storage/logs
+
+docker-compose.yml
+
+Dockerfile
+
+.env

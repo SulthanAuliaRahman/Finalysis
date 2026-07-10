@@ -37,5 +37,15 @@ services:
       timeout: 5s
       retries: 5
 
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: financial_chroma
+    ports:
+      - "8081:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  chroma_data:

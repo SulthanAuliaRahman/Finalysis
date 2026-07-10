@@ -15,6 +15,7 @@ class AnalisisController extends Controller
 {
     public function index(Perusahaan $perusahaan)
     {
+        
         $dokumenList = $perusahaan->dokumen()
             ->select('id', 'periode_type', 'tahun', 'quarter', 'bulan', 'updated_at')
             ->get();
@@ -35,13 +36,13 @@ class AnalisisController extends Controller
                     'bulan'         => $referensi->bulan,
                 ],
                 [
-                    'status' => 'belum dianalisis',
+                    'status' => 'belum dihitung',
                 ]
             );
 
             $dokumenTerbaru = $group->max('updated_at');
 
-            if ($analisis->status === 'sudah dianalisis' && $dokumenTerbaru->gt($analisis->updated_at)) {
+            if ($analisis->status === 'sudah dihitung' && $dokumenTerbaru->gt($analisis->updated_at)) {
                 $analisis->status = 'Terjadi Perubahan Data!';
                 $analisis->save();
             }
@@ -168,7 +169,7 @@ class AnalisisController extends Controller
         $section    = $request->input('section');
         $userPrompt = $request->input('user_prompt');
 
-        if (!in_array($analisis->status, ['rasio tersedia', 'sudah dianalisis'])) {
+        if (!in_array($analisis->status, ['sudah dihitung'])) {
             return back()->withErrors(['message' => 'Silahkan Hitung Data Finansial terlebih dahulu.']);
         }
 
