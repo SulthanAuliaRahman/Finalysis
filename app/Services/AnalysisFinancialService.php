@@ -19,6 +19,7 @@ use App\Neuron\RAG\TrendRasioAgent;
 use App\Neuron\RAG\TrendDupontAgent;
 use App\Neuron\RAG\TrendCommonsizeAgent;
 use App\Neuron\RAG\TrendArusKasAgent;
+use App\Neuron\RAG\SummaryAgent;
 
 use App\Services\CalculateFinancialService;
 
@@ -431,22 +432,95 @@ class AnalysisFinancialService
         );
     }
 
-    // =====================================================================
-    // STATUS
-    // =====================================================================
-
-    public function updateStatusJikaLengkap(Analisis $analisis): void
+    public function prosesSummaryAnalisis(Analisis $analisis, ?string $userPrompt = null): void
     {
-        $lengkap = $analisis->likuiditas()->exists()
-                && $analisis->profitabilitas()->exists()
-                && $analisis->solvabilitas()->exists()
-                && $analisis->aktivitas()->exists()
-                && $analisis->commonsize()->exists()
-                && $analisis->dupont()->exists()
-                && $analisis->trend()->exists();
+        $Prompt = "Susun Executive Summary berdasarkan seluruh hasil analisis keuangan yang tersedia.\n";
 
-        if ($lengkap) {
-            $analisis->update(['status' => 'sudah dianalisis']);
+        $Prompt .= "=== INFORMASI PERUSAHAAN ===\n";
+        $Prompt .= "Perusahaan : {$analisis->perusahaan->nama}\n";
+        $Prompt .= "Sektor : {$analisis->perusahaan->sektor}\n";
+        $Prompt .= "Periode Analisis : {$analisis->periode}\n";
+
+        $Prompt .= "Gunakan seluruh hasil analisis berikut sebagai dasar penyusunan Executive Summary.\n";
+        $Prompt .= "Apabila suatu analisis tidak tersedia maka abaikan, jangan membuat asumsi.\n";
+
+
+         if ($analisis->likuiditas?->narasi_likuiditas_AI) {
+            $Prompt .= "=== ANALISIS LIKUIDITAS ===\n";
+            $Prompt .= $analisis->likuiditas->narasi_likuiditas_AI . "\n";
         }
+
+        if ($analisis->profitabilitas?->narasi_profitabilitas_AI) {
+            $Prompt .= "=== ANALISIS PROFITABILITAS ===\n";
+            $Prompt .= $analisis->profitabilitas->narasi_profitabilitas_AI . "\n";
+        }
+
+        if ($analisis->solvabilitas?->narasi_solvabilitas_AI) {
+            $Prompt .= "=== ANALISIS SOLVABILITAS ===\n";
+            $Prompt .= $analisis->solvabilitas->narasi_solvabilitas_AI . "\n";
+        }
+
+        if ($analisis->aktivitas?->narasi_aktivitas_AI) {
+            $Prompt .= "=== ANALISIS AKTIVITAS ===\n";
+            $Prompt .= $analisis->aktivitas->narasi_aktivitas_AI . "\n";
+        }
+
+        if ($analisis->dupont?->narasi_dupont_AI) {
+            $Prompt .= "=== ANALISIS DUPONT ===\n";
+            $Prompt .= $analisis->dupont->narasi_dupont_AI . "\n";
+        }
+
+        if ($analisis->commonsize?->narasi_commonsize_AI) {
+            $Prompt .= "=== ANALISIS COMMON SIZE ===\n";
+            $Prompt .= $analisis->commonsize->narasi_commonsize_AI . "\n";
+        }
+
+        if ($analisis->trend) {
+
+            if ($analisis->trend->narasi_trend_akun_utama_AI) {
+                $Prompt .= "=== TREND AKUN UTAMA ===\n";
+                $Prompt .= $analisis->trend->narasi_trend_akun_utama_AI . "\n";
+            }
+
+            if ($analisis->trend->narasi_trend_rasio_AI) {
+                $Prompt .= "=== TREND RASIO ===\n";
+                $Prompt .= $analisis->trend->narasi_trend_rasio_AI . "\n";
+            }
+
+            if ($analisis->trend->narasi_trend_dupont_AI) {
+                $Prompt .= "=== TREND DUPONT ===\n";
+                $Prompt .= $analisis->trend->narasi_trend_dupont_AI . "\n";
+            }
+
+            if ($analisis->trend->narasi_trend_commonsize_AI) {
+                $Prompt .= "=== TREND COMMON SIZE ===\n";
+                $Prompt .= $analisis->trend->narasi_trend_commonsize_AI . "\n";
+            }
+
+            if ($analisis->trend->narasi_trend_arus_kas_AI) {
+                $Prompt .= "=== TREND ARUS KAS ===\n";
+                $Prompt .= $analisis->trend->narasi_trend_arus_kas_AI . "\n";
+            }
+        }
+
+        if ($analisis->AI_summary_insight) {
+            $Prompt .= "=== EXECUTIVE SUMMARY SEBELUMNYA ===\n";
+            $Prompt .= $analisis->AI_summary_insight . "\n";
+        }
+
+        if ($userPrompt) {
+            $Prompt .= "=== PERMINTAAN PENGGUNA ===\n";
+            $Prompt .= $userPrompt . "\n";
+        }
+
+        $Prompt .= "Susun kembali Executive Summary berdasarkan seluruh informasi di atas.";
+
+        $response = SummaryAgent::make()->chat(new UserMessage($Prompt));
+        $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
+        $narasi = TextCleanerService::bersihkanMarkdown($narasi);
+
+        $analisis->update([
+            'AI_summary_insight' => $narasi,
+        ]);
     }
 }

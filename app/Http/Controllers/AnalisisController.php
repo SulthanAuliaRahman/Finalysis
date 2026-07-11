@@ -15,7 +15,7 @@ class AnalisisController extends Controller
 {
     public function index(Perusahaan $perusahaan)
     {
-        
+
         $dokumenList = $perusahaan->dokumen()
             ->select('id', 'periode_type', 'tahun', 'quarter', 'bulan', 'updated_at')
             ->get();
@@ -209,11 +209,34 @@ class AnalisisController extends Controller
                     $analysisFinancialService->prosesTrendArusKas($analisis, $userPrompt);
                     break;
                 case 'summary':
-                    // TODO: generateAISummary
+                    // minimal sudah ada AI Narasi untuk 4 rasio utama + Trend nya
+                    $analisis->load([
+                        'likuiditas',
+                        'profitabilitas',
+                        'solvabilitas',
+                        'aktivitas',
+                        'trend',
+                    ]);
+
+                    $hasNarasi =
+                        filled($analisis->likuiditas?->narasi_likuiditas_AI) &&
+                        filled($analisis->profitabilitas?->narasi_profitabilitas_AI) &&
+                        filled($analisis->solvabilitas?->narasi_solvabilitas_AI) &&
+                        filled($analisis->aktivitas?->narasi_aktivitas_AI) &&
+                        filled($analisis->trend?->narasi_trend_rasio_AI);
+
+                    if (!$hasNarasi) {
+                        return back()->withErrors([
+                            'message' => 'Minimal Komponen Rasio Di lakukan analisis AI Sebelum Mendapatkan summary !'
+                        ]);
+                    }
+
+                    $analysisFinancialService->prosesSummaryAnalisis($analisis, $userPrompt);
+
                     break;
             }
 
-            $analysisFinancialService->updateStatusJikaLengkap($analisis);
+            // $analysisFinancialService->updateStatusJikaLengkap($analisis);
         });
 
         return back();

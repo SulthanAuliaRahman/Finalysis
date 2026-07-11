@@ -1,3 +1,5 @@
+import { useRef, useState } from 'react';
+import { router } from '@inertiajs/react';
 import AppLayout from "@/Layouts/AppLayout";
 import { CompanyHeader } from "@/Components/Analisis/CompanyHeader";
 import { AnalisisLikuiditasCard } from "@/Components/Analisis/AnalisisLikuiditasCard";
@@ -12,10 +14,8 @@ import { TrendDupontCard } from "@/Components/Analisis/TrendDupontCard";
 import { TrendCommonsizeCard } from "@/Components/Analisis/TrendCommonsizeCard";
 import { TrendArusKasCard } from "@/Components/Analisis/TrendArusKasCard";
 import { AIInsightCard } from "@/Components/Analisis/AIInsightCard";
+import { usePdfGenerator } from "@/Components/Analisis/PDF/usePdfGenerator";
 import { FileDown, Calculator, Loader2 } from "lucide-react";
-import { router } from '@inertiajs/react';
-import { useState } from 'react';
-import { dummyTrendData } from '@/Components/Analisis/DummyTrendData';
 
 export default function Detail({
     perusahaan,
@@ -37,8 +37,51 @@ export default function Detail({
 }) {
     const [isCalculating, setIsCalculating] = useState(false);
 
+    const refRasio      = useRef(null);
+    const refDupont     = useRef(null);
+    const refCommonsize = useRef(null);
+    const refAkunUtama  = useRef(null);
+    const refArusKas    = useRef(null);
+
+    const safeNama    = perusahaan.nama.replace(/[^a-zA-Z0-9]/g, '_');
+    const safePeriode = analisis.periode_label.replace(/[^a-zA-Z0-9]/g, '_');
+    const fileName    = `Analisis_${safeNama}_${safePeriode}.pdf`;
+
+    // FIX: lowercase 'u' — sesuai nama export di usePdfGenerator.jsx
+    const { isGenerating, generatePdf } = usePdfGenerator({
+        pdfProps: {
+            perusahaan,
+            analisis,
+            neraca,
+            labaRugi,
+            likuiditas,
+            profitabilitas,
+            solvabilitas,
+            aktivitas,
+            dupont,
+            commonsize,
+            trendAkunUtama,
+            trendRasio,
+            trendDupont,
+            trendCommonsize,
+            trendArusKas,
+            fileName,
+        },
+        chartRefs: {
+            rasio:      refRasio,
+            dupont:     refDupont,
+            commonsize: refCommonsize,
+            akunUtama:  refAkunUtama,
+            arusKas:    refArusKas,
+        },
+    });
+
     function handleDownloadPdf() {
-        console.log(`Download PDF analisis periode ${analisis.periode_label} untuk perusahaan ${perusahaan.id}`);
+        if (!analisis.ai_summary_insight) {
+            alert('Generate Executive Summary terlebih dahulu sebelum mengunduh PDF.');
+            return;
+        }
+        generatePdf();
     }
 
     function handleHitungRasio() {
@@ -78,17 +121,19 @@ export default function Detail({
                     </button>
                     <button
                         onClick={handleDownloadPdf}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium flex-shrink-0"
+                        disabled={isGenerating}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium flex-shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                        <FileDown className="w-4 h-4" />
-                        Download PDF
+                        {isGenerating
+                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                            : <FileDown className="w-4 h-4" />}
+                        {isGenerating ? 'Membuat PDF...' : 'Download PDF'}
                     </button>
                 </div>
             </div>
 
             <CompanyHeader perusahaan={perusahaan} dokumenPeriode={dokumenPeriode} />
 
-            {/* Rasio Keuangan */}
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Rasio Keuangan</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -99,7 +144,6 @@ export default function Detail({
                 </div>
             </div>
 
-            {/* Analisis Struktural */}
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Analisis Struktural</h3>
                 <div className="grid grid-cols-1 gap-6">
@@ -108,7 +152,6 @@ export default function Detail({
                 </div>
             </div>
 
-            {/* Analisis Tren */}
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Analisis Tren</h3>
                 <div className="grid grid-cols-1 gap-6">
@@ -120,7 +163,6 @@ export default function Detail({
                 </div>
             </div>
 
-            {/* AI Summary */}
             <div className="flex justify-center">
                 <div className="w-full max-w-4xl">
                     <AIInsightCard narasi={analisis.ai_summary_insight} perusahaanId={perusahaan.id} analisisId={analisis.id} />
