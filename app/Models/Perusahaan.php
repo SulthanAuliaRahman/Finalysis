@@ -17,6 +17,11 @@ class Perusahaan extends Model
         'deskripsi',
     ];
 
+
+    public function perusahaan(){
+        return $this->hasMany(User::class);
+    }
+
     public function dokumen()
     {
         return $this->hasMany(Dokumen::class);

@@ -8,80 +8,100 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\PythonTesterController;
 use App\Http\Controllers\AiConfigurationController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\DashboardController;
 
 // Real Not Test
 
 use App\Http\Controllers\PerusahaanController;
 use App\Http\Controllers\DokumenController;
 use App\Http\Controllers\AnalisisController;
+use App\Http\Controllers\UserController;
 
-// CRUD Perusahaan
-Route::get('/perusahaan', [PerusahaanController::class, 'index'])->name('perusahaan.index');
-Route::get('/perusahaan/create', [PerusahaanController::class, 'create'])->name('perusahaan.create');
-Route::post('/perusahaan', [PerusahaanController::class, 'store'])->name('perusahaan.store');
-Route::get('/perusahaan/{perusahaan}/edit', [PerusahaanController::class, 'edit'])->name('perusahaan.edit');
-Route::put('/perusahaan/{perusahaan}', [PerusahaanController::class, 'update'])->name('perusahaan.update');
-Route::delete('/perusahaan/{perusahaan}', [PerusahaanController::class, 'destroy'])->name('perusahaan.destroy');
+//ROLE UMUM
+Route::middleware(['auth'])->group(function(){
+    // Rute Pengelolaan Dokumen Perusahaan
+    Route::get('/perusahaan/{perusahaan}/dokumen', [DokumenController::class, 'index'])->name('perusahaan.dokumen.index');
 
-// Rute Pengelolaan Dokumen Perusahaan
-Route::get('/perusahaan/{perusahaan}/dokumen', [DokumenController::class, 'index'])->name('perusahaan.dokumen.index');
+    // Halaman Alur Pros
+    Route::get('/python-health', [DokumenController::class, 'checkPythonHealth'])->name('python.health');
 
-// Halaman Alur Pros
-Route::get('/python-health', [DokumenController::class, 'checkPythonHealth'])->name('python.health');
+    // Extract
+    Route::get('/perusahaan/{perusahaan}/dokumen/create', [DokumenController::class, 'create'])->name('perusahaan.dokumen.create');
+    Route::post('/perusahaan/{perusahaan}/dokumen', [DokumenController::class, 'store'])->name('perusahaan.dokumen.store');
 
-// Extract
-Route::get('/perusahaan/{perusahaan}/dokumen/create', [DokumenController::class, 'create'])->name('perusahaan.dokumen.create');
-Route::post('/perusahaan/{perusahaan}/dokumen', [DokumenController::class, 'store'])->name('perusahaan.dokumen.store');
+    //Review & StartChunking
+    Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/view-pdf', [DokumenController::class, 'viewPdf'])->name('perusahaan.dokumen.view-pdf');
+    Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/review', [DokumenController::class, 'review'])->name('perusahaan.dokumen.review');
+    Route::post('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunk', [DokumenController::class, 'chunk'])->name('perusahaan.dokumen.chunk');
 
-//Review & StartChunking
-Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/view-pdf', [DokumenController::class, 'viewPdf'])->name('perusahaan.dokumen.view-pdf');
-Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/review', [DokumenController::class, 'review'])->name('perusahaan.dokumen.review');
-Route::post('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunk', [DokumenController::class, 'chunk'])->name('perusahaan.dokumen.chunk');
+    Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/edit', [DokumenController::class, 'edit'])->name('perusahaan.dokumen.edit');
+    Route::put('/perusahaan/{perusahaan}/dokumen/{dokumen}', [DokumenController::class, 'update'])->name('perusahaan.dokumen.update');
 
-Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/edit', [DokumenController::class, 'edit'])->name('perusahaan.dokumen.edit');
-Route::put('/perusahaan/{perusahaan}/dokumen/{dokumen}', [DokumenController::class, 'update'])->name('perusahaan.dokumen.update');
+    // Start Embedding
+    Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'embedPage'])->name('perusahaan.dokumen.embed');
+    Route::post('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'startEmbedding'])->name('perusahaan.dokumen.embed.run');
 
-// Start Embedding
-Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'embedPage'])->name('perusahaan.dokumen.embed');
-Route::post('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'startEmbedding'])->name('perusahaan.dokumen.embed.run');
+    //Data Loading Done Sudah ada di vectorstore
+    Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunks', [DokumenController::class, 'showChunks'])->name('perusahaan.dokumen.chunks');
 
-//Data Loading Done Sudah ada di vectorstore
-Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunks', [DokumenController::class, 'showChunks'])->name('perusahaan.dokumen.chunks');
+    Route::delete('/perusahaan/{perusahaan}/dokumen/{dokumen}', [DokumenController::class, 'destroy'])->name('perusahaan.dokumen.destroy');
 
-Route::delete('/perusahaan/{perusahaan}/dokumen/{dokumen}', [DokumenController::class, 'destroy'])->name('perusahaan.dokumen.destroy');
+    // Rute Pengelolaan Analisis Perusahaan
+    Route::get('/perusahaan/{perusahaan}/analisis', [AnalisisController::class, 'index'])->name('perusahaan.analisis.index');
+    Route::get('/perusahaan/{perusahaan}/analisis/{analisis}', [AnalisisController::class, 'analisis'])->name('perusahaan.analisis.detail');
 
-// Rute Pengelolaan Analisis Perusahaan
-Route::get('/perusahaan/{perusahaan}/analisis', [AnalisisController::class, 'index'])->name('perusahaan.analisis.index');
-Route::get('/perusahaan/{perusahaan}/analisis/{analisis}', [AnalisisController::class, 'analisis'])->name('perusahaan.analisis.detail');
+    //Settings
+    Route::prefix('settings')->name('settings.')->group(function () {
 
-//Settings
-Route::prefix('settings')->name('settings.')->group(function () {
+        //Ai Configuration
+        Route::get('/ai',[AiConfigurationController::class, 'index'])->name('ai.view');
+        Route::get('/ai/edit',[AiConfigurationController::class, 'edit'])->name('ai.edit');
+        Route::put('/ai',[AiConfigurationController::class, 'update'])->name('ai.update');
 
-    //Ai Configuration
-    Route::get('/ai',[AiConfigurationController::class, 'index'])->name('ai.view');
-    Route::get('/ai/edit',[AiConfigurationController::class, 'edit'])->name('ai.edit');
-    Route::put('/ai',[AiConfigurationController::class, 'update'])->name('ai.update');
+    });
+
+    // Alur Proses Generate Analisis RAG
+    Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/regenerasi', [AnalisisController::class, 'regenerasi'])->name('perusahaan.analisis.regenerasi');
+    Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/hitung-rasio', [AnalisisController::class, 'hitungRasio'])->name('perusahaan.analisis.hitung-rasio');
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
 
 });
 
-// Alur Proses Generate Analisis RAG
-Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/regenerasi', [AnalisisController::class, 'regenerasi'])->name('perusahaan.analisis.regenerasi');
-Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/hitung-rasio', [AnalisisController::class, 'hitungRasio'])->name('perusahaan.analisis.hitung-rasio');
-
-
-// Ganti rute lama ini
-Route::get('/', function () {
-    return Inertia::render('LandingPage');
+//ROLE SUPER ADMIN
+Route::middleware(['auth','role:super_admin'])->group(function(){
+    // CRUD Perusahaan
+    Route::get('/perusahaan', [PerusahaanController::class, 'index'])->name('perusahaan.index');
+    Route::get('/perusahaan/create', [PerusahaanController::class, 'create'])->name('perusahaan.create');
+    Route::delete('/perusahaan/{perusahaan}', [PerusahaanController::class, 'destroy'])->name('perusahaan.destroy');
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth','role:super_admin,manager'])->group(function(){
+    //EDIT PERUSAHAAN
+    Route::get('/perusahaan/{perusahaan}/edit', [PerusahaanController::class, 'edit'])->name('perusahaan.edit');
+    Route::put('/perusahaan/{perusahaan}', [PerusahaanController::class, 'update'])->name('perusahaan.update');
+    Route::post('/perusahaan', [PerusahaanController::class, 'store'])->name('perusahaan.store');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // CRUD USER
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
+
+    
+    // Ganti rute lama ini
+    Route::get('/', function () {
+        return Inertia::render('LandingPage');
+    });
 
 require __DIR__.'/auth.php';
