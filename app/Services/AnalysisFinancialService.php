@@ -269,7 +269,7 @@ class AnalysisFinancialService
             $Prompt .= "Net Cash Flow: " . number_format($titik['net_cash_flow'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_net_cash_flow'] !== null ? round($titik['growth_net_cash_flow'], 2) . '%' : '-') . ")\n";
         }
 
-        $this->tambahkanKonteksNarasiSebelumnya($Prompt, $trendData['narasi_trend_AI']);
+        $this->tambahkanKonteksNarasiSebelumnya($Prompt, $trendData['narasi_trend_akun_utama_AI']);
 
         if ($userPrompt) {
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
