@@ -2,8 +2,6 @@ import { Activity } from 'lucide-react';
 import { RatioCardBase } from './RatioCardBase';
 
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
-
-// FIX: Remove the division by 100 since TATO is a multiplier, not a percentage
 const parseVal = (val) => val ? parseFloat(val) : 0;
 
 export function AnalisisAktivitasCard({ data, neraca, labaRugi, perusahaanId, analisisId, sektor }) {

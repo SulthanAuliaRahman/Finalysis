@@ -2,7 +2,7 @@ import { Shield } from 'lucide-react';
 import { RatioCardBase } from './RatioCardBase';
 
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
-const parseVal = (val) => val ? Number((val / 100).toFixed(2)) : 0;
+const parseVal = (val) => val ? parseFloat(val) : 0;
 
 export function AnalisisSolvabilitasCard({ data, neraca, perusahaanId, analisisId }) {
 

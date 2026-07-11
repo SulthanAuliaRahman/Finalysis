@@ -2,8 +2,7 @@ import { Droplet } from 'lucide-react';
 import { RatioCardBase } from './RatioCardBase';
 
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
-// Helper: Mengubah angka database (persentase) menjadi desimal murni kelipatan
-const parseVal = (val) => val ? Number((val / 100).toFixed(2)) : 0;
+const parseVal = (val) => val != null ? Number(val) : 0;
 
 export function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId }) {
 

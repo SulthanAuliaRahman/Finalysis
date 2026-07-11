@@ -3,8 +3,8 @@ import { TrendCardBase } from './TrendCardBase';
 import { TabelPeriode, LineChartBlock } from './trendHelpers';
 
 // Helper untuk menormalkan data untuk Chart (Angka desimal murni)
-const parseLikuiditas = (val) => val != null ? Number((val / 100).toFixed(2)) : null;
-const parseStandard = (val) => val != null ? Number(Number(val).toFixed(2)) : null;
+const parseLikuiditas = (val) => val != null ? Number(val) : 0;
+const parseStandard = (val) => val != null ? Number(val) : 0;
 
 // Helper untuk UI Tabel (Format koma Indonesia)
 const formatLabel = (val) => val != null ? val.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;

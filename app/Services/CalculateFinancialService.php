@@ -80,7 +80,7 @@ class CalculateFinancialService
         $this->hitungDupont($analisis, $neraca, $labaRugi);
         $this->hitungCommonsize($analisis, $neraca, $labaRugi);
 
-        if (in_array($analisis->status, ['belum dihitung', 'Terjadi Perubahan Data!'])) {
+        if (in_array($analisis->status, ['belum dianalisis', 'Terjadi Perubahan Data!'])) {
             $analisis->update(['status' => 'sudah dihitung']);
         }
     }
@@ -94,9 +94,9 @@ class CalculateFinancialService
         $analisis->likuiditas()->updateOrCreate(
             ['analisis_id' => $analisis->id],
             [
-                'current_ratio' => round($cr * 100, 2),
-                'quick_ratio'   => round($qr * 100, 2),
-                'cash_ratio'    => round($csr * 100, 2),
+                'current_ratio' => round($cr, 2),
+                'quick_ratio'   => round($qr, 2),
+                'cash_ratio'    => round($csr, 2),
             ]
         );
     }
@@ -125,8 +125,8 @@ class CalculateFinancialService
         $analisis->solvabilitas()->updateOrCreate(
             ['analisis_id' => $analisis->id],
             [
-                'debt_to_equity' => round($dte * 100, 2),
-                'debt_to_asset'  => round($dta * 100, 2),
+                'debt_to_equity' => round($dte, 2),
+                'debt_to_asset'  => round($dta, 2),
             ]
         );
     }

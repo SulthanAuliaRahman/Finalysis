@@ -268,7 +268,7 @@ class Analisis extends Model
             'periode_data'               => $periodeData,
         ];
     }
-    
+
     public function getAkunUtamaTrend(): array
     {
         $this->loadMissing('trend');
@@ -328,7 +328,7 @@ class Analisis extends Model
         }
 
         return [
-            'narasi_trend_AI' => $this->trend?->narasi_trend_akun_utama_AI,
+            'narasi_trend_akun_utama_AI' => $this->trend?->narasi_trend_akun_utama_AI,
             'has_gap'         => $hasGap,
             'periode_data'    => $periodeData,
         ];

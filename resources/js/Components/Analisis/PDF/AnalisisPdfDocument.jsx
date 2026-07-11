@@ -3,7 +3,6 @@ import {
 } from '@react-pdf/renderer';
 
 // Helpers
-
 const fmt = (val) =>
     val !== null && val !== undefined
         ? new Intl.NumberFormat('id-ID').format(val)
@@ -11,7 +10,7 @@ const fmt = (val) =>
 
 const fmtPct = (val) =>
     val !== null && val !== undefined
-        ? `${Number(val * 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
+        ? `${Number(val).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
         : '—';
 
 const fmtRatio = (val, suffix = 'x') =>
@@ -437,7 +436,7 @@ function DataKeuanganPage({ neraca, labaRugi, perusahaan, analisis }) {
 
 // Halaman: Rasio Keuangan
 
-function RasioPage({ likuiditas, profitabilitas, solvabilitas, aktivitas, dupont, commonsize, perusahaan, analisis }) {
+function RasioPage({ likuiditas, profitabilitas, solvabilitas, aktivitas, dupont, commonsize, perusahaan, analisis, chartImages }) {
     const likuiditasRows = [
         { label: 'Current Ratio', value: fmtLikuiditas(likuiditas?.current_ratio), formula: 'Aset Lancar / Liabilitas Lancar' },
         { label: 'Quick Ratio',   value: fmtLikuiditas(likuiditas?.quick_ratio),   formula: '(Aset Lancar - Persediaan) / Liabilitas Lancar' },
@@ -489,18 +488,30 @@ function RasioPage({ likuiditas, profitabilitas, solvabilitas, aktivitas, dupont
             <Text style={[S.sectionTitle, S.sectionFirst]}>Rasio Likuiditas</Text>
             <TabelRasio rows={likuiditasRows} />
             <NarasiBlock narasi={likuiditas?.narasi_likuiditas_AI} label="Likuiditas" />
+            {chartImages?.likuiditas && (
+                <>
+                    <Text style={S.chartLabel}>Grafik Rasio Likuiditas</Text>
+                    <Image src={chartImages.likuiditas} style={S.chartImage} />
+                </>
+            )}
 
             {/* Profitabilitas */}
             <Text style={S.sectionTitle}>Rasio Profitabilitas</Text>
             <TabelRasio rows={profitabilitasRows} />
             <NarasiBlock narasi={profitabilitas?.narasi_profitabilitas_AI} label="Profitabilitas" />
+            {chartImages?.profitabilitas && (
+                <>
+                    <Text style={S.chartLabel}>Grafik Rasio Profitabilitas</Text>
+                    <Image src={chartImages.profitabilitas} style={S.chartImage} />
+                </>
+            )}
 
             <PageFooter perusahaan={perusahaan.nama} periode={analisis.periode_label} />
         </Page>
     );
 }
 
-function RasioPage2({ solvabilitas, aktivitas, dupont, commonsize, perusahaan, analisis }) {
+function RasioPage2({ solvabilitas, aktivitas, dupont, commonsize, perusahaan, analisis, chartImages }) {
     const solvabilitasRows = [
         { label: 'Debt to Equity (DER)', value: fmtPct(solvabilitas?.debt_to_equity), formula: 'Total Liabilitas / Total Ekuitas' },
         { label: 'Debt to Asset (DAR)',  value: fmtPct(solvabilitas?.debt_to_asset),  formula: 'Total Liabilitas / Total Aset' },
@@ -539,10 +550,22 @@ function RasioPage2({ solvabilitas, aktivitas, dupont, commonsize, perusahaan, a
             <Text style={[S.sectionTitle, S.sectionFirst]}>Rasio Solvabilitas</Text>
             <TabelRasio rows={solvabilitasRows} />
             <NarasiBlock narasi={solvabilitas?.narasi_solvabilitas_AI} label="Solvabilitas" />
+            {chartImages?.solvabilitas && (
+                <>
+                    <Text style={S.chartLabel}>Grafik Rasio Solvabilitas</Text>
+                    <Image src={chartImages.solvabilitas} style={S.chartImage} />
+                </>
+            )}
 
             <Text style={S.sectionTitle}>Rasio Aktivitas</Text>
             <TabelRasio rows={aktivitasRows} />
             <NarasiBlock narasi={aktivitas?.narasi_aktivitas_AI} label="Aktivitas" />
+            {chartImages?.aktivitas && (
+                <>
+                    <Text style={S.chartLabel}>Grafik Rasio Aktivitas</Text>
+                    <Image src={chartImages.aktivitas} style={S.chartImage} />
+                </>
+            )}
 
             <Text style={S.sectionTitle}>Analisis DuPont</Text>
             <TabelRasio rows={dupontRows} />
@@ -787,6 +810,7 @@ export function AnalisisPdfDocument({
                     profitabilitas={profitabilitas}
                     perusahaan={perusahaan}
                     analisis={analisis}
+                    chartImages={chartImages}
                 />
             )}
 
@@ -799,6 +823,7 @@ export function AnalisisPdfDocument({
                     commonsize={commonsize}
                     perusahaan={perusahaan}
                     analisis={analisis}
+                    chartImages={chartImages}
                 />
             )}
 
