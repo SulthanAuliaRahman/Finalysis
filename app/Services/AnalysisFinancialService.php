@@ -101,9 +101,9 @@ class AnalysisFinancialService
         $Prompt .= "Deskripsi: {$perusahaan->deskripsi}\n";
 
         $Prompt .= "Berikan narasi analisis likuiditas berdasarkan data berikut: \n";
-        $Prompt .= "Current Ratio (CR): " . $data->current_ratio . "%\n";
-        $Prompt .= "Quick Ratio (QR): " . $data->quick_ratio . "%\n";
-        $Prompt .= "Cash Ratio (CSR): " . $data->cash_ratio . "%\n";
+        $Prompt .= "Current Ratio (CR): " . $data->current_ratio . "x\n";
+        $Prompt .= "Quick Ratio (QR): " . $data->quick_ratio . "x\n";
+        $Prompt .= "Cash Ratio (CSR): " . $data->cash_ratio . "x\n";
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $data->narasi_likuiditas_AI);
 
@@ -149,8 +149,8 @@ class AnalysisFinancialService
         $data = $analisis->solvabilitas;
 
         $Prompt  = "Berikan narasi analisis solvabilitas berdasarkan data berikut: \n";
-        $Prompt .= "Debt to Equity Ratio (DER): " . $data->debt_to_equity . "%\n";
-        $Prompt .= "Debt to Asset Ratio (DAR): " . $data->debt_to_asset . "%\n";
+        $Prompt .= "Debt to Equity Ratio (DER): " . $data->debt_to_equity . "x\n";
+        $Prompt .= "Debt to Asset Ratio (DAR): " . $data->debt_to_asset . "x\n";
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $data->narasi_solvabilitas_AI);
 

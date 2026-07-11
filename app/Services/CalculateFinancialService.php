@@ -14,57 +14,57 @@ class CalculateFinancialService
 
     public function currentRatio(float $currentAssets, float $currentLiabilities): float
     {
-        return $currentLiabilities > 0 ? $currentAssets / $currentLiabilities : 0;
+        return $currentLiabilities  == 0 ? 0 : $currentAssets / $currentLiabilities;
     }
 
     public function quickRatio(float $currentAssets, float $inventory, float $currentLiabilities): float
     {
-        return $currentLiabilities > 0 ? ($currentAssets - $inventory) / $currentLiabilities : 0;
+        return $currentLiabilities  == 0 ? 0 : ($currentAssets - $inventory) / $currentLiabilities;
     }
 
     public function cashRatio(float $cash, float $currentLiabilities): float
     {
-        return $currentLiabilities > 0 ? $cash / $currentLiabilities : 0;
+        return $currentLiabilities  == 0 ? 0 : $cash / $currentLiabilities;
     }
 
     public function netProfitMargin(float $netProfit, float $revenue): float
     {
-        return $revenue > 0 ? $netProfit / $revenue : 0;
+        return $revenue  == 0 ? 0 : $netProfit / $revenue;
     }
 
     public function returnOnAssets(float $netProfit, float $totalAssets): float
     {
-        return $totalAssets > 0 ? $netProfit / $totalAssets : 0;
+        return $totalAssets  == 0 ? 0 : $netProfit / $totalAssets;
     }
 
     public function returnOnEquity(float $netProfit, float $totalEquity): float
     {
-        return $totalEquity > 0 ? $netProfit / $totalEquity : 0;
+        return $totalEquity  == 0 ? 0 : $netProfit / $totalEquity;
     }
 
     public function debtToEquity(float $totalLiabilities, float $totalEquity): float
     {
-        return $totalEquity > 0 ? $totalLiabilities / $totalEquity : 0;
+        return $totalEquity  == 0 ? 0 : $totalLiabilities / $totalEquity;
     }
 
     public function debtToAsset(float $totalLiabilities, float $totalAssets): float
     {
-        return $totalAssets > 0 ? $totalLiabilities / $totalAssets : 0;
+        return $totalAssets  == 0 ? 0 : $totalLiabilities / $totalAssets;
     }
 
     public function totalAssetTurnover(float $revenue, float $totalAssets): float
     {
-        return $totalAssets > 0 ? $revenue / $totalAssets : 0;
+        return $totalAssets  == 0 ? 0 : $revenue / $totalAssets;
     }
 
     public function financialLeverage(float $totalAssets, float $totalEquity): float
     {
-        return $totalEquity > 0 ? $totalAssets / $totalEquity : 0;
+        return $totalEquity  == 0 ? 0 : $totalAssets / $totalEquity;
     }
 
     public function commonSizePercentage(float $accountValue, float $baseValue): float
     {
-        return $baseValue > 0 ? ($accountValue / $baseValue) * 100 : 0;
+        return $baseValue  == 0 ? 0 : ($accountValue / $baseValue) * 100;
     }
 
     // =====================================================================
