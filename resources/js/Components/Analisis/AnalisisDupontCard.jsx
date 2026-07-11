@@ -5,11 +5,19 @@ import { BarChart, Bar, XAxis, ResponsiveContainer, LabelList, Cell } from 'rech
 
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
 
+// Helper: Mengubah persentase (15.5) kembali menjadi desimal mentah hasil bagi (0,155).
+// HANYA berlaku untuk field yang memang disimpan dalam skala % (dikali 100 saat dihitung) —
+// yaitu NPM dan ROE. TATO & Leverage TIDAK dikali 100 saat dihitung, jadi nilainya SUDAH
+// desimal murni dari awal — tidak perlu (dan tidak boleh) dibagi 100 lagi.
+const getRawDecimal = (val) => {
+    if (val == null) return null;
+    return Number(val / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+};
+
 // Skala relatif hanya untuk perbandingan visual antar batang (satuan asli beda: % vs x).
-// Nilai asli tetap ditampilkan sebagai label di atas tiap batang, skala di bawah cuma internal.
-const NPM_SKALA_MAX = 30;      // asumsi NPM wajar tidak lebih dari ~30% untuk skala visual
-const TATO_SKALA_MAX = 2;      // asumsi TATO wajar tidak lebih dari ~2x untuk skala visual
-const LEVERAGE_SKALA_MAX = 3;  // asumsi Leverage wajar tidak lebih dari ~3x untuk skala visual
+const NPM_SKALA_MAX = 30;
+const TATO_SKALA_MAX = 2;
+const LEVERAGE_SKALA_MAX = 3;
 
 function normalisasi(value, max) {
     if (value === null || value === undefined) return 0;
@@ -36,7 +44,7 @@ export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, anali
             value: data?.net_profit_margin ?? null,
             unit: '%',
             skala: normalisasi(data?.net_profit_margin, NPM_SKALA_MAX),
-            color: '#0d9488', // teal
+            color: '#0d9488',
         },
         {
             key: 'tato',
@@ -44,7 +52,7 @@ export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, anali
             value: data?.total_asset_turnover ?? null,
             unit: 'x',
             skala: normalisasi(data?.total_asset_turnover, TATO_SKALA_MAX),
-            color: '#2563eb', // blue
+            color: '#2563eb',
         },
         {
             key: 'leverage',
@@ -52,11 +60,42 @@ export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, anali
             value: data?.leverage_multiplier ?? null,
             unit: 'x',
             skala: normalisasi(data?.leverage_multiplier, LEVERAGE_SKALA_MAX),
-            color: '#ea580c', // orange
+            color: '#ea580c',
         },
     ];
 
     const adaData = chartData.some((d) => d.value !== null);
+
+    const ratios = [
+        {
+            label: 'Net Profit Margin (NPM)',
+            value: data?.net_profit_margin ?? null, suffix: '%',
+            formula: 'Laba Bersih / Pendapatan',
+            breakdown: labaRugi ? `${formatNum(labaRugi.laba_bersih)} / ${formatNum(labaRugi.pendapatan)}` : null,
+            rawResult: data?.net_profit_margin != null ? getRawDecimal(data.net_profit_margin) : null,
+        },
+        {
+            label: 'Total Asset Turnover (TATO)',
+            value: data?.total_asset_turnover ?? null, suffix: 'x',
+            formula: 'Pendapatan / Total Aset',
+            breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.pendapatan)} / ${formatNum(neraca.total_assets)}` : null,
+            rawResult: null, // TATO sudah desimal murni ("x"), sama dengan value — tidak perlu ditampilkan dobel
+        },
+        {
+            label: 'Leverage Multiplier',
+            value: data?.leverage_multiplier ?? null, suffix: 'x',
+            formula: 'Total Aset / Total Ekuitas',
+            breakdown: neraca ? `${formatNum(neraca.total_assets)} / ${formatNum(neraca.total_equity)}` : null,
+            rawResult: null, // Leverage sudah desimal murni ("x"), sama dengan value — tidak perlu ditampilkan dobel
+        },
+        {
+            label: 'Return on Equity (ROE)',
+            value: data?.roe ?? null, suffix: '%',
+            formula: 'NPM x TATO x Leverage',
+            breakdown: data ? `${data.net_profit_margin}% x ${data.total_asset_turnover}x x ${data.leverage_multiplier}x` : null,
+            rawResult: data?.roe != null ? getRawDecimal(data.roe) : null,
+        },
+    ];
 
     return (
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
@@ -78,34 +117,9 @@ export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, anali
                 </button>
             </div>
 
-            {/* Detail Rumus & Angka Mentah (dipertahankan dari versi sebelumnya) */}
+            {/* Detail Rumus & Angka Mentah */}
             <div className="space-y-2.5 mb-4">
-                {[
-                    {
-                        label: 'Net Profit Margin (NPM)',
-                        value: data?.net_profit_margin ?? null, suffix: '%',
-                        formula: 'Laba Bersih / Pendapatan',
-                        breakdown: labaRugi ? `${formatNum(labaRugi.laba_bersih)} / ${formatNum(labaRugi.pendapatan)}` : null,
-                    },
-                    {
-                        label: 'Total Asset Turnover (TATO)',
-                        value: data?.total_asset_turnover ?? null, suffix: 'x',
-                        formula: 'Pendapatan / Total Aset',
-                        breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.pendapatan)} / ${formatNum(neraca.total_assets)}` : null,
-                    },
-                    {
-                        label: 'Leverage Multiplier',
-                        value: data?.leverage_multiplier ?? null, suffix: 'x',
-                        formula: 'Total Aset / Total Ekuitas',
-                        breakdown: neraca ? `${formatNum(neraca.total_assets)} / ${formatNum(neraca.total_equity)}` : null,
-                    },
-                    {
-                        label: 'Return on Equity (ROE)',
-                        value: data?.roe ?? null, suffix: '%',
-                        formula: 'NPM x TATO x Leverage',
-                        breakdown: data ? `${data.net_profit_margin}% x ${data.total_asset_turnover}x x ${data.leverage_multiplier}x` : null,
-                    },
-                ].map((ratio, idx) => (
+                {ratios.map((ratio, idx) => (
                     <div key={idx} className="flex flex-col mb-4 last:mb-0 border-b border-slate-100 last:border-0 pb-3 last:pb-0">
                         <div className="flex items-center justify-between mb-1.5">
                             <span className="text-sm text-slate-600 font-medium">{ratio.label}</span>
@@ -123,6 +137,12 @@ export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, anali
                                     <span className="text-slate-400 font-sans w-12 shrink-0">Data:</span>
                                     <span className="text-slate-700">{ratio.breakdown}</span>
                                 </div>
+                                {ratio.rawResult !== null && (
+                                    <div className="flex gap-2">
+                                        <span className="text-slate-400 font-sans w-12 shrink-0">Hasil:</span>
+                                        <span className="text-slate-700">{ratio.rawResult} (sebelum dikali 100%)</span>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
