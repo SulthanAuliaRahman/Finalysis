@@ -1,4 +1,4 @@
-import { useForm, Link } from "@inertiajs/react";
+import { useForm, Link, usePage } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import { Button } from "@/Components/ui/button";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
@@ -12,15 +12,26 @@ export default function Edit({ perusahaan }) {
         deskripsi: perusahaan.deskripsi ?? ""
     });
 
+    const { props } = usePage();
+    const userRole = props.auth?.user?.role;
+
+    const backUrl =
+        userRole === "super_admin"
+            ? "/perusahaan"
+            : "/dashboard";
+
     function handleSubmit(e) {
         e.preventDefault();
         put(`/perusahaan/${perusahaan.id}`);
     }
 
     return (
+        
         <div className="max-w-2xl mx-auto space-y-4">
-            <Link href="/perusahaan" className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-slate-800 gap-1 transition-colors">
-                <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Daftar Perusahaan
+            <Link href={backUrl} className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-slate-800 gap-1 transition-colors">
+                <ArrowLeft className="w-3.5 h-3.5" />
+
+            {userRole === "super_admin"? "Kembali ke Daftar Perusahaan": "Kembali ke Dashboard"}
             </Link>
 
             <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-6">

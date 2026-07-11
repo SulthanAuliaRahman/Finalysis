@@ -1,39 +1,34 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
-import DeleteUserForm from './Partials/DeleteUserForm';
-import UpdatePasswordForm from './Partials/UpdatePasswordForm';
-import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
+import AppLayout from "@/Layouts/AppLayout";
+import DeleteUserForm from "./Partials/DeleteUserForm";
+import UpdatePasswordForm from "./Partials/UpdatePasswordForm";
+import UpdateProfileInformationForm from "./Partials/UpdateProfileInformationForm";
 
 export default function Edit({ mustVerifyEmail, status }) {
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Profile
-                </h2>
-            }
-        >
-            <Head title="Profile" />
-
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <UpdateProfileInformationForm
-                            mustVerifyEmail={mustVerifyEmail}
-                            status={status}
-                            className="max-w-xl"
-                        />
-                    </div>
-
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <UpdatePasswordForm className="max-w-xl" />
-                    </div>
-
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <DeleteUserForm className="max-w-xl" />
-                    </div>
-                </div>
+        <div className="max-w-2xl mx-auto space-y-6">
+            <div>
+                <h2 className="text-xl font-bold text-slate-900">Pengaturan Profil</h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                    Kelola informasi akun, keamanan kata sandi, dan zona berbahaya.
+                </p>
             </div>
-        </AuthenticatedLayout>
+
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs">
+                <UpdateProfileInformationForm
+                    mustVerifyEmail={mustVerifyEmail}
+                    status={status}
+                />
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs">
+                <UpdatePasswordForm />
+            </div>
+
+            <div className="bg-white border border-red-100 rounded-xl p-6 shadow-xs">
+                <DeleteUserForm />
+            </div>
+        </div>
     );
 }
+
+Edit.layout = (page) => <AppLayout title="Pengaturan Profil" children={page} />;

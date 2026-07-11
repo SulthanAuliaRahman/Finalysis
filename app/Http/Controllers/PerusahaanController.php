@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Perusahaan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class PerusahaanController extends Controller
 {
@@ -62,7 +63,13 @@ class PerusahaanController extends Controller
 
         $perusahaan->update($validated);
 
-        return redirect()->route('perusahaan.index');
+        $user = Auth::user();
+        if ($user && $user->role === 'super_admin') {
+            return redirect()->route('perusahaan.index');
+        }
+
+        return redirect()->route('perusahaan.edit',$perusahaan)
+        ->with('success','Data perusahaan berhasil diperbarui');
     }
 
     public function destroy(Perusahaan $perusahaan)

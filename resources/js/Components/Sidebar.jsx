@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react'
 import {
     LayoutDashboard,
     Building2,
+    Building,
     FileText,
     BarChart3,
     Settings2,
@@ -14,10 +15,15 @@ import {
 export default function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
     const { url, props } = usePage();
     const userRole = props.auth?.user?.role;
-
+    const user = props.auth?.user;
+    console.log(props.auth.user);
+    
     const navItems = [
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
         ...(userRole === 'super_admin' ? [{ href: "/perusahaan", label: "Perusahaan", icon: Building2 }] : []),
+        { href: `/perusahaan/${user.perusahaan_id}/dokumen`, label: "Dokumen", icon: FileText},
+        { href: `/perusahaan/${user.perusahaan_id}/analisis`, label: "Analisis", icon: BarChart3},
+        ...(userRole === 'manager' ? [{href: `/perusahaan/${user.perusahaan_id}/edit`, label: "perusahaan", icon:Building}] : []),
         ...(userRole === 'super_admin' || userRole === 'manager' ? [{ href: "/users", label: "Kelola User", icon: Users }] : []),
         { href: "/settings/ai", label: "Konfigurasi AI", icon: Settings2 },
     ];
@@ -103,4 +109,5 @@ export default function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobile
             </aside>
         </>
     );
+    
 }
