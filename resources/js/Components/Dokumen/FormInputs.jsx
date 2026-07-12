@@ -29,13 +29,13 @@ export function InputFieldWithMetadata({ label, section, fieldKey, metadataKey, 
         <div className="space-y-1.5 bg-white border border-slate-100 rounded-lg p-3.5 shadow-sm hover:border-slate-200 transition-colors">
             <label className="text-xs font-bold text-slate-700 block tracking-wide">{label}</label>
 
-            {/* Input Finansial Utama dengan Prefix "Rp" */}
+            {/* Input Finansial Utama dengan Prefix "$" */}
             <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <span className="text-slate-400 text-sm font-semibold">$</span>
                 </div>
                 <input
-                    type="text" // Diubah ke text agar bisa menampilkan titik
+                    type="text"
                     value={formatRibuan(value)}
                     onChange={e => {
                         const rawValue = parseRibuan(e.target.value);
@@ -58,8 +58,17 @@ export function InputFieldWithMetadata({ label, section, fieldKey, metadataKey, 
                         <span className="w-16 font-medium text-slate-500">Halaman:</span>
                         <input
                             type="number"
+                            min="1"
                             value={safeMetadata.page || ''}
-                            onChange={e => onMetadataChange(metadataKey, 'page', e.target.value === '' ? '' : parseInt(e.target.value))}
+                            onChange={e => {
+                                const val = e.target.value;
+                                if (val === '') {
+                                    onMetadataChange(metadataKey, 'page', '');
+                                } else {
+                                    const num = parseInt(val, 10);
+                                    onMetadataChange(metadataKey, 'page', Math.max(1, num));
+                                }
+                            }}
                             className="px-2 py-1 text-[10px] border border-slate-200 rounded w-full max-w-[4rem] focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
                             placeholder="Ex: 3"
                         />
@@ -148,8 +157,17 @@ export function CashFlowInputWithBreakdown({ label, fieldKey, metadataKey, value
                     <span className="w-16 font-medium text-slate-500">Halaman:</span>
                     <input
                         type="number"
+                        min="1"
                         value={safeMetadata.page || ''}
-                        onChange={e => onMetadataChange(metadataKey, 'page', e.target.value === '' ? '' : parseInt(e.target.value))}
+                        onChange={e => {
+                            const val = e.target.value;
+                            if (val === '') {
+                                onMetadataChange(metadataKey, 'page', '');
+                            } else {
+                                const num = parseInt(val, 10);
+                                onMetadataChange(metadataKey, 'page', Math.max(1, num));
+                            }
+                        }}
                         className="px-2 py-1 text-[10px] border border-slate-200 rounded w-16 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
                         placeholder="Ex: 7"
                     />
@@ -196,7 +214,6 @@ export function CashFlowComponentInput({ label, fieldKey, metadataKey, value, on
                     value={value === null ? '' : formatRibuan(value)}
                     onChange={e => {
                         const rawValue = parseRibuan(e.target.value);
-                        // Kirim ke handler khusus CFO/CFI/CFF agar kalkulasi realtime berjalan
                         onChange(fieldKey, rawValue);
                     }}
                     className="w-full pl-9 pr-3 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-mono bg-white text-slate-900 transition-all disabled:bg-slate-50 disabled:text-slate-500"
@@ -205,7 +222,6 @@ export function CashFlowComponentInput({ label, fieldKey, metadataKey, value, on
                 />
             </div>
 
-            {/* Indikator kontribusi ke kas masuk atau kas keluar */}
             {value !== null && value !== '' && !isNaN(parseFloat(value)) && (
                 <div className={`text-[10px] font-semibold px-2 py-0.5 rounded inline-block mt-0.5
                     ${parseFloat(value) >= 0
@@ -227,8 +243,17 @@ export function CashFlowComponentInput({ label, fieldKey, metadataKey, value, on
                         <span className="w-16 font-medium text-slate-500">Halaman:</span>
                         <input
                             type="number"
+                            min="1"
                             value={safeMetadata.page || ''}
-                            onChange={e => onMetadataChange(metadataKey, 'page', e.target.value === '' ? '' : parseInt(e.target.value))}
+                            onChange={e => {
+                                const val = e.target.value;
+                                if (val === '') {
+                                    onMetadataChange(metadataKey, 'page', '');
+                                } else {
+                                    const num = parseInt(val, 10);
+                                    onMetadataChange(metadataKey, 'page', Math.max(1, num));
+                                }
+                            }}
                             className="px-2 py-1 text-[10px] border border-slate-200 rounded w-full max-w-[4rem] focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400"
                             placeholder="Ex: 5"
                         />

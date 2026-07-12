@@ -34,7 +34,7 @@ export function AnalisisPdfDocument({
 }) {
     return (
         <Document
-            title={`Analisis Keuangan ${perusahaan?.nama} — ${analisis?.periode_label}`}
+            title={`Analisis Keuangan ${perusahaan?.nama}-${analisis?.periode_label}`}
             author="Finalysis"
             subject="Laporan Analisis Keuangan"
         >

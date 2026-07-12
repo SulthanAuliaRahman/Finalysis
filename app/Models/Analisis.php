@@ -372,7 +372,7 @@ class Analisis extends Model
         })->all();
 
         return [
-            'narasi_arus_kas_AI' => $this->trend?->narasi_trend_arus_kas_AI,
+            'narasi_trend_arus_kas_AI' => $this->trend?->narasi_trend_arus_kas_AI,
             'has_gap'            => $hasGap,
             'periode_data'       => $periodeData,
         ];

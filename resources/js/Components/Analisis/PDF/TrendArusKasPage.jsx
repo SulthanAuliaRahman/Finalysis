@@ -7,8 +7,8 @@ export function TrendArusKasPage({ perusahaan, analisis, trendArusKas, chartImag
     const periodeData = trendArusKas?.periode_data ?? [];
 
     const rows = [
-        { label: 'Arus Kas Masuk',   get: (periode) => periode.analisis?.arus_kas?.kas_masuk },
-        { label: 'Arus Kas Keluar', get: (periode) => periode.analisis?.arus_kas?.kas_keluar },
+        { label: 'Arus Kas Masuk',   get: (periode) => formatAngka(periode.kas_masuk) },
+        { label: 'Arus Kas Keluar', get: (periode) => formatAngka(periode.kas_keluar) },
     ];
 
     return (

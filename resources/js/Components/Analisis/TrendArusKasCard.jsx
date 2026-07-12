@@ -80,7 +80,6 @@ export const TrendArusKasCard = forwardRef(function TrendArusKasCard({ data, per
             section="trend_arus_kas"
             narasi={data?.narasi_trend_arus_kas_AI}
             narasiLabel="Arus Kas"
-            isDataIlustratif={data?.is_data_ilustratif ?? false}
             hasGap={hasGap}
             dataKurang={dataKurang}
             perusahaanId={perusahaanId}
