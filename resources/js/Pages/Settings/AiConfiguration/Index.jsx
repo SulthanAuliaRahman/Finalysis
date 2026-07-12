@@ -54,7 +54,7 @@ function Pill({ label, value }) {
 	);
 }
 
-export default function Index({ configuration }) {
+export default function Index({ configuration, keyStatus = {} }) {
 	const hasConfiguration = Boolean(configuration);
 
 	return (
@@ -108,7 +108,7 @@ export default function Index({ configuration }) {
 				<DetailRow label="Provider" value={configuration?.llm_provider} />
 				<DetailRow label="Model" value={configuration?.llm_model} />
 				<DetailRow label="Base URL" value={configuration?.llm_url} mono />
-				<DetailRow label="API Key" value={configuration?.llm_api_key ? "Tersimpan" : "Tidak ada"} />
+				<DetailRow label="API Key" value={keyStatus.llm ? "Tersimpan" : "Tidak ada"} />
 			</SectionCard>
 
 			<SectionCard
@@ -119,7 +119,7 @@ export default function Index({ configuration }) {
 				<DetailRow label="Provider" value={configuration?.embedding_provider} />
 				<DetailRow label="Model" value={configuration?.embedding_model} />
 				<DetailRow label="Base URL" value={configuration?.embedding_url} mono />
-				<DetailRow label="API Key" value={configuration?.embedding_api_key ? "Tersimpan" : "Tidak ada"} />
+				<DetailRow label="API Key" value={keyStatus.embedding ? "Tersimpan" : "Tidak ada"} />
 			</SectionCard>
 
 			<SectionCard
@@ -132,7 +132,7 @@ export default function Index({ configuration }) {
 						<DetailRow label="Reranker Provider" value={configuration?.reranker_provider} />
 						<DetailRow label="Reranker Model" value={configuration?.reranker_model} />
 						<DetailRow label="Top N" value={configuration?.reranker_top_n} />
-						<DetailRow label="Reranker API Key" value={configuration?.reranker_api_key ? "Tersimpan" : "Tidak ada"} />
+						<DetailRow label="Reranker API Key" value={keyStatus.reranker ? "Tersimpan" : "Tidak ada"} />
 					</div>
 					<div className="space-y-3">
 						<DetailRow label="LocalAI URL" value={configuration?.localai_url} mono />

@@ -40,13 +40,4 @@ return [
         'timeout' => env('PYTHON_SERVICE_TIMEOUT', 120),
     ],
 
-    'reranker' => [
-        'provider'       => env('RERANKER_PROVIDER', 'localai'),
-        'model'          => env('RERANKER_MODEL'), // sengaja null; default per-provider ditentukan di RagAgent::buildReranker()
-        'top_n'          => env('RERANKER_TOP_N', 3),
-        'cohere_api_key' => env('COHERE_API_KEY'),
-        'jina_api_key'   => env('JINA_API_KEY'),
-        'localai_url'    => env('LOCALAI_URL', 'http://localhost:8080/'),
-    ],
-
 ];
