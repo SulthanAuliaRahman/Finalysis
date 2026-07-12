@@ -209,21 +209,19 @@ class AnalisisController extends Controller
                     $analysisFinancialService->prosesTrendArusKas($analisis, $userPrompt);
                     break;
                 case 'summary':
-                    // minimal sudah ada AI Narasi untuk 4 rasio utama + Trend nya
+                    // minimal sudah ada AI Narasi untuk 4 rasio utama
                     $analisis->load([
                         'likuiditas',
                         'profitabilitas',
                         'solvabilitas',
                         'aktivitas',
-                        'trend',
                     ]);
 
                     $hasNarasi =
                         filled($analisis->likuiditas?->narasi_likuiditas_AI) &&
                         filled($analisis->profitabilitas?->narasi_profitabilitas_AI) &&
                         filled($analisis->solvabilitas?->narasi_solvabilitas_AI) &&
-                        filled($analisis->aktivitas?->narasi_aktivitas_AI) &&
-                        filled($analisis->trend?->narasi_trend_rasio_AI);
+                        filled($analisis->aktivitas?->narasi_aktivitas_AI);
 
                     if (!$hasNarasi) {
                         return back()->withErrors([
@@ -232,11 +230,9 @@ class AnalisisController extends Controller
                     }
 
                     $analysisFinancialService->prosesSummaryAnalisis($analisis, $userPrompt);
-
                     break;
             }
 
-            // $analysisFinancialService->updateStatusJikaLengkap($analisis);
         });
 
         return back();

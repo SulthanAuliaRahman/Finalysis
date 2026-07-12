@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { RatioCardBase } from './RatioCardBase';
 
@@ -12,7 +13,7 @@ const getRawDecimal = (val) => {
     return Number(val / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 };
 
-export function AnalisisProfitabilitasCard({ data, neraca, labaRugi, perusahaanId, analisisId, sektor }) {
+export const AnalisisProfitabilitasCard = forwardRef(function AnalisisProfitabilitasCard({ data, neraca, labaRugi, perusahaanId, analisisId, sektor }, ref) {
 
     // Logika Dinamis Benchmark NPM berdasarkan sektor
     let npmBenchmark = null;
@@ -28,6 +29,7 @@ export function AnalisisProfitabilitasCard({ data, neraca, labaRugi, perusahaanI
 
     return (
         <RatioCardBase
+            ref={ref}
             title="Profitabilitas"
             icon={<TrendingUp className="w-5 h-5" />}
             iconBgColor="bg-green-100"
@@ -66,4 +68,4 @@ export function AnalisisProfitabilitasCard({ data, neraca, labaRugi, perusahaanI
             analisisId={analisisId}
         />
     );
-}
+});

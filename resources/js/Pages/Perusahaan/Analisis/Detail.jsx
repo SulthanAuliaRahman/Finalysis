@@ -37,17 +37,20 @@ export default function Detail({
 }) {
     const [isCalculating, setIsCalculating] = useState(false);
 
-    const refRasio      = useRef(null);
-    const refDupont     = useRef(null);
-    const refCommonsize = useRef(null);
-    const refAkunUtama  = useRef(null);
-    const refArusKas    = useRef(null);
+    const refLikuiditas    = useRef(null);
+    const refProfitabilitas = useRef(null);
+    const refSolvabilitas  = useRef(null);
+    const refAktivitas     = useRef(null);
+    const refRasio         = useRef(null);
+    const refDupont        = useRef(null);
+    const refCommonsize    = useRef(null);
+    const refAkunUtama     = useRef(null);
+    const refArusKas       = useRef(null);
 
     const safeNama    = perusahaan.nama.replace(/[^a-zA-Z0-9]/g, '_');
     const safePeriode = analisis.periode_label.replace(/[^a-zA-Z0-9]/g, '_');
     const fileName    = `Analisis_${safeNama}_${safePeriode}.pdf`;
 
-    // FIX: lowercase 'u' — sesuai nama export di usePdfGenerator.jsx
     const { isGenerating, generatePdf } = usePdfGenerator({
         pdfProps: {
             perusahaan,
@@ -68,11 +71,15 @@ export default function Detail({
             fileName,
         },
         chartRefs: {
-            rasio:      refRasio,
-            dupont:     refDupont,
-            commonsize: refCommonsize,
-            akunUtama:  refAkunUtama,
-            arusKas:    refArusKas,
+            likuiditas:     refLikuiditas,
+            profitabilitas: refProfitabilitas,
+            solvabilitas:   refSolvabilitas,
+            aktivitas:      refAktivitas,
+            rasio:          refRasio,
+            dupont:         refDupont,
+            commonsize:     refCommonsize,
+            akunUtama:      refAkunUtama,
+            arusKas:        refArusKas,
         },
     });
 
@@ -124,9 +131,7 @@ export default function Detail({
                         disabled={isGenerating}
                         className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium flex-shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                        {isGenerating
-                            ? <Loader2 className="w-4 h-4 animate-spin" />
-                            : <FileDown className="w-4 h-4" />}
+                        {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
                         {isGenerating ? 'Membuat PDF...' : 'Download PDF'}
                     </button>
                 </div>
@@ -137,10 +142,10 @@ export default function Detail({
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Rasio Keuangan</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <AnalisisLikuiditasCard data={likuiditas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
-                    <AnalisisProfitabilitasCard data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
-                    <AnalisisSolvabilitasCard data={solvabilitas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
-                    <AnalisisAktivitasCard data={aktivitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
+                    <AnalisisLikuiditasCard ref={refLikuiditas} data={likuiditas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
+                    <AnalisisProfitabilitasCard ref={refProfitabilitas} data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
+                    <AnalisisSolvabilitasCard ref={refSolvabilitas} data={solvabilitas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
+                    <AnalisisAktivitasCard ref={refAktivitas} data={aktivitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
                 </div>
             </div>
 

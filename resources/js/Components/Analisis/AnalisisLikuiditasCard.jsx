@@ -1,10 +1,11 @@
+import { forwardRef } from 'react';
 import { Droplet } from 'lucide-react';
 import { RatioCardBase } from './RatioCardBase';
 
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
 const parseVal = (val) => val != null ? Number(val) : 0;
 
-export function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId }) {
+export const AnalisisLikuiditasCard = forwardRef(function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId }, ref) {
 
     const chartData = [
         { name: 'CR', value: parseVal(data?.current_ratio), benchmark: 1.5 },
@@ -14,6 +15,7 @@ export function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId 
 
     return (
         <RatioCardBase
+            ref={ref}
             title="Likuiditas"
             icon={<Droplet className="w-5 h-5" />}
             iconBgColor="bg-blue-100"
@@ -52,4 +54,4 @@ export function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId 
             analisisId={analisisId}
         />
     );
-}
+});

@@ -1,10 +1,11 @@
+import { forwardRef } from 'react';
 import { Shield } from 'lucide-react';
 import { RatioCardBase } from './RatioCardBase';
 
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
 const parseVal = (val) => val ? parseFloat(val) : 0;
 
-export function AnalisisSolvabilitasCard({ data, neraca, perusahaanId, analisisId }) {
+export const AnalisisSolvabilitasCard = forwardRef(function AnalisisSolvabilitasCard({ data, neraca, perusahaanId, analisisId }, ref) {
 
     const chartData = [
         { name: 'DER', value: parseVal(data?.debt_to_equity), benchmark: 2.0 },
@@ -13,6 +14,7 @@ export function AnalisisSolvabilitasCard({ data, neraca, perusahaanId, analisisI
 
     return (
         <RatioCardBase
+            ref={ref}
             title="Solvabilitas"
             icon={<Shield className="w-5 h-5" />}
             iconBgColor="bg-purple-100"
@@ -43,4 +45,4 @@ export function AnalisisSolvabilitasCard({ data, neraca, perusahaanId, analisisI
             analisisId={analisisId}
         />
     );
-}
+});
