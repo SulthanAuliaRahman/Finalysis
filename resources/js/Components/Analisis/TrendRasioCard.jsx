@@ -1,15 +1,12 @@
 import { Activity } from 'lucide-react';
+import { forwardRef } from 'react';
 import { TrendCardBase } from './TrendCardBase';
 import { TabelPeriode, LineChartBlock } from './trendHelpers';
 
-// Helper untuk menormalkan data untuk Chart (Angka desimal murni)
 const parseLikuiditas = (val) => val != null ? Number(val) : 0;
 const parseStandard = (val) => val != null ? Number(val) : 0;
-
-// Helper untuk UI Tabel (Format koma Indonesia)
 const formatLabel = (val) => val != null ? val.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;
 
-// Tabel row definitions
 const RASIO_ROWS = [
     { label: 'Current Ratio', get: (a) => parseLikuiditas(a?.likuiditas?.current_ratio),      suffix: 'x' },
     { label: 'Quick Ratio',   get: (a) => parseLikuiditas(a?.likuiditas?.quick_ratio),        suffix: 'x' },
@@ -33,7 +30,6 @@ const RASIO_ROWS = [
     },
 }));
 
-// Chart line definitions
 const LIKUIDITAS_LINES = [
     { key: 'cr',  label: 'Current Ratio', color: '#0ea5e9', get: (a) => parseLikuiditas(a?.likuiditas?.current_ratio) },
     { key: 'qr',  label: 'Quick Ratio',   color: '#6366f1', get: (a) => parseLikuiditas(a?.likuiditas?.quick_ratio) },
@@ -55,7 +51,7 @@ const AKTIVITAS_LINES = [
     { key: 'tato', label: 'TATO', color: '#2563eb', get: (a) => parseStandard(a?.aktivitas?.total_asset_turnover) },
 ];
 
-export function TrendRasioCard({ data, perusahaanId, analisisId }) {
+export const TrendRasioCard = forwardRef(function TrendRasioCard({ data, perusahaanId, analisisId }, ref) {
     const periodeData = data?.periode_data ?? [];
     const dataKurang  = periodeData.length < 2;
     const hasGap      = data?.has_gap ?? false;
@@ -80,7 +76,7 @@ export function TrendRasioCard({ data, perusahaanId, analisisId }) {
                 periodeData={periodeData}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+            <div ref={ref} className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 w-full bg-white mt-4 pb-2">
                 <LineChartBlock title="Tren Likuiditas" periodeData={periodeData} lines={LIKUIDITAS_LINES} leftUnit="x" />
                 <LineChartBlock title="Tren Profitabilitas" periodeData={periodeData} lines={PROFITABILITAS_LINES} leftUnit="%" />
                 <LineChartBlock title="Tren Solvabilitas" periodeData={periodeData} lines={SOLVABILITAS_LINES} leftUnit="%" />
@@ -88,4 +84,4 @@ export function TrendRasioCard({ data, perusahaanId, analisisId }) {
             </div>
         </TrendCardBase>
     );
-}
+});

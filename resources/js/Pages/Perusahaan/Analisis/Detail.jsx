@@ -44,8 +44,11 @@ export default function Detail({
     const refRasio         = useRef(null);
     const refDupont        = useRef(null);
     const refCommonsize    = useRef(null);
-    const refAkunUtama     = useRef(null);
-    const refArusKas       = useRef(null);
+
+    const refTrendRasio  = useRef(null);
+    const refTrendDupont  = useRef(null);
+    const refTrendCommonsize  = useRef(null);
+    const refTrendArusKas  = useRef(null);
 
     const safeNama    = perusahaan.nama.replace(/[^a-zA-Z0-9]/g, '_');
     const safePeriode = analisis.periode_label.replace(/[^a-zA-Z0-9]/g, '_');
@@ -78,8 +81,10 @@ export default function Detail({
             rasio:          refRasio,
             dupont:         refDupont,
             commonsize:     refCommonsize,
-            akunUtama:      refAkunUtama,
-            arusKas:        refArusKas,
+            trendRasio:         refTrendRasio,
+            trendDupont:        refTrendDupont,
+            trendCommonsize:    refTrendCommonsize,
+            trendArusKas:       refTrendArusKas,
         },
     });
 
@@ -152,8 +157,8 @@ export default function Detail({
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Analisis Struktural</h3>
                 <div className="grid grid-cols-1 gap-6">
-                    <AnalisisDupontCard data={dupont} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <AnalisisCommonsizeCard data={commonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <AnalisisDupontCard ref={refDupont} data={dupont} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <AnalisisCommonsizeCard ref={refCommonsize} data={commonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                 </div>
             </div>
 
@@ -161,15 +166,15 @@ export default function Detail({
                 <h3 className="font-semibold text-slate-900 mb-4">Analisis Tren</h3>
                 <div className="grid grid-cols-1 gap-6">
                     <TrendAkunUtamaCard data={trendAkunUtama} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <TrendRasioCard data={trendRasio} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <TrendDupontCard data={trendDupont} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <TrendCommonsizeCard data={trendCommonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <TrendArusKasCard data={trendArusKas} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <TrendRasioCard ref={refTrendRasio} data={trendRasio} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
+                    <TrendDupontCard ref={refTrendDupont} data={trendDupont} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <TrendCommonsizeCard ref={refTrendCommonsize} data={trendCommonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <TrendArusKasCard ref={refTrendArusKas} data={trendArusKas} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
                 </div>
             </div>
 
             <div className="flex justify-center">
-                <div className="w-full max-w-4xl">
+                <div className="w-full">
                     <AIInsightCard narasi={analisis.ai_summary_insight} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                 </div>
             </div>

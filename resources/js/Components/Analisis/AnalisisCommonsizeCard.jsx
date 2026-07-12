@@ -1,17 +1,13 @@
 import { PieChart, RefreshCw, Loader2, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { router } from '@inertiajs/react';
 import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
-// Format persen: DB kirim string decimal(12,6) mentah (mis. "64.290000"),
-// jadi selalu dibulatkan ke 2 desimal sebelum ditampilkan.
 const formatPersen = (val) => {
     if (val === null || val === undefined) return null;
     return Number(val).toFixed(2);
 };
 
-// Konversi eksplisit ke number — kolom decimal(12,6) Laravel dikembalikan sebagai STRING,
-// dan Recharts butuh number asli untuk menghitung sudut tiap slice pie.
 const toNum = (val) => (val === null || val === undefined ? null : Number(val));
 
 function PercentBar({ label, value, color = 'bg-teal-500' }) {
@@ -86,7 +82,7 @@ function DonutChart({ title, data, height = 200 }) {
     );
 }
 
-export function AnalisisCommonsizeCard({ data, perusahaanId, analisisId }) {
+export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard({ data, perusahaanId, analisisId }, ref) {
     const [isLoading, setIsLoading] = useState(false);
     const belumDianalisis = !data?.narasi_commonsize_AI;
 
@@ -136,37 +132,39 @@ export function AnalisisCommonsizeCard({ data, perusahaanId, analisisId }) {
                 </button>
             </div>
 
-            {/* Data mentah: 2 kolom percent bar, persis seperti gambar referensi */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 mb-6">
-                <div>
-                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3">
-                        Laba Rugi (basis Pendapatan)
-                    </p>
-                    <PercentBar label="HPP" value={data?.hpp_persen ?? null} color="bg-orange-500" />
-                    <PercentBar label="Beban Lain & Pajak" value={data?.beban_lain_pajak_persen ?? null} color="bg-red-500" />
-                    <PercentBar label="Laba Bersih" value={data?.laba_bersih_persen ?? null} color="bg-green-600" />
+            {/* Area yang di-capture PDF */}
+            <div ref={ref} className="w-full bg-white pb-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 mb-4">
+                    <div>
+                        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3">
+                            Laba Rugi (basis Pendapatan)
+                        </p>
+                        <PercentBar label="HPP" value={data?.hpp_persen ?? null} color="bg-orange-500" />
+                        <PercentBar label="Beban Lain & Pajak" value={data?.beban_lain_pajak_persen ?? null} color="bg-red-500" />
+                        <PercentBar label="Laba Bersih" value={data?.laba_bersih_persen ?? null} color="bg-green-600" />
+                    </div>
+                    <div>
+                        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3">
+                            Neraca (basis Total Aset)
+                        </p>
+                        <PercentBar label="Aset Lancar" value={data?.aset_lancar_persen ?? null} color="bg-blue-500" />
+                        <PercentBar label="Aset Tetap" value={data?.aset_tetap_persen ?? null} color="bg-indigo-500" />
+                        <PercentBar label="Liabilitas Lancar" value={data?.liabilitas_lancar_persen ?? null} color="bg-yellow-500" />
+                        <PercentBar label="Liabilitas Jk. Panjang" value={data?.liabilitas_panjang_persen ?? null} color="bg-orange-600" />
+                        <PercentBar label="Ekuitas" value={data?.ekuitas_persen ?? null} color="bg-purple-500" />
+                    </div>
                 </div>
-                <div>
-                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3">
-                        Neraca (basis Total Aset)
+
+                {data?.beban_lain_pajak_persen !== null && data?.beban_lain_pajak_persen !== undefined && (
+                    <p className="text-[10px] text-slate-400 italic">
+                        * "Beban Lain & Pajak" adalah gabungan OpEx, Bunga, dan Pajak — tidak tersedia terpisah dari dokumen sumber.
                     </p>
-                    <PercentBar label="Aset Lancar" value={data?.aset_lancar_persen ?? null} color="bg-blue-500" />
-                    <PercentBar label="Aset Tetap" value={data?.aset_tetap_persen ?? null} color="bg-indigo-500" />
-                    <PercentBar label="Liabilitas Lancar" value={data?.liabilitas_lancar_persen ?? null} color="bg-yellow-500" />
-                    <PercentBar label="Liabilitas Jk. Panjang" value={data?.liabilitas_panjang_persen ?? null} color="bg-orange-600" />
-                    <PercentBar label="Ekuitas" value={data?.ekuitas_persen ?? null} color="bg-purple-500" />
-                </div>
+                )}
             </div>
+            {/* Akhir area capture PDF */}
 
-            {/* Catatan transparansi untuk pos gabungan */}
-            {data?.beban_lain_pajak_persen !== null && data?.beban_lain_pajak_persen !== undefined && (
-                <p className="text-[10px] text-slate-400 italic mb-6 -mt-3">
-                    * "Beban Lain & Pajak" adalah gabungan OpEx, Bunga, dan Pajak — tidak tersedia terpisah dari dokumen sumber.
-                </p>
-            )}
-
-            {/* Donut chart, sebagai pelengkap visual */}
-            <div className="mb-5">
+            {/* Donut chart (gak ke pdf) */}
+            <div className="mt-6 mb-5">
                 <DonutChart title="Income Statement (basis Pendapatan)" data={incomeStatementData} />
             </div>
             <div className="mb-5">
@@ -181,11 +179,11 @@ export function AnalisisCommonsizeCard({ data, perusahaanId, analisisId }) {
 
             {/* Narasi AI */}
             {belumDianalisis ? (
-                <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-lg p-4 text-center">
+                <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-lg p-4 text-center mt-4">
                     <p className="text-xs text-slate-400">Analisis Common-size belum pernah dijalankan pada periode ini.</p>
                 </div>
             ) : (
-                <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3">
+                <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 mt-4">
                     <div className="flex items-center gap-1.5 mb-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-blue-500" />
                         <span className="text-xs font-medium text-blue-700">Insight AI</span>
@@ -195,4 +193,4 @@ export function AnalisisCommonsizeCard({ data, perusahaanId, analisisId }) {
             )}
         </div>
     );
-}
+});

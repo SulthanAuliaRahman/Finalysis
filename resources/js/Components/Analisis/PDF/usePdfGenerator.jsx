@@ -30,29 +30,41 @@ export function usePdfGenerator({ pdfProps, chartRefs }) {
         setIsGenerating(true);
         try {
             const [
-                likuiditasImg, profitabilitasImg, solvabilitasImg, aktivitasImg,rasioImg, dupontImg, commonsizeImg, akunUtamaImg, arusKasImg,
+                likuiditasImg,
+                profitabilitasImg,
+                solvabilitasImg,
+                aktivitasImg,
+                dupontImg,
+                commonsizeImg,
+                trendRasioImg,
+                trendDupontImg,
+                trendCommonsizeImg,
+                trendArusKasImg,
             ] = await Promise.all([
                 captureElement(chartRefs.likuiditas),
                 captureElement(chartRefs.profitabilitas),
                 captureElement(chartRefs.solvabilitas),
                 captureElement(chartRefs.aktivitas),
-                captureElement(chartRefs.rasio),
                 captureElement(chartRefs.dupont),
                 captureElement(chartRefs.commonsize),
-                captureElement(chartRefs.akunUtama),
-                captureElement(chartRefs.arusKas),
+                captureElement(chartRefs.trendRasio),
+                captureElement(chartRefs.trendDupont),
+                captureElement(chartRefs.trendCommonsize),
+                captureElement(chartRefs.trendArusKas),
             ]);
 
+            // Mapping yang konsisten dengan kebutuhan AnalisisPdfDocument
             const chartImages = {
-                likuiditas:     likuiditasImg,
-                profitabilitas: profitabilitasImg,
-                solvabilitas:   solvabilitasImg,
-                aktivitas:      aktivitasImg,
-                rasio:          rasioImg,
-                dupont:         dupontImg,
-                commonsize:     commonsizeImg,
-                akunUtama:      akunUtamaImg,
-                arusKas:        arusKasImg,
+                likuiditas:      likuiditasImg,
+                profitabilitas:  profitabilitasImg,
+                solvabilitas:    solvabilitasImg,
+                aktivitas:       aktivitasImg,
+                dupont:          dupontImg,
+                commonsize:      commonsizeImg,
+                trendRasio:      trendRasioImg,
+                trendDupont:     trendDupontImg,
+                trendCommonsize: trendCommonsizeImg,
+                trendArusKas:    trendArusKasImg,
             };
 
             const doc = <AnalisisPdfDocument {...pdfProps} chartImages={chartImages} />;

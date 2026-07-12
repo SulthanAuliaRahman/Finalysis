@@ -1,20 +1,15 @@
 import { Layers, RefreshCw, Loader2, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { router } from '@inertiajs/react';
 import { BarChart, Bar, XAxis, ResponsiveContainer, LabelList, Cell } from 'recharts';
 
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
 
-// Helper: Mengubah persentase (15.5) kembali menjadi desimal mentah hasil bagi (0,155).
-// HANYA berlaku untuk field yang memang disimpan dalam skala % (dikali 100 saat dihitung) —
-// yaitu NPM dan ROE. TATO & Leverage TIDAK dikali 100 saat dihitung, jadi nilainya SUDAH
-// desimal murni dari awal — tidak perlu (dan tidak boleh) dibagi 100 lagi.
 const getRawDecimal = (val) => {
     if (val == null) return null;
     return Number(val / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 };
 
-// Skala relatif hanya untuk perbandingan visual antar batang (satuan asli beda: % vs x).
 const NPM_SKALA_MAX = 30;
 const TATO_SKALA_MAX = 2;
 const LEVERAGE_SKALA_MAX = 3;
@@ -24,7 +19,7 @@ function normalisasi(value, max) {
     return Math.min((value / max) * 100, 100);
 }
 
-export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, analisisId }) {
+export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, analisisId }, ref) {
     const [isLoading, setIsLoading] = useState(false);
     const belumDianalisis = !data?.narasi_dupont_AI;
 
@@ -155,7 +150,7 @@ export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, anali
                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
                         Dekomposisi Visual
                     </p>
-                    <div style={{ width: '100%', height: 180 }}>
+                    <div ref={ref} style={{ width: '100%', height: 180 }}>
                         <ResponsiveContainer>
                             <BarChart data={chartData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
                                 <XAxis dataKey="label" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -207,4 +202,4 @@ export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, anali
             )}
         </div>
     );
-}
+});

@@ -1,9 +1,13 @@
 import { Page, Text, View } from '@react-pdf/renderer';
 import { pdfStyles } from './shared/pdfStyles';
-import { PdfPageHeader, PdfPageFooter, NarasiAiBlock } from './shared/pdfComponents';
-import { formatPersentase } from './shared/pdfHelpers';
+import { PdfPageHeader, PdfPageFooter, NarasiAiBlock, ChartImageBlock  } from './shared/pdfComponents';
 
-export function AnalisisCommonsizePage({ perusahaan, analisis, commonsize }) {
+export function AnalisisCommonsizePage({
+    perusahaan,
+    analisis,
+    commonsize,
+    chartImageBase64
+}) {
     const rows = [
         { label: 'HPP (%)',                   value: commonsize?.hpp_persen },
         { label: 'Laba Kotor (%)',            value: commonsize?.laba_kotor_persen },
@@ -39,6 +43,7 @@ export function AnalisisCommonsizePage({ perusahaan, analisis, commonsize }) {
                 ))}
             </View>
             <NarasiAiBlock narasi={commonsize?.narasi_commonsize_AI} label="Common-Size" />
+            <ChartImageBlock judul="Diagram CommonSize" chartImageBase64={chartImageBase64} />
 
             <PdfPageFooter namaPerusahaan={perusahaan.nama} periodeLabel={analisis.periode_label} />
         </Page>

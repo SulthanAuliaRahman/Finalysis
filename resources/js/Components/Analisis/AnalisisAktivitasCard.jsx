@@ -1,13 +1,12 @@
+import { forwardRef } from 'react';
 import { Activity } from 'lucide-react';
 import { RatioCardBase } from './RatioCardBase';
 
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
 const parseVal = (val) => val ? parseFloat(val) : 0;
 
-export function AnalisisAktivitasCard({ data, neraca, labaRugi, perusahaanId, analisisId, sektor }) {
-
+export const  AnalisisAktivitasCard = forwardRef(function AnalisisAktivitasCard({ data, neraca, labaRugi, perusahaanId, analisisId, sektor }, ref){
     let npmBenchmark = null;
-    //temp
     if (sektor === "Jasa") npmBenchmark = 1;
     else if (sektor === "Manufaktur") npmBenchmark = 1;
     else if (sektor === "Perdagangan") npmBenchmark = 1;
@@ -18,6 +17,7 @@ export function AnalisisAktivitasCard({ data, neraca, labaRugi, perusahaanId, an
 
     return (
         <RatioCardBase
+            ref={ref}
             title="Aktivitas"
             icon={<Activity className="w-5 h-5" />}
             iconBgColor="bg-orange-100"
@@ -40,4 +40,4 @@ export function AnalisisAktivitasCard({ data, neraca, labaRugi, perusahaanId, an
             analisisId={analisisId}
         />
     );
-}
+});

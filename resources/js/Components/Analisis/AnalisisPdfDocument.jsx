@@ -108,6 +108,7 @@ export function AnalisisPdfDocument({
                     perusahaan={perusahaan}
                     analisis={analisis}
                     dupont={dupont}
+                    chartImageBase64={chartImages.dupont}
                 />
             )}
 
@@ -117,16 +118,16 @@ export function AnalisisPdfDocument({
                     perusahaan={perusahaan}
                     analisis={analisis}
                     commonsize={commonsize}
+                    chartImageBase64={chartImages.commonsize}
                 />
             )}
 
-            {/* 10. Tren Akun Utama */}
+            {/* 10. Tren Akun Utama (Tanpa Grafik) */}
             {trendAkunUtama && (
                 <TrendAkunUtamaPage
                     perusahaan={perusahaan}
                     analisis={analisis}
                     trendAkunUtama={trendAkunUtama}
-                    chartImageBase64={chartImages.akunUtama}
                 />
             )}
 
@@ -136,7 +137,7 @@ export function AnalisisPdfDocument({
                     perusahaan={perusahaan}
                     analisis={analisis}
                     trendRasio={trendRasio}
-                    chartImageBase64={chartImages.rasio}
+                    chartImageBase64={chartImages.trendRasio}
                 />
             )}
 
@@ -146,7 +147,7 @@ export function AnalisisPdfDocument({
                     perusahaan={perusahaan}
                     analisis={analisis}
                     trendDupont={trendDupont}
-                    chartImageBase64={chartImages.dupont}
+                    chartImageBase64={chartImages.trendDupont}
                 />
             )}
 
@@ -156,7 +157,7 @@ export function AnalisisPdfDocument({
                     perusahaan={perusahaan}
                     analisis={analisis}
                     trendCommonsize={trendCommonsize}
-                    chartImageBase64={chartImages.commonsize}
+                    chartImageBase64={chartImages.trendCommonsize}
                 />
             )}
 
@@ -166,7 +167,7 @@ export function AnalisisPdfDocument({
                     perusahaan={perusahaan}
                     analisis={analisis}
                     trendArusKas={trendArusKas}
-                    chartImageBase64={chartImages.arusKas}
+                    chartImageBase64={chartImages.trendArusKas}
                 />
             )}
         </Document>

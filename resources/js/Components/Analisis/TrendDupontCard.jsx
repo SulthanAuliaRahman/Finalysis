@@ -1,8 +1,8 @@
 import { GitMerge } from 'lucide-react';
+import { forwardRef } from 'react';
 import { TrendCardBase } from './TrendCardBase';
 import { TabelPeriode, LineChartBlock } from './trendHelpers';
 
-// Tabel row definitions
 const DUPONT_ROWS = [
     { label: 'Net Profit Margin',    get: (a) => a?.dupont?.net_profit_margin,    suffix: '%' },
     { label: 'Total Asset Turnover', get: (a) => a?.dupont?.total_asset_turnover, suffix: 'x' },
@@ -20,8 +20,6 @@ const DUPONT_ROWS = [
     },
 }));
 
-// NPM & ROE -> sumbu kiri (%)
-// TATO & Leverage -> sumbu kanan (x)
 const DUPONT_LINES = [
     { key: 'npm',      label: 'NPM',      color: '#16a34a', axis: 'left',  get: (a) => a?.dupont?.net_profit_margin },
     { key: 'roe',      label: 'ROE',      color: '#dc2626', axis: 'left',  get: (a) => a?.dupont?.roe },
@@ -29,7 +27,7 @@ const DUPONT_LINES = [
     { key: 'leverage', label: 'Leverage', color: '#ea580c', axis: 'right', get: (a) => a?.dupont?.leverage_multiplier },
 ];
 
-export function TrendDupontCard({ data, perusahaanId, analisisId }) {
+export const TrendDupontCard = forwardRef(function TrendDupontCard({ data, perusahaanId, analisisId }, ref) {
     const periodeData = data?.periode_data ?? [];
     const dataKurang  = periodeData.length < 2;
     const hasGap      = data?.has_gap ?? false;
@@ -54,14 +52,16 @@ export function TrendDupontCard({ data, perusahaanId, analisisId }) {
                 periodeData={periodeData}
             />
 
-            <LineChartBlock
-                title="Tren DuPont — NPM & ROE (kiri %) vs TATO & Leverage (kanan x)"
-                periodeData={periodeData}
-                lines={DUPONT_LINES}
-                dualAxis
-                leftUnit="%"
-                rightUnit="x"
-            />
+            <div ref={ref} className="w-full bg-white mt-4 pb-2">
+                <LineChartBlock
+                    title="Tren DuPont — NPM & ROE (kiri %) vs TATO & Leverage (kanan x)"
+                    periodeData={periodeData}
+                    lines={DUPONT_LINES}
+                    dualAxis
+                    leftUnit="%"
+                    rightUnit="x"
+                />
+            </div>
         </TrendCardBase>
     );
-}
+});

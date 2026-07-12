@@ -1,9 +1,14 @@
 import { Page, Text } from '@react-pdf/renderer';
 import { pdfStyles } from './shared/pdfStyles';
-import { PdfPageHeader, PdfPageFooter, TabelRasio, NarasiAiBlock } from './shared/pdfComponents';
+import { PdfPageHeader, PdfPageFooter, TabelRasio, NarasiAiBlock, ChartImageBlock  } from './shared/pdfComponents';
 import { formatPersentase, formatRasio } from './shared/pdfHelpers';
 
-export function AnalisisDupontPage({ perusahaan, analisis, dupont }) {
+export function AnalisisDupontPage({
+    perusahaan,
+    analisis,
+    dupont,
+    chartImageBase64
+}) {
     const rows = [
         {
             label:   'Net Profit Margin (%)',
@@ -37,6 +42,7 @@ export function AnalisisDupontPage({ perusahaan, analisis, dupont }) {
             <Text style={[pdfStyles.sectionTitle, pdfStyles.sectionFirst]}>Analisis DuPont</Text>
             <TabelRasio rows={rows} />
             <NarasiAiBlock narasi={dupont?.narasi_dupont_AI} label="DuPont" />
+            <ChartImageBlock judul="Grafik Dupont" chartImageBase64={chartImageBase64} />
 
             <PdfPageFooter namaPerusahaan={perusahaan.nama} periodeLabel={analisis.periode_label} />
         </Page>

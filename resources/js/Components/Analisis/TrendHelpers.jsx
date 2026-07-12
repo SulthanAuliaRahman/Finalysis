@@ -130,7 +130,6 @@ export function LineChartBlock({
                                 />
                             )}
 
-                            {/* FIX: Tooltip dikonfigurasi agar pakai koma gaya Indonesia */}
                             <Tooltip
                                 formatter={(val, name) => [
                                     Number(val).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),

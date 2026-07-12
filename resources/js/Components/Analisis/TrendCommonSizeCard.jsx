@@ -1,15 +1,13 @@
 import { PieChart } from 'lucide-react';
+import { forwardRef } from 'react';
 import { TrendCardBase } from './TrendCardBase';
 import { TabelPeriode, LineChartBlock } from './trendHelpers';
 
-// Tabel row definitions
 const COMMONSIZE_ROWS = [
-    // Income Statement
     { label: 'HPP',                    get: (a) => a?.commonsize?.hpp_persen },
     { label: 'Laba Kotor',             get: (a) => a?.commonsize?.laba_kotor_persen },
     { label: 'Beban Lain & Pajak',     get: (a) => a?.commonsize?.beban_lain_pajak_persen },
     { label: 'Laba Bersih',            get: (a) => a?.commonsize?.laba_bersih_persen },
-    // Balance Sheet
     { label: 'Aset Lancar',            get: (a) => a?.commonsize?.aset_lancar_persen },
     { label: 'Aset Tetap',             get: (a) => a?.commonsize?.aset_tetap_persen },
     { label: 'Liabilitas Lancar',      get: (a) => a?.commonsize?.liabilitas_lancar_persen },
@@ -27,9 +25,8 @@ const COMMONSIZE_ROWS = [
     },
 }));
 
-// Chart line definitions
 const LABA_RUGI_LINES = [
-    { key: 'hpp',         label: 'HPP',                color: '#f97316', get: (a) => a?.commonsize?.hpp_persen },
+    { key: 'hpp',         label: 'HPP',                 color: '#f97316', get: (a) => a?.commonsize?.hpp_persen },
     { key: 'laba_kotor',  label: 'Laba Kotor',         color: '#a3e635', get: (a) => a?.commonsize?.laba_kotor_persen },
     { key: 'beban_lain',  label: 'Beban Lain & Pajak', color: '#ef4444', get: (a) => a?.commonsize?.beban_lain_pajak_persen },
     { key: 'laba_bersih', label: 'Laba Bersih',        color: '#16a34a', get: (a) => a?.commonsize?.laba_bersih_persen },
@@ -43,7 +40,7 @@ const NERACA_LINES = [
     { key: 'ekuitas',      label: 'Ekuitas',                 color: '#a855f7', get: (a) => a?.commonsize?.ekuitas_persen },
 ];
 
-export function TrendCommonsizeCard({ data, perusahaanId, analisisId }) {
+export const TrendCommonsizeCard = forwardRef(function TrendCommonsizeCard({ data, perusahaanId, analisisId }, ref) {
     const periodeData = data?.periode_data ?? [];
     const dataKurang  = periodeData.length < 2;
     const hasGap      = data?.has_gap ?? false;
@@ -68,7 +65,7 @@ export function TrendCommonsizeCard({ data, perusahaanId, analisisId }) {
                 periodeData={periodeData}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+            <div ref={ref} className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 w-full bg-white mt-4 pb-2">
                 <LineChartBlock
                     title="Laba Rugi — basis Pendapatan"
                     periodeData={periodeData}
@@ -84,4 +81,4 @@ export function TrendCommonsizeCard({ data, perusahaanId, analisisId }) {
             </div>
         </TrendCardBase>
     );
-}
+});

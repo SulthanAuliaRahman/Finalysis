@@ -5,7 +5,7 @@ import { formatAngka } from './shared/pdfHelpers';
 
 export function DataKeuanganDasarPage({ perusahaan, analisis, neraca, labaRugi }) {
     const neracaRows = [
-        { label: 'Kas & Setara Kas',  value: formatAngka(neraca?.cash_equivalent) },
+        { label: 'Kas & Setara Kas',   value: formatAngka(neraca?.cash_equivalent) },
         { label: 'Persediaan',         value: formatAngka(neraca?.inventory) },
         { label: 'Aset Lancar',        value: formatAngka(neraca?.current_assets) },
         { label: 'Total Aset',         value: formatAngka(neraca?.total_assets) },

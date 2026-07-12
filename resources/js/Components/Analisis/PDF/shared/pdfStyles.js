@@ -201,10 +201,10 @@ export const pdfStyles = StyleSheet.create({
         fontStyle: 'italic',
     },
     chartImage: {
-        width: '80%',
+        width: '100%',
         alignSelf: 'center',
         marginTop: 4,
-        marginBottom: 16,
+        marginBottom: 4,
     },
 
     // Footer

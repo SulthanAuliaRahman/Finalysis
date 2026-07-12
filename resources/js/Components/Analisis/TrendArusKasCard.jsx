@@ -1,8 +1,8 @@
 import { Wallet } from 'lucide-react';
+import { forwardRef } from 'react';
 import { TrendCardBase } from './TrendCardBase';
 import { TabelPeriode, LineChartBlock, formatNum } from './trendHelpers';
 
-// Tabel row definitions
 const ARUS_KAS_ROWS = [
     {
         label: 'Kas Masuk',
@@ -23,7 +23,6 @@ const ARUS_KAS_ROWS = [
     {
         label: 'Status Arus Kas',
         render: (p) => {
-            // Pastikan data tidak kosong
             if (p.kas_masuk === undefined || p.kas_keluar === undefined || p.kas_masuk === null || p.kas_keluar === null) {
                 return <span className="text-slate-400">—</span>;
             }
@@ -31,7 +30,6 @@ const ARUS_KAS_ROWS = [
             const net = Number(p.kas_masuk) - Number(p.kas_keluar);
 
             if (net > 0) {
-                // Gunakan tampilan "Badge" agar status lebih menonjol
                 return (
                     <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-600 text-[10px] rounded-full font-semibold uppercase tracking-wider">
                         Surplus
@@ -59,7 +57,7 @@ const ARUS_KAS_LINES = [
     { key: 'kas_keluar', label: 'Kas Keluar', color: '#f43f5e', get: (a) => a?.kas_keluar },
 ];
 
-export function TrendArusKasCard({ data, perusahaanId, analisisId }) {
+export const TrendArusKasCard = forwardRef(function TrendArusKasCard({ data, perusahaanId, analisisId }, ref) {
     const periodeData = data?.periode_data ?? [];
     const dataKurang = periodeData.length < 2;
     const hasGap      = data?.has_gap ?? false;
@@ -88,14 +86,13 @@ export function TrendArusKasCard({ data, perusahaanId, analisisId }) {
             perusahaanId={perusahaanId}
             analisisId={analisisId}
         >
-
             <TabelPeriode
                 title="Ringkasan Pergerakan Kas"
                 rows={ARUS_KAS_ROWS}
                 periodeData={periodeData}
             />
 
-            <div className="mt-6">
+            <div ref={ref} className="mt-6 w-full bg-white pb-2">
                 <LineChartBlock
                     title="Grafik Kas Masuk vs Kas Keluar"
                     periodeData={chartDataMapped}
@@ -105,4 +102,4 @@ export function TrendArusKasCard({ data, perusahaanId, analisisId }) {
             </div>
         </TrendCardBase>
     );
-}
+});
