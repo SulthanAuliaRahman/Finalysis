@@ -157,7 +157,7 @@ export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard
 
                 {data?.beban_lain_pajak_persen !== null && data?.beban_lain_pajak_persen !== undefined && (
                     <p className="text-[10px] text-slate-400 italic">
-                        * "Beban Lain & Pajak" adalah gabungan OpEx, Bunga, dan Pajak — tidak tersedia terpisah dari dokumen sumber.
+                        *"Beban Lain & Pajak" adalah gabungan OpEx, Bunga, dan Pajak - dihitung dari laba kotor - laba bersih
                     </p>
                 )}
             </div>

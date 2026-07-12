@@ -68,20 +68,23 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({ data,
             formula: 'Laba Bersih / Pendapatan',
             breakdown: labaRugi ? `${formatNum(labaRugi.laba_bersih)} / ${formatNum(labaRugi.pendapatan)}` : null,
             rawResult: data?.net_profit_margin != null ? getRawDecimal(data.net_profit_margin) : null,
+            rawNote: '(sebelum dikali 100%)' // Tambahan
         },
         {
             label: 'Total Asset Turnover (TATO)',
             value: data?.total_asset_turnover ?? null, suffix: 'x',
             formula: 'Pendapatan / Total Aset',
             breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.pendapatan)} / ${formatNum(neraca.total_assets)}` : null,
-            rawResult: null, // TATO sudah desimal murni ("x"), sama dengan value — tidak perlu ditampilkan dobel
+            rawResult: data?.total_asset_turnover != null ? data.total_asset_turnover : null, // Ubah dari null
+            rawNote: null // Kosongkan karena bukan persentase
         },
         {
             label: 'Leverage Multiplier',
             value: data?.leverage_multiplier ?? null, suffix: 'x',
             formula: 'Total Aset / Total Ekuitas',
             breakdown: neraca ? `${formatNum(neraca.total_assets)} / ${formatNum(neraca.total_equity)}` : null,
-            rawResult: null, // Leverage sudah desimal murni ("x"), sama dengan value — tidak perlu ditampilkan dobel
+            rawResult: data?.leverage_multiplier != null ? data.leverage_multiplier : null, // Ubah dari null
+            rawNote: null
         },
         {
             label: 'Return on Equity (ROE)',
@@ -89,6 +92,7 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({ data,
             formula: 'NPM x TATO x Leverage',
             breakdown: data ? `${data.net_profit_margin}% x ${data.total_asset_turnover}x x ${data.leverage_multiplier}x` : null,
             rawResult: data?.roe != null ? getRawDecimal(data.roe) : null,
+            rawNote: '(sebelum dikali 100%)'
         },
     ];
 
@@ -122,20 +126,33 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({ data,
                                 {ratio.value !== null ? `${ratio.value}${ratio.suffix}` : '—'}
                             </span>
                         </div>
+
                         {ratio.breakdown && ratio.value !== null && (
-                            <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[11px] font-mono text-slate-500 space-y-1">
+                            <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[11px] font-mono text-slate-500 space-y-1.5">
                                 <div className="flex gap-2">
-                                    <span className="text-slate-400 font-sans w-12 shrink-0">Rumus:</span>
+                                    <span className="text-slate-400 font-sans w-14 shrink-0">Rumus:</span>
                                     <span className="text-blue-600">{ratio.formula}</span>
                                 </div>
                                 <div className="flex gap-2">
-                                    <span className="text-slate-400 font-sans w-12 shrink-0">Data:</span>
+                                    <span className="text-slate-400 font-sans w-14 shrink-0">Angka:</span>
                                     <span className="text-slate-700">{ratio.breakdown}</span>
                                 </div>
-                                {ratio.rawResult !== null && (
-                                    <div className="flex gap-2">
-                                        <span className="text-slate-400 font-sans w-12 shrink-0">Hasil:</span>
-                                        <span className="text-slate-700">{ratio.rawResult} (sebelum dikali 100%)</span>
+
+                                {/* Row Hasil Raw yang sudah mendukung TATO & Leverage */}
+                                {ratio.rawResult !== null && ratio.rawResult !== undefined && (
+                                    <div className="flex gap-2 mt-1 pt-1.5 border-t border-slate-200 border-dashed items-center">
+                                        <span className="text-slate-500 font-sans font-medium w-14 shrink-0">Hasil:</span>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-slate-800 font-bold bg-white px-1.5 py-0.5 rounded border border-slate-200 leading-none">
+                                                {ratio.rawResult}
+                                            </span>
+                                            {/* Note hanya dirender jika ada nilainya */}
+                                            {ratio.rawNote && (
+                                                <span className="text-slate-400 font-sans italic text-[10px]">
+                                                    {ratio.rawNote}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
