@@ -1,9 +1,14 @@
-import NeracaForm from "./NeracaForm";
-import LabaRugiForm from "./LabaRugiForm";
-import ArusKasForm from "./ArusKasForm";
+import EditNeracaForm from "./EditNeracaForm";
+import EditLabaRugiForm from "./EditLabaRugiForm";
+import EditArusKasForm from "./EditArusKasForm";
 
-export default function ExtractionForm({ data, foundAt, onDataChange, onMetadataChange, onCashFlowComponentChange, disabled, statementTypes = [] }) {
-
+export default function EditForm({
+    data,
+    onDataChange,
+    onCashFlowComponentChange,
+    disabled,
+    statementTypes = []
+}) {
     const hasNeraca = statementTypes.includes("neraca");
     const hasLabaRugi = statementTypes.includes("laba_rugi");
     const hasArusKas = statementTypes.includes("arus_kas");
@@ -11,31 +16,25 @@ export default function ExtractionForm({ data, foundAt, onDataChange, onMetadata
     return (
         <div className="grid grid-cols-1 gap-5">
             {hasNeraca && (
-                <NeracaForm
+                <EditNeracaForm
                     data={data}
-                    foundAt={foundAt}
                     onDataChange={onDataChange}
-                    onMetadataChange={onMetadataChange}
                     disabled={disabled}
                 />
             )}
 
             {hasLabaRugi && (
-                <LabaRugiForm
+                <EditLabaRugiForm
                     data={data}
-                    foundAt={foundAt}
                     onDataChange={onDataChange}
-                    onMetadataChange={onMetadataChange}
                     disabled={disabled}
                 />
             )}
 
             {hasArusKas && (
-                <ArusKasForm
+                <EditArusKasForm
                     data={data}
-                    foundAt={foundAt}
                     onDataChange={onDataChange}
-                    onMetadataChange={onMetadataChange}
                     onCashFlowComponentChange={onCashFlowComponentChange}
                     disabled={disabled}
                 />
