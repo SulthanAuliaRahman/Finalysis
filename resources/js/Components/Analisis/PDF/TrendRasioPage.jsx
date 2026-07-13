@@ -1,7 +1,7 @@
 import { Page, Text } from '@react-pdf/renderer';
 import { pdfStyles } from './shared/pdfStyles';
 import { PdfPageHeader, PdfPageFooter, NarasiAiBlock, ChartImageBlock, TabelTrendMultiPeriode } from './shared/pdfComponents';
-import { formatPersentase, formatRasio, formatLikuiditasDanSolvabilitas, formatLabelPeriode } from './shared/pdfHelpers';
+import { formatLabelPeriode } from './shared/pdfHelpers';
 
 export function TrendRasioPage({ perusahaan, analisis, trendRasio, chartImageBase64 }) {
     const periodeData = trendRasio?.periode_data ?? [];

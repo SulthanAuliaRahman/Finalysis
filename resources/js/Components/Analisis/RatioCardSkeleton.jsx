@@ -36,7 +36,7 @@ export function RatioCardSkeleton({ title, icon, ratioNames, iconBgColor, iconCo
 
             <div className="bg-slate-50/70 border border-slate-100 rounded-lg p-3">
                 <p className="text-xs text-slate-400 italic">
-                    Insight AI untuk rasio {title.toLowerCase()} akan muncul di sini setelah analisis dijalankan.
+                    Narasi AI untuk rasio {title.toLowerCase()} akan muncul di sini setelah analisis dijalankan.
                 </p>
             </div>
         </div>

@@ -37,7 +37,7 @@ function NarasiBlock({ title, text }) {
         <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 mb-5">
             <div className="flex items-center gap-1.5 mb-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-                <span className="text-xs font-medium text-blue-700">Insight AI — {title}</span>
+                <span className="text-xs font-medium text-blue-700">Narasi AI — {title}</span>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{text}</p>
         </div>
@@ -311,7 +311,7 @@ export function AnalisisTrendCard({ data, perusahaanId, analisisId }) {
                     </div>
                     <NarasiBlock title="Rasio" text={data?.narasi_rasio_AI} />
 
-                    
+
 
                     {/* 3. Tren DuPont — tabel, narasi, 1 chart dual-axis */}
                     <TabelPeriode title="DuPont" rows={DUPONT_ROWS} periodeData={periodeData} />
@@ -332,9 +332,9 @@ export function AnalisisTrendCard({ data, perusahaanId, analisisId }) {
                             />
                         </div>
                     </div>
-                
+
                     <NarasiBlock title="DuPont" text={data?.narasi_dupont_AI} />
-                    
+
 
                     {/* 4. Tren Common-size — tabel gabung, narasi, 2 chart terpisah basis */}
                     <TabelPeriode title="Common-size" rows={COMMONSIZE_ROWS} periodeData={periodeData} />
@@ -361,7 +361,7 @@ export function AnalisisTrendCard({ data, perusahaanId, analisisId }) {
                         />
                     </div>
                     <NarasiBlock title="Common-size" text={data?.narasi_commonsize_AI} />
-                    
+
                 </>
             )}
         </div>

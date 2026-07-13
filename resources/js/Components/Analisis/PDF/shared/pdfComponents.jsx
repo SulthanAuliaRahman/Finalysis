@@ -34,7 +34,7 @@ export function NarasiAiBlock({ narasi, label }) {
     }
     return (
         <View style={pdfStyles.narasiBox}>
-            <Text style={pdfStyles.narasiLabel}>Insight AI: {label}</Text>
+            <Text style={pdfStyles.narasiLabel}>Narasi AI: {label}</Text>
             <Text style={pdfStyles.narasiText}>{narasi}</Text>
         </View>
     );

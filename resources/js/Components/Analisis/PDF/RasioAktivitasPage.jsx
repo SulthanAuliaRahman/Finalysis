@@ -1,7 +1,6 @@
 import { Page, Text } from '@react-pdf/renderer';
 import { pdfStyles } from './shared/pdfStyles';
 import { PdfPageHeader, PdfPageFooter, TabelRasio, NarasiAiBlock, ChartImageBlock } from './shared/pdfComponents';
-import { formatRasio } from './shared/pdfHelpers';
 
 export function RasioAktivitasPage({ perusahaan, analisis, aktivitas, chartImageBase64 }) {
     const rows = [

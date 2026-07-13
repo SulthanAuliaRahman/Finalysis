@@ -1,7 +1,6 @@
 import { Page, Text } from '@react-pdf/renderer';
 import { pdfStyles } from './shared/pdfStyles';
 import { PdfPageHeader, PdfPageFooter, TabelRasio, NarasiAiBlock, ChartImageBlock } from './shared/pdfComponents';
-import { formatLikuiditasDanSolvabilitas } from './shared/pdfHelpers';
 
 export function RasioSolvabilitasPage({ perusahaan, analisis, solvabilitas, chartImageBase64 }) {
     const rows = [

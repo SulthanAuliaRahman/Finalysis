@@ -143,7 +143,7 @@ export const RatioCardBase = forwardRef(function RatioCardBase({
                     <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3">
                         <div className="flex items-center gap-1.5 mb-1.5">
                             <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-                            <span className="text-xs font-medium text-blue-700">Insight AI</span>
+                            <span className="text-xs font-medium text-blue-700">Narasi AI</span>
                         </div>
                         <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{narasi}</p>
                     </div>

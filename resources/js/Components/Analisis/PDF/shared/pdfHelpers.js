@@ -5,31 +5,6 @@
 export const formatAngka = (val) => val !== null && val !== undefined? new Intl.NumberFormat('id-ID').format(val) : '—';
 
 /**
- * Format nilai persentase dari DB.
- * Nilai DB sudah dalam bentuk persentase (misal: 15.5 → "15,50%").
- */
-export const formatPersentase = (val) =>
-    val !== null && val !== undefined ? `${Number(val).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : '—';
-
-/**
- * Format nilai rasio dengan suffix (default "x").
- * Contoh: 1.5 → "1,50x"
- */
-export const formatRasio = (val, suffix = 'x') =>
-    val !== null && val !== undefined
-        ? `${Number(val).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${suffix}`
-        : '—';
-
-/**
- * Format nilai likuiditas & solvabilitas.
- * Nilai DB disimpan dalam persentase×100 (misal: 150 → dibagi 100 → "1,50x").
- */
-export const formatLikuiditasDanSolvabilitas = (val) =>
-    val !== null && val !== undefined
-        ? `${Number(val / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}x`
-        : '—';
-
-/**
  * Format label periode dari object analisis.
  * Contoh: { periode_type: 'quarterly', quarter: 3, tahun: 2024 } → "Q3 2024"
  */
