@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { RefreshCw, Sparkles, Loader2, X, AlertCircle } from 'lucide-react';
+import { ReferenceButton } from './ReferenceButton';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export function RatioCardBase({
@@ -15,6 +16,7 @@ export function RatioCardBase({
     section,
     perusahaanId,
     analisisId,
+    referenceDocuments,
 }) {
     const [isLoading, setIsLoading] = useState(false);
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
@@ -56,14 +58,17 @@ export function RatioCardBase({
                     </div>
                     <h3 className="font-semibold text-slate-900">{title}</h3>
                 </div>
-                <button
-                    onClick={handleTrigger}
-                    disabled={isLoading || rasioBelumDihitung}
-                    className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                    {belumDianalisis ? 'Mulai Analisis' : 'Regenerasi'}
-                </button>
+                <div className="flex items-center gap-2">
+                    <ReferenceButton documents={referenceDocuments} section={section} />
+                    <button
+                        onClick={handleTrigger}
+                        disabled={isLoading || rasioBelumDihitung}
+                        className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                        {belumDianalisis ? 'Mulai Analisis' : 'Regenerasi'}
+                    </button>
+                </div>
             </div>
 
             <div className="space-y-2.5 mb-4">

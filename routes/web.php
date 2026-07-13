@@ -49,6 +49,7 @@ Route::middleware(['auth'])->group(function(){
     // Rute Pengelolaan Analisis Perusahaan
     Route::get('/perusahaan/{perusahaan}/analisis', [AnalisisController::class, 'index'])->name('perusahaan.analisis.index');
     Route::get('/perusahaan/{perusahaan}/analisis/{analisis}', [AnalisisController::class, 'analisis'])->name('perusahaan.analisis.detail');
+    Route::get('/perusahaan/{perusahaan}/analisis/{analisis}/referensi/{dokumen}/chunks', [AnalisisController::class, 'referensiChunks'])->name('perusahaan.analisis.referensi-chunks');
 
     //Settings
     Route::prefix('settings')->name('settings.')->group(function () {

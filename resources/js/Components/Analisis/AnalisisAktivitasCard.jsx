@@ -6,7 +6,7 @@ const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
 // FIX: Remove the division by 100 since TATO is a multiplier, not a percentage
 const parseVal = (val) => val ? parseFloat(val) : 0;
 
-export function AnalisisAktivitasCard({ data, neraca, labaRugi, perusahaanId, analisisId, sektor }) {
+export function AnalisisAktivitasCard({ data, neraca, labaRugi, perusahaanId, analisisId, sektor, referenceDocuments }) {
 
     let npmBenchmark = null;
     //temp
@@ -40,6 +40,7 @@ export function AnalisisAktivitasCard({ data, neraca, labaRugi, perusahaanId, an
             section="aktivitas"
             perusahaanId={perusahaanId}
             analisisId={analisisId}
+            referenceDocuments={referenceDocuments}
         />
     );
 }

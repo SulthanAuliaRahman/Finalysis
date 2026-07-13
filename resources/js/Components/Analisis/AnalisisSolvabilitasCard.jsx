@@ -4,7 +4,7 @@ import { RatioCardBase } from './RatioCardBase';
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
 const parseVal = (val) => val ? Number((val / 100).toFixed(2)) : 0;
 
-export function AnalisisSolvabilitasCard({ data, neraca, perusahaanId, analisisId }) {
+export function AnalisisSolvabilitasCard({ data, neraca, perusahaanId, analisisId, referenceDocuments }) {
 
     const chartData = [
         { name: 'DER', value: parseVal(data?.debt_to_equity), benchmark: 2.0 },
@@ -41,6 +41,7 @@ export function AnalisisSolvabilitasCard({ data, neraca, perusahaanId, analisisI
             section="solvabilitas"
             perusahaanId={perusahaanId}
             analisisId={analisisId}
+            referenceDocuments={referenceDocuments}
         />
     );
 }

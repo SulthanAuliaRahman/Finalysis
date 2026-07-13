@@ -5,7 +5,7 @@ const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
 // Helper: Mengubah angka database (persentase) menjadi desimal murni kelipatan
 const parseVal = (val) => val ? Number((val / 100).toFixed(2)) : 0;
 
-export function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId }) {
+export function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId, referenceDocuments }) {
 
     const chartData = [
         { name: 'CR', value: parseVal(data?.current_ratio), benchmark: 1.5 },
@@ -51,6 +51,7 @@ export function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId 
             section="likuiditas"
             perusahaanId={perusahaanId}
             analisisId={analisisId}
+            referenceDocuments={referenceDocuments}
         />
     );
 }

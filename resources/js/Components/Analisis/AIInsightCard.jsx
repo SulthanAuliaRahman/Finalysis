@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { Sparkles, RefreshCw, Loader2, X } from 'lucide-react';
+import { ReferenceButton } from './ReferenceButton';
 
-export function AIInsightCard({ narasi, perusahaanId, analisisId }) {
+export function AIInsightCard({ narasi, perusahaanId, analisisId, referenceDocuments }) {
     const [isLoading, setIsLoading] = useState(false);
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
     const [userPrompt, setUserPrompt] = useState('');
@@ -42,18 +43,21 @@ export function AIInsightCard({ narasi, perusahaanId, analisisId }) {
                     </div>
                     <h3 className="font-semibold text-slate-900">Summary & Insight</h3>
                 </div>
-                <button
-                    onClick={handleTrigger}
-                    disabled={isLoading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-blue-700 hover:bg-blue-50 transition-colors text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed z-0"
-                >
-                    {isLoading ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                        <RefreshCw className="w-3.5 h-3.5" />
-                    )}
-                    {belumDianalisis ? 'Mulai Analisis' : 'Regenerasi'}
-                </button>
+                <div className="flex items-center gap-2">
+                    <ReferenceButton documents={referenceDocuments} section="summary" />
+                    <button
+                        onClick={handleTrigger}
+                        disabled={isLoading}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-blue-700 hover:bg-blue-50 transition-colors text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed z-0"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                            <RefreshCw className="w-3.5 h-3.5" />
+                        )}
+                        {belumDianalisis ? 'Mulai Analisis' : 'Regenerasi'}
+                    </button>
+                </div>
             </div>
 
             {belumDianalisis ? (

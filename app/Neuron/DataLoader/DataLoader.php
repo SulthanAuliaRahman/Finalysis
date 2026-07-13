@@ -10,21 +10,24 @@ use NeuronAI\RAG\Document;
 class DataLoader
 {
     private const METADATA_KEYS = [
+        'company_id',
+        'document_id',
         'company',
         'period',
         'statement_type',
         'source',
         'found_page',
         'found_at',
+        'chunk_index',
     ];
 
-    public static function embedChunks(array $chunks): int
+    public static function embedChunks(array $chunks, array $documentMetadata = []): int
     {
         $allDocuments = [];
 
         foreach ($chunks as $chunk) {
             $text     = $chunk['text']     ?? '';
-            $metadata = $chunk['metadata'] ?? [];
+            $metadata = array_merge($chunk['metadata'] ?? [], $documentMetadata);
 
             if (trim($text) === '') {
                 continue;
@@ -36,6 +39,8 @@ class DataLoader
 
             foreach ($documents as $document) {
                 self::attachMetadata($document, $metadata);
+                $document->sourceType = 'document';
+                $document->sourceName = (string) ($metadata['document_id'] ?? 'unknown');
                 $allDocuments[] = $document;
             }
         }
@@ -44,7 +49,9 @@ class DataLoader
             return 0;
         }
 
-        IndexerAgent::make()->addDocuments($allDocuments);
+        // Re-embedding the same document must replace its previous vectors,
+        // otherwise duplicate chunks bias retrieval results.
+        IndexerAgent::make()->reindexBySource($allDocuments);
 
         return count($allDocuments);
     }

@@ -55,7 +55,7 @@ const AKTIVITAS_LINES = [
     { key: 'tato', label: 'TATO', color: '#2563eb', get: (a) => parseStandard(a?.aktivitas?.total_asset_turnover) },
 ];
 
-export function TrendRasioCard({ data, perusahaanId, analisisId }) {
+export function TrendRasioCard({ data, perusahaanId, analisisId, referenceDocuments }) {
     const periodeData = data?.periode_data ?? [];
     const dataKurang  = periodeData.length < 2;
     const hasGap      = data?.has_gap ?? false;
@@ -73,6 +73,7 @@ export function TrendRasioCard({ data, perusahaanId, analisisId }) {
             dataKurang={dataKurang}
             perusahaanId={perusahaanId}
             analisisId={analisisId}
+            referenceDocuments={referenceDocuments}
         >
             <TabelPeriode
                 title="Ringkasan Rasio"

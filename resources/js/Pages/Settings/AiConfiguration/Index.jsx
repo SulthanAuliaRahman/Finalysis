@@ -143,7 +143,7 @@ export default function Index({ configuration, keyStatus = {} }) {
 				</div>
 			</SectionCard>
 
-			<SectionCard
+			{/* <SectionCard
 				icon={Wand2}
 				title="System Prompt"
 				description="Instruksi global yang dipakai untuk mengarahkan gaya dan format output AI."
@@ -156,7 +156,7 @@ export default function Index({ configuration, keyStatus = {} }) {
 						{configuration?.system_prompt || "Belum ada system prompt yang disimpan."}
 					</pre>
 				</div>
-			</SectionCard>
+			</SectionCard> */}
 
 			
 		</div>

@@ -29,7 +29,7 @@ const DUPONT_LINES = [
     { key: 'leverage', label: 'Leverage', color: '#ea580c', axis: 'right', get: (a) => a?.dupont?.leverage_multiplier },
 ];
 
-export function TrendDupontCard({ data, perusahaanId, analisisId }) {
+export function TrendDupontCard({ data, perusahaanId, analisisId, referenceDocuments }) {
     const periodeData = data?.periode_data ?? [];
     const dataKurang  = periodeData.length < 2;
     const hasGap      = data?.has_gap ?? false;
@@ -47,6 +47,7 @@ export function TrendDupontCard({ data, perusahaanId, analisisId }) {
             dataKurang={dataKurang}
             perusahaanId={perusahaanId}
             analisisId={analisisId}
+            referenceDocuments={referenceDocuments}
         >
             <TabelPeriode
                 title="Komponen DuPont"
