@@ -57,7 +57,7 @@ const ARUS_KAS_LINES = [
     { key: 'kas_keluar', label: 'Kas Keluar', color: '#f43f5e', get: (a) => a?.kas_keluar },
 ];
 
-export const TrendArusKasCard = forwardRef(function TrendArusKasCard({ data, perusahaanId, analisisId }, ref) {
+export const TrendArusKasCard = forwardRef(function TrendArusKasCard({ data, perusahaanId, analisisId, referenceDocuments }, ref) {
     const periodeData = data?.periode_data ?? [];
     const dataKurang = periodeData.length < 2;
     const hasGap      = data?.has_gap ?? false;
@@ -84,6 +84,7 @@ export const TrendArusKasCard = forwardRef(function TrendArusKasCard({ data, per
             dataKurang={dataKurang}
             perusahaanId={perusahaanId}
             analisisId={analisisId}
+            referenceDocuments={referenceDocuments}
         >
             <TabelPeriode
                 title="Ringkasan Pergerakan Kas"

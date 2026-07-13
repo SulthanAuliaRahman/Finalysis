@@ -6,14 +6,14 @@ use Illuminate\Console\Command;
 use NeuronAI\Chat\Messages\UserMessage;
 
 // Mengimpor semua Agen Terfokus dari sub-folder RAG sesuai definisi file Anda
-use App\Neuron\RAG\LiquidityAgent;
+use App\Neuron\RAG\LiquidityAnalystAgent;
 use App\Neuron\RAG\ProfitabilityAgent; 
 use App\Neuron\RAG\SolvencyAgent;      
 use App\Neuron\RAG\ActivityAgent;
 use App\Neuron\RAG\CommonsizeAgent;    
 use App\Neuron\RAG\DupontAgent;        
 use App\Neuron\RAG\TrendAgent;         
-use App\Neuron\RAG\ConclusionAgent;
+use App\Neuron\RAG\SummaryAgent;
 use App\Services\CalculateFinancialService;   // ganti dari 'use App\Services\FinancialService;'
 
 class Agent extends Command
@@ -92,7 +92,7 @@ class Agent extends Command
                 $no = $index + 1;
                 $chunkContext .= "[Chunk {$no} — Hal. {$chunk->page_number}] {$chunk->chunk_text}\n";
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $chunkContext .= "[Simulasi RAG]: Pendapatan usaha tumbuh positif sebesar 15%. Namun, manajemen sengaja menahan porsi kas operasional yang lebih besar untuk mengamankan likuiditas jangka pendek.\n";
         }
 
@@ -104,7 +104,7 @@ class Agent extends Command
         // 1. Eksekusi Agen Likuiditas [cite: 26]
         $this->info("1/8 Menjalankan Agen Likuiditas...");
         $liqPrompt = $companyProfile . "\nMETRIK LIKUIDITAS: Current Ratio: {$currentRatio}, Quick Ratio: {$quickRatio}, Cash Ratio: {$cashRatio}\n[BENCHMARK: Current Ratio >= 1.5 sehat, Quick Ratio >= 1.0 sehat, Cash Ratio >= 0.2]\n" . $chunkContext;
-        $liqResult = LiquidityAgent::make()->chat(new UserMessage($liqPrompt))->getMessage()->getContent();
+        $liqResult = LiquidityAnalystAgent::make()->chat(new UserMessage($liqPrompt))->getMessage()->getContent();
 
         // 2. Eksekusi Agen Profitabilitas [cite: 35]
         $this->info("2/8 Menjalankan Agen Profitabilitas...");
@@ -151,7 +151,7 @@ class Agent extends Command
             $trendResult;
 
         $conclusionPrompt = $companyProfile . "\n" . $allAnalysesText;
-        $conclusionResult = ConclusionAgent::make()->chat(new UserMessage($conclusionPrompt))->getMessage()->getContent();
+        $conclusionResult = SummaryAgent::make()->chat(new UserMessage($conclusionPrompt))->getMessage()->getContent();
 
         
         // BLOK 5 — KONSOLIDASI OUTPUT LAPORAN AKHIR

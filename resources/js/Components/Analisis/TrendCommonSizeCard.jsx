@@ -40,7 +40,7 @@ const NERACA_LINES = [
     { key: 'ekuitas',      label: 'Ekuitas',                 color: '#a855f7', get: (a) => a?.commonsize?.ekuitas_persen },
 ];
 
-export const TrendCommonsizeCard = forwardRef(function TrendCommonsizeCard({ data, perusahaanId, analisisId }, ref) {
+export const TrendCommonsizeCard = forwardRef(function TrendCommonsizeCard({ data, perusahaanId, analisisId, referenceDocuments }, ref) {
     const periodeData = data?.periode_data ?? [];
     const dataKurang  = periodeData.length < 2;
     const hasGap      = data?.has_gap ?? false;
@@ -58,6 +58,7 @@ export const TrendCommonsizeCard = forwardRef(function TrendCommonsizeCard({ dat
             dataKurang={dataKurang}
             perusahaanId={perusahaanId}
             analisisId={analisisId}
+            referenceDocuments={referenceDocuments}
         >
             <TabelPeriode
                 title="Ringkasan Common-size"

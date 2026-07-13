@@ -100,7 +100,7 @@ function SuperAdminDashboard({ user, stats, recentPerusahaan, recentDokumen }) {
                 {/* Total Dokumen */}
                 <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between shadow-xs">
                     <div className="space-y-1">
-                        <p className="text-xs text-slate-400 font-medium">Dokumen Terunggah</p>
+                        <p className="text-xs text-slate-400 font-medium">Dokumen dTerunggah</p>
                         <h3 className="text-2xl font-bold text-slate-900">{stats.total_dokumen}</h3>
                     </div>
                     <div className="w-12 h-12 bg-amber-50 border border-amber-100 rounded-xl flex items-center justify-center text-amber-600">
@@ -121,7 +121,7 @@ function SuperAdminDashboard({ user, stats, recentPerusahaan, recentDokumen }) {
             </div>
 
             {/* Split Panels */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Area: Perusahaan & Dokumen */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Perusahaan Terbaru */}
@@ -205,36 +205,9 @@ function SuperAdminDashboard({ user, stats, recentPerusahaan, recentDokumen }) {
 
                 {/* Right Area: Quick Action Panel */}
                 <div className="space-y-6">
-                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 text-white shadow-xs space-y-4">
-                        <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-                            <Compass className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="text-sm font-bold">Menu Pintasan Admin</h3>
-                            <p className="text-[11px] text-slate-400 mt-1">
-                                Tambahkan entitas korporasi baru, konfigurasikan alokasi API LLM, atau kelola akun operator.
-                            </p>
-                        </div>
-                        <div className="flex flex-col gap-2 pt-2 border-t border-slate-800">
-                            <Link href="/perusahaan/create">
-                                <Button className="w-full justify-start text-xs bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700 hover:text-white" variant="outline" size="sm">
-                                    <Plus className="w-3.5 h-3.5 mr-2" /> Tambah Perusahaan
-                                </Button>
-                            </Link>
-                            <Link href="/users/create">
-                                <Button className="w-full justify-start text-xs bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700 hover:text-white" variant="outline" size="sm">
-                                    <Plus className="w-3.5 h-3.5 mr-2" /> Tambah Akun / User
-                                </Button>
-                            </Link>
-                            <Link href="/settings/ai">
-                                <Button className="w-full justify-start text-xs bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700 hover:text-white" variant="outline" size="sm">
-                                    <Settings className="w-3.5 h-3.5 mr-2" /> Konfigurasi AI RAG
-                                </Button>
-                            </Link>
-                        </div>
-                    </div>
+                    
 
-                    <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
+                    {/* <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
                         <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
                             <Activity className="w-4 h-4 text-emerald-500" /> Status Koneksi RAG
                         </h4>
@@ -258,7 +231,7 @@ function SuperAdminDashboard({ user, stats, recentPerusahaan, recentDokumen }) {
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>
@@ -330,7 +303,7 @@ function CompanyDashboard({ user, role, perusahaan, stats, recentDokumen, recent
             </div>
 
             {/* Split panels */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Panel: Dokumen Baru di Perusahaan */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">

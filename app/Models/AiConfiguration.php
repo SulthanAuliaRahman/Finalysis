@@ -32,6 +32,12 @@ class AiConfiguration extends Model
         'system_prompt',
     ];
 
+    protected $hidden = [
+        'llm_api_key',
+        'embedding_api_key',
+        'reranker_api_key',
+    ];
+
     protected $casts = [
         'reranker_top_n' => 'integer',
     ];

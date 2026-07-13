@@ -6,6 +6,7 @@ use App\Models\Perusahaan;
 use App\Models\Analisis;
 use App\Models\Neraca;
 use App\Models\LabaRugi;
+use App\Models\Dokumen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\AnalysisFinancialService;
@@ -107,6 +108,20 @@ class AnalisisController extends Controller
                 ->where('bulan', $analisis->bulan);
         })->latest()->first();
 
+        $referensiDokumen = $perusahaan->dokumen()
+            ->where('status', 'selesai')
+            ->withCount('chunks')
+            ->latest()
+            ->get()
+            ->map(fn ($dokumen) => [
+                'id'            => $dokumen->id,
+                'nama_file'     => $dokumen->nama_file,
+                'periode_label' => $dokumen->periode,
+                'chunks_count'  => $dokumen->chunks_count,
+                'pdf_url'       => route('perusahaan.dokumen.view-pdf', [$perusahaan, $dokumen]),
+                'chunks_url'    => route('perusahaan.analisis.referensi-chunks', [$perusahaan, $analisis, $dokumen]),
+            ]);
+
         return Inertia::render('Perusahaan/Analisis/Detail', [
             'perusahaan'      => $perusahaan,
             'analisis'        => [
@@ -116,6 +131,7 @@ class AnalisisController extends Controller
                 'ai_summary_insight' => $analisis->AI_summary_insight,
             ],
             'dokumenPeriode'  => $dokumenPeriode,
+            'referensiDokumen' => $referensiDokumen,
             'likuiditas'      => $analisis->likuiditas,
             'profitabilitas'  => $analisis->profitabilitas,
             'solvabilitas'    => $analisis->solvabilitas,
@@ -129,6 +145,36 @@ class AnalisisController extends Controller
             'trendArusKas'    => $analisis->getArusKasTrend(),
             'neraca'          => $neraca,
             'labaRugi'        => $labaRugi,
+        ]);
+    }
+
+    public function referensiChunks(Request $request, Perusahaan $perusahaan, Analisis $analisis, Dokumen $dokumen)
+    {
+        abort_if($analisis->perusahaan_id !== $perusahaan->id || $dokumen->perusahaan_id !== $perusahaan->id, 404);
+
+        $section = $request->validate([
+            'section' => 'required|string|in:likuiditas,profitabilitas,solvabilitas,aktivitas,dupont,commonsize,trend_akun_utama,trend_rasio,trend_dupont,trend_commonsize,trend_arus_kas,summary',
+        ])['section'];
+
+        return response()->json([
+            'chunks' => DB::table('analisis_referensi')
+                ->leftJoin('dokumen', 'dokumen.id', '=', 'analisis_referensi.dokumen_id')
+                ->where('analisis_id', $analisis->id)
+                ->where('section', $section)
+                ->where('dokumen_id', $dokumen->id)
+                ->orderBy('urutan')
+                ->get([
+                    'analisis_referensi.id',
+                    'analisis_referensi.dokumen_id',
+                    'analisis_referensi.chunk_index',
+                    'analisis_referensi.text',
+                    'analisis_referensi.score',
+                    'dokumen.nama_file as source_file',
+                    'dokumen.periode_type as source_periode_type',
+                    'dokumen.tahun as source_tahun',
+                    'dokumen.quarter as source_quarter',
+                    'dokumen.bulan as source_bulan',
+                ]),
         ]);
     }
 

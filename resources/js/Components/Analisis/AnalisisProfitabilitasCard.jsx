@@ -13,7 +13,7 @@ const getRawDecimal = (val) => {
     return Number(val / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 };
 
-export const AnalisisProfitabilitasCard = forwardRef(function AnalisisProfitabilitasCard({ data, neraca, labaRugi, perusahaanId, analisisId, sektor }, ref) {
+export const AnalisisProfitabilitasCard = forwardRef(function AnalisisProfitabilitasCard({ data, neraca, labaRugi, perusahaanId, analisisId, sektor, referenceDocuments }, ref) {
 
     // Logika Dinamis Benchmark NPM berdasarkan sektor
     let npmBenchmark = null;
@@ -66,6 +66,7 @@ export const AnalisisProfitabilitasCard = forwardRef(function AnalisisProfitabil
             section="profitabilitas"
             perusahaanId={perusahaanId}
             analisisId={analisisId}
+            referenceDocuments={referenceDocuments}
         />
     );
 });

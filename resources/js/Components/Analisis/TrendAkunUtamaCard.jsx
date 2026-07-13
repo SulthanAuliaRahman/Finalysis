@@ -30,7 +30,7 @@ const ROWS = AKUN_UTAMA.map((akun) => ({
     ),
 }));
 
-export function TrendAkunUtamaCard({ data, perusahaanId, analisisId }) {
+export function TrendAkunUtamaCard({ data, perusahaanId, analisisId, referenceDocuments }) {
     const periodeData = data?.periode_data ?? [];
     const dataKurang = periodeData.length < 2;
     const hasGap      = data?.has_gap ?? false;
@@ -48,6 +48,7 @@ export function TrendAkunUtamaCard({ data, perusahaanId, analisisId }) {
             dataKurang={dataKurang}
             perusahaanId={perusahaanId}
             analisisId={analisisId}
+            referenceDocuments={referenceDocuments}
         >
             <TabelPeriode
                 title="Perbandingan Akun Utama"

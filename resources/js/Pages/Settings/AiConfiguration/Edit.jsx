@@ -55,7 +55,7 @@ export default function Edit({ configuration }) {
 		embedding_api_key: configuration?.embedding_api_key ?? "",
 		reranker_provider: configuration?.reranker_provider ?? "",
 		reranker_model: configuration?.reranker_model ?? "",
-		reranker_top_n: configuration?.reranker_top_n ?? 3,
+		reranker_top_n: configuration?.reranker_top_n ?? 5,
 		reranker_api_key: configuration?.reranker_api_key ?? "",
 		localai_url: configuration?.localai_url ?? "",
 		vector_store_driver: configuration?.vector_store_driver ?? "file",
@@ -319,7 +319,7 @@ export default function Edit({ configuration }) {
 					</div>
 				</SectionCard>
 
-				<SectionCard
+				{/* <SectionCard
 					icon={Wand2}
 					title="System Prompt"
 					description="Prompt dasar yang dipakai untuk mengarahkan gaya analisis AI."
@@ -339,7 +339,7 @@ export default function Edit({ configuration }) {
 						/>
 						{errors.system_prompt && <p className="text-xs text-red-500">{errors.system_prompt}</p>}
 					</Field>
-				</SectionCard>
+				</SectionCard> */}
 
 				<div className="flex flex-col sm:flex-row justify-end gap-2 pt-1">
 					<Link href="/dashboard">

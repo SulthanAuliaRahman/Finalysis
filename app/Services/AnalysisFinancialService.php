@@ -6,6 +6,7 @@ use App\Models\Analisis;
 use App\Models\Neraca;
 use App\Models\LabaRugi;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 use NeuronAI\Chat\Messages\UserMessage;
 
 use App\Neuron\RAG\ProfitabilityAgent;
@@ -20,6 +21,7 @@ use App\Neuron\RAG\TrendDupontAgent;
 use App\Neuron\RAG\TrendCommonsizeAgent;
 use App\Neuron\RAG\TrendArusKasAgent;
 use App\Neuron\RAG\SummaryAgent;
+use App\Neuron\RAG\BaseRagAgent;
 
 use App\Services\CalculateFinancialService;
 
@@ -77,6 +79,66 @@ class AnalysisFinancialService
         return "Bulan {$a['bulan']} {$a['tahun']}";
     }
 
+    /**
+     * Every analysis agent must retrieve only documents belonging to the
+     * company currently being analysed. Period is intentionally not filtered:
+     * trend analysis needs prior company periods as evidence.
+     *
+     * @param class-string<BaseRagAgent> $agentClass
+     */
+    private function ragAgentFor(Analisis $analisis, string $agentClass): BaseRagAgent
+    {
+        /** @var BaseRagAgent $agent */
+        $agent = $agentClass::make();
+
+        return $agent->withRetrievalScope([
+            'company_id' => $analisis->perusahaan_id,
+        ]);
+    }
+
+    private function generateWithReferences(Analisis $analisis, string $agentClass, string $prompt, string $section)
+    {
+        $agent = $this->ragAgentFor($analisis, $agentClass);
+        $handler = $agent->chat(new UserMessage($prompt));
+        $message = $handler->getMessage();
+
+        $references = $agent->lastRetrievedReferences();
+        DB::table('analisis_referensi')
+            ->where('analisis_id', $analisis->id)
+            ->where('section', $section)
+            ->delete();
+
+        if ($references !== []) {
+            DB::table('analisis_referensi')->insert(array_map(
+                fn ($document, $index) => [
+                    'analisis_id' => $analisis->id,
+                    'section'     => $section,
+                    'dokumen_id'  => is_numeric($document->metadata['document_id'] ?? null)
+                        ? (int) $document->metadata['document_id']
+                        : null,
+                    'chunk_index' => is_numeric($document->metadata['chunk_index'] ?? null)
+                        ? (int) $document->metadata['chunk_index']
+                        : null,
+                    'urutan'      => $index + 1,
+                    'score'       => $document->getScore(),
+                    'text'        => $document->getContent(),
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
+                ],
+                $references,
+                array_keys($references),
+            ));
+        }
+
+        return new class($message) {
+            public function __construct(private $message) {}
+            public function getMessage()
+            {
+                return $this->message;
+            }
+        };
+    }
+
     // Sisipkan narasi hasil generate sebelumnya (kalau ada) + instruksi eksplisit
     // ke AI soal apa yang harus dilakukan dengan narasi lama itu.
     private function tambahkanKonteksNarasiSebelumnya(string &$prompt, ?string $narasiSebelumnya): void
@@ -112,7 +174,7 @@ class AnalysisFinancialService
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
         }
 
-        $response = LiquidityAnalystAgent::make()->chat(new UserMessage($Prompt));
+        $response = $this->generateWithReferences($analisis, LiquidityAnalystAgent::class, $Prompt, 'likuiditas');
         $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
         $narasi = TextCleanerService::bersihkanMarkdown($narasi);
 
@@ -138,7 +200,7 @@ class AnalysisFinancialService
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
         }
 
-        $response = ProfitabilityAgent::make()->chat(new UserMessage($Prompt));
+        $response = $this->generateWithReferences($analisis, ProfitabilityAgent::class, $Prompt, 'profitabilitas');
         $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
         $narasi = TextCleanerService::bersihkanMarkdown($narasi);
 
@@ -159,7 +221,7 @@ class AnalysisFinancialService
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
         }
 
-        $response = SolvencyAgent::make()->chat(new UserMessage($Prompt));
+        $response = $this->generateWithReferences($analisis, SolvencyAgent::class, $Prompt, 'solvabilitas');
         $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
         $narasi = TextCleanerService::bersihkanMarkdown($narasi);
 
@@ -179,7 +241,7 @@ class AnalysisFinancialService
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
         }
 
-        $response = ActivityAgent::make()->chat(new UserMessage($Prompt));
+        $response = $this->generateWithReferences($analisis, ActivityAgent::class, $Prompt, 'aktivitas');
         $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
         $narasi = TextCleanerService::bersihkanMarkdown($narasi);
 
@@ -202,7 +264,7 @@ class AnalysisFinancialService
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
         }
 
-        $response = DupontAgent::make()->chat(new UserMessage($Prompt));
+        $response = $this->generateWithReferences($analisis, DupontAgent::class, $Prompt, 'dupont');
         $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight yang dihasilkan oleh AI.';
         $narasi = TextCleanerService::bersihkanMarkdown($narasi);
 
@@ -234,7 +296,7 @@ class AnalysisFinancialService
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
         }
 
-        $response = CommonsizeAgent::make()->chat(new UserMessage($Prompt));
+        $response = $this->generateWithReferences($analisis, CommonsizeAgent::class, $Prompt, 'commonsize');
         $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight yang dihasilkan oleh AI.';
         $narasi = TextCleanerService::bersihkanMarkdown($narasi);
 
@@ -275,7 +337,7 @@ class AnalysisFinancialService
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
         }
 
-        $response = TrendAkunUtamaAgent::make()->chat(new UserMessage($Prompt));
+        $response = $this->generateWithReferences($analisis, TrendAkunUtamaAgent::class, $Prompt, 'trend_akun_utama');
         $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
         $narasi = TextCleanerService::bersihkanMarkdown($narasi);
 
@@ -312,7 +374,7 @@ class AnalysisFinancialService
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
         }
 
-        $response = TrendRasioAgent::make()->chat(new UserMessage($Prompt));
+        $response = $this->generateWithReferences($analisis, TrendRasioAgent::class, $Prompt, 'trend_rasio');
         $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
         $narasi = TextCleanerService::bersihkanMarkdown($narasi);
 
@@ -347,7 +409,7 @@ class AnalysisFinancialService
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
         }
 
-        $response = TrendDupontAgent::make()->chat(new UserMessage($Prompt));
+        $response = $this->generateWithReferences($analisis, TrendDupontAgent::class, $Prompt, 'trend_dupont');
         $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
         $narasi = TextCleanerService::bersihkanMarkdown($narasi);
 
@@ -383,7 +445,7 @@ class AnalysisFinancialService
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
         }
 
-        $response = TrendCommonsizeAgent::make()->chat(new UserMessage($Prompt));
+        $response = $this->generateWithReferences($analisis, TrendCommonsizeAgent::class, $Prompt, 'trend_commonsize');
         $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
         $narasi = TextCleanerService::bersihkanMarkdown($narasi);
 
@@ -422,7 +484,7 @@ class AnalysisFinancialService
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
         }
 
-        $response = TrendArusKasAgent::make()->chat(new UserMessage($Prompt));
+        $response = $this->generateWithReferences($analisis, TrendArusKasAgent::class, $Prompt, 'trend_arus_kas');
         $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
         $narasi = TextCleanerService::bersihkanMarkdown($narasi);
 
@@ -515,7 +577,7 @@ class AnalysisFinancialService
 
         $Prompt .= "Susun kembali Executive Summary berdasarkan seluruh informasi di atas.";
 
-        $response = SummaryAgent::make()->chat(new UserMessage($Prompt));
+        $response = $this->generateWithReferences($analisis, SummaryAgent::class, $Prompt, 'summary');
         $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
         $narasi = TextCleanerService::bersihkanMarkdown($narasi);
 

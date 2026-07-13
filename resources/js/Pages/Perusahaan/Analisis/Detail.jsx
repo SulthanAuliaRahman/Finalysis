@@ -34,6 +34,7 @@ export default function Detail({
     trendArusKas,
     neraca,
     labaRugi,
+    referensiDokumen,
 }) {
     const [isCalculating, setIsCalculating] = useState(false);
 
@@ -147,35 +148,35 @@ export default function Detail({
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Rasio Keuangan</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <AnalisisLikuiditasCard ref={refLikuiditas} data={likuiditas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
-                    <AnalisisProfitabilitasCard ref={refProfitabilitas} data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
-                    <AnalisisSolvabilitasCard ref={refSolvabilitas} data={solvabilitas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
-                    <AnalisisAktivitasCard ref={refAktivitas} data={aktivitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} />
+                    <AnalisisLikuiditasCard ref={refLikuiditas} data={likuiditas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} referenceDocuments={referensiDokumen} />
+                    <AnalisisProfitabilitasCard ref={refProfitabilitas} data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} referenceDocuments={referensiDokumen} />
+                    <AnalisisSolvabilitasCard ref={refSolvabilitas} data={solvabilitas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} referenceDocuments={referensiDokumen} />
+                    <AnalisisAktivitasCard ref={refAktivitas} data={aktivitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} referenceDocuments={referensiDokumen} />
                 </div>
             </div>
 
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Analisis Struktural</h3>
                 <div className="grid grid-cols-1 gap-6">
-                    <AnalisisDupontCard ref={refDupont} data={dupont} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <AnalisisCommonsizeCard ref={refCommonsize} data={commonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <AnalisisDupontCard ref={refDupont} data={dupont} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} referenceDocuments={referensiDokumen} />
+                    <AnalisisCommonsizeCard ref={refCommonsize} data={commonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} referenceDocuments={referensiDokumen} />
                 </div>
             </div>
 
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Analisis Tren</h3>
                 <div className="grid grid-cols-1 gap-6">
-                    <TrendAkunUtamaCard data={trendAkunUtama} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <TrendRasioCard ref={refTrendRasio} data={trendRasio} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
-                    <TrendDupontCard ref={refTrendDupont} data={trendDupont} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <TrendCommonsizeCard ref={refTrendCommonsize} data={trendCommonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <TrendArusKasCard ref={refTrendArusKas} data={trendArusKas} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
+                    <TrendAkunUtamaCard data={trendAkunUtama} perusahaanId={perusahaan.id} analisisId={analisis.id} referenceDocuments={referensiDokumen} />
+                    <TrendRasioCard ref={refTrendRasio} data={trendRasio} perusahaanId={perusahaan.id} analisisId={analisis.id} referenceDocuments={referensiDokumen}/>
+                    <TrendDupontCard ref={refTrendDupont} data={trendDupont} perusahaanId={perusahaan.id} analisisId={analisis.id} referenceDocuments={referensiDokumen} />
+                    <TrendCommonsizeCard ref={refTrendCommonsize} data={trendCommonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} referenceDocuments={referensiDokumen} />
+                    <TrendArusKasCard ref={refTrendArusKas} data={trendArusKas} perusahaanId={perusahaan.id} analisisId={analisis.id} referenceDocuments={referensiDokumen}/>
                 </div>
             </div>
 
             <div className="flex justify-center">
                 <div className="w-full">
-                    <AIInsightCard narasi={analisis.ai_summary_insight} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <AIInsightCard narasi={analisis.ai_summary_insight} perusahaanId={perusahaan.id} analisisId={analisis.id} referenceDocuments={referensiDokumen} />
                 </div>
             </div>
         </div>

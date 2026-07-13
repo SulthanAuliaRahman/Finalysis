@@ -1,4 +1,5 @@
 import { PieChart, RefreshCw, Loader2, Sparkles } from 'lucide-react';
+import { ReferenceButton } from './ReferenceButton';
 import { useState, forwardRef } from 'react';
 import { router } from '@inertiajs/react';
 import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -82,7 +83,7 @@ function DonutChart({ title, data, height = 200 }) {
     );
 }
 
-export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard({ data, perusahaanId, analisisId }, ref) {
+export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard({ data, perusahaanId, analisisId, referenceDocuments }, ref) {
     const [isLoading, setIsLoading] = useState(false);
     const belumDianalisis = !data?.narasi_commonsize_AI;
 
@@ -122,14 +123,17 @@ export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard
                     </div>
                     <h3 className="font-semibold text-slate-900">Common-Size Analysis</h3>
                 </div>
-                <button
-                    onClick={handleTrigger}
-                    disabled={isLoading}
-                    className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                    {belumDianalisis ? 'Mulai Analisis' : 'Regenerasi'}
-                </button>
+                <div className="flex items-center gap-2">
+                    <ReferenceButton documents={referenceDocuments} section="commonsize" />
+                    <button
+                        onClick={handleTrigger}
+                        disabled={isLoading}
+                        className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                        {belumDianalisis ? 'Mulai Analisis' : 'Regenerasi'}
+                    </button>
+                </div>
             </div>
 
             {/* Area yang di-capture PDF */}
@@ -193,4 +197,4 @@ export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard
             )}
         </div>
     );
-});
+}

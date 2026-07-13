@@ -126,6 +126,12 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
+        'reranker' => [
+        'driver' => 'daily',
+        'path' => storage_path('logs/reranker.log'),
+        'level' => 'debug',
+        'days' => 14,
+        ],
 
     ],
 

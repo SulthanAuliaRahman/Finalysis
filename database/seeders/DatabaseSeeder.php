@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             PerusahaanSeeder::class,
             UserSeeder::class,
             // PerusahaanAnalisisSeeder::class,
+            AiConfigurationSeeder::class
         ]);
     }
 }

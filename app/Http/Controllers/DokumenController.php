@@ -344,7 +344,12 @@ class DokumenController extends Controller
             })->toArray();
 
         //  NeuronAI DataLoader ke Vector DB
-        $embeddedCount = DataLoader::embedChunks($chunksFromDb);
+        $embeddedCount = DataLoader::embedChunks($chunksFromDb, [
+            'company_id'  => $perusahaan->id,
+            'document_id' => $dokumen->id,
+            'company'     => $perusahaan->nama,
+            'period'      => (string) $dokumen->periode,
+        ]);
 
         if ($embeddedCount > 0) {
             $dokumen->update(['status' => 'selesai']);
