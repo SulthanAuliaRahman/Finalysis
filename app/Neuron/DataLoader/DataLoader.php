@@ -54,6 +54,11 @@ class DataLoader
         return count($allDocuments);
     }
 
+    public static function deleteDocument(string $documentId): void
+    {
+        IndexerAgent::make()->deleteBySource(sourceType: 'document', sourceName: $documentId);
+    }
+
 
     private static function attachMetadata(Document $document, array $metadata): void
     {

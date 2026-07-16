@@ -402,6 +402,7 @@ class DokumenController extends Controller
         $storagePath = $dokumen->storage_path;
 
         try {
+            //delete di Relational DB
             DB::transaction(function () use ($perusahaan, $dokumen) {
                 // Cek apakah masih ada dokumen lain (selain yang mau dihapus) untuk periode yang sama.
                 // 1 periode bisa punya banyak dokumen
@@ -430,7 +431,15 @@ class DokumenController extends Controller
             });
 
             if (Storage::disk('local')->exists($storagePath)) {
+                //delete di File
                 Storage::disk('local')->delete($storagePath);
+            }
+
+            try {
+                //delete di Vector DB
+                DataLoader::deleteDocument((string) $dokumen->id);
+            } catch (\Exception $e) {
+                Log::error('Gagal menghapus vector embedding: ' . $e->getMessage());
             }
 
             return redirect()->route('perusahaan.dokumen.index', $perusahaan->id)->with('success', 'Dokumen beserta data ekstraksi dan analisis terkait berhasil dihapus.');
