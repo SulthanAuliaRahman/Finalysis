@@ -4,6 +4,7 @@ namespace App\Neuron\RAG;
 
 use NeuronAI\RAG\RAG;
 use NeuronAI\RAG\VectorStore\VectorStoreInterface;
+use NeuronAI\RAG\VectorStore\ChromaVectorStore;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\RAG\Embeddings\EmbeddingsProviderInterface;
 
@@ -204,19 +205,34 @@ abstract class BaseRagAgent extends RAG
     {
         $directory = __DIR__;
         $name = 'demo';
+        $driver = 'file';
 
         try {
             $dbConfig = $this->dbConfig ?? app(AiConfigurationService::class)->get();
+            if ($dbConfig->vector_store_driver) {
+                $driver = $dbConfig->vector_store_driver;
+            }
             if ($dbConfig->vector_store_path) {
                 $directory = $dbConfig->vector_store_path;
             }
             if ($dbConfig->vector_store_name) {
                 $name = $dbConfig->vector_store_name;
-                }
+            }
         } catch (\Throwable $e) {
             Log::debug('[rag-config] Failed to resolve vector store settings from database, using defaults.', [
                 'exception' => $e->getMessage()
             ]);
+        }
+
+        if ($driver === 'chroma') {
+            return new ChromaVectorStore(
+                collection: $name,
+                host: config('neuron.store.chroma.host', 'http://chroma:8000'),
+                tenant: config('neuron.store.chroma.tenant', 'default_tenant'),
+                database: config('neuron.store.chroma.database', 'default_database'),
+                key: config('neuron.store.chroma.key'),
+                topK: 12
+            );
         }
 
         return new ScopedFileVectorStore(
@@ -235,6 +251,11 @@ abstract class BaseRagAgent extends RAG
      */
     public function withRetrievalScope(array $metadataFilters): static
     {
+        Log::channel('reranker')->info('[rag-scope] Retrieval scope applied.', [
+            'agent' => static::class,
+            'metadata_filters' => $metadataFilters,
+        ]);
+
         $this->setRetrieval(new MetadataFilteredRetrieval(
             $this->resolveVectorStore(),
             $this->resolveEmbeddingsProvider(),

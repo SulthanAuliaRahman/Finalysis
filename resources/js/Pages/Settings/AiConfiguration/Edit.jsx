@@ -106,15 +106,20 @@ export default function Edit({ configuration }) {
 					description="Pengaturan model utama untuk menjawab, menganalisis, dan menulis narasi hasil."
 				>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<Field label="Provider" htmlFor="llm_provider" required hint="Contoh: openai, ollama, localai">
-							<input
+						<Field label="Provider" htmlFor="llm_provider" required hint="Pilih provider LLM">
+							<select
 								id="llm_provider"
-								type="text"
 								value={data.llm_provider}
 								onChange={e => setData("llm_provider", e.target.value)}
-								className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+								className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
 								disabled={processing}
-							/>
+							>
+								<option value="" disabled>Pilih Provider</option>
+								<option value="gemini">Gemini</option>
+								<option value="openai">OpenAI</option>
+								<option value="localai">LocalAI</option>
+								<option value="ollama">Ollama</option>
+							</select>
 							{errors.llm_provider && <p className="text-xs text-red-500">{errors.llm_provider}</p>}
 						</Field>
 
@@ -164,14 +169,18 @@ export default function Edit({ configuration }) {
 				>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<Field label="Provider" htmlFor="embedding_provider" required>
-							<input
+							<select
 								id="embedding_provider"
-								type="text"
 								value={data.embedding_provider}
 								onChange={e => setData("embedding_provider", e.target.value)}
-								className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+								className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
 								disabled={processing}
-							/>
+							>
+								<option value="" disabled>Pilih Provider</option>
+								<option value="gemini">Gemini</option>
+								<option value="openai">OpenAI</option>
+								<option value="ollama">Ollama</option>
+							</select>
 							{errors.embedding_provider && <p className="text-xs text-red-500">{errors.embedding_provider}</p>}
 						</Field>
 
@@ -220,14 +229,18 @@ export default function Edit({ configuration }) {
 				>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<Field label="Reranker Provider" htmlFor="reranker_provider" required>
-							<input
+							<select
 								id="reranker_provider"
-								type="text"
 								value={data.reranker_provider}
 								onChange={e => setData("reranker_provider", e.target.value)}
-								className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+								className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
 								disabled={processing}
-							/>
+							>
+								<option value="" disabled>Pilih Provider</option>
+								<option value="jina">Jina</option>
+								<option value="cohere">Cohere</option>
+								<option value="localai">LocalAI</option>
+							</select>
 							{errors.reranker_provider && <p className="text-xs text-red-500">{errors.reranker_provider}</p>}
 						</Field>
 
