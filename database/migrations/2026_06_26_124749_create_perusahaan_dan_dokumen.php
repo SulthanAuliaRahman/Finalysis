@@ -32,7 +32,7 @@ return new class extends Migration
             $table->unsignedSmallInteger('tahun');// tahun
             $table->unsignedTinyInteger('quarter')->nullable();// NULL jika annual
             $table->unsignedTinyInteger('bulan')->nullable(); // NULL jika annual / quarterly
-            $table->json('statement_types')->nullable(); // ["balance_sheet","income_statement","cash_flow"]
+            $table->json('statement_types')->nullable(); // ["neraca","laba_rugi","arus_kas"]
             $table->unsignedBigInteger('ukuran_file')->nullable();
             $table->enum('status', [
                 'menunggu',

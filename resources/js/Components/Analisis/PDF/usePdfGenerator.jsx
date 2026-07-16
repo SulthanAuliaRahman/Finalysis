@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { pdf } from '@react-pdf/renderer';
-import { AnalisisPdfDocument } from './AnalisisPdfDocument';
+import { AnalisisPdfDocument } from '../AnalisisPdfDocument.jsx';
 
 async function captureElement(ref) {
     if (!ref?.current) return null;
@@ -11,6 +11,10 @@ async function captureElement(ref) {
             useCORS: true,
             backgroundColor: '#ffffff',
             logging: false,
+            x: -8,
+            y: -8,
+            width:  ref.current.offsetWidth  + 16,
+            height: ref.current.offsetHeight + 16,
         });
         return canvas.toDataURL('image/png');
     } catch (e) {
@@ -25,20 +29,42 @@ export function usePdfGenerator({ pdfProps, chartRefs }) {
     const generatePdf = useCallback(async () => {
         setIsGenerating(true);
         try {
-            const [rasioImg, dupontImg, commonsizeImg, akunUtamaImg, arusKasImg] = await Promise.all([
-                captureElement(chartRefs.rasio),
+            const [
+                likuiditasImg,
+                profitabilitasImg,
+                solvabilitasImg,
+                aktivitasImg,
+                dupontImg,
+                commonsizeImg,
+                trendRasioImg,
+                trendDupontImg,
+                trendCommonsizeImg,
+                trendArusKasImg,
+            ] = await Promise.all([
+                captureElement(chartRefs.likuiditas),
+                captureElement(chartRefs.profitabilitas),
+                captureElement(chartRefs.solvabilitas),
+                captureElement(chartRefs.aktivitas),
                 captureElement(chartRefs.dupont),
                 captureElement(chartRefs.commonsize),
-                captureElement(chartRefs.akunUtama),
-                captureElement(chartRefs.arusKas),
+                captureElement(chartRefs.trendRasio),
+                captureElement(chartRefs.trendDupont),
+                captureElement(chartRefs.trendCommonsize),
+                captureElement(chartRefs.trendArusKas),
             ]);
 
+            // Mapping yang konsisten dengan kebutuhan AnalisisPdfDocument
             const chartImages = {
-                rasio:      rasioImg,
-                dupont:     dupontImg,
-                commonsize: commonsizeImg,
-                akunUtama:  akunUtamaImg,
-                arusKas:    arusKasImg,
+                likuiditas:      likuiditasImg,
+                profitabilitas:  profitabilitasImg,
+                solvabilitas:    solvabilitasImg,
+                aktivitas:       aktivitasImg,
+                dupont:          dupontImg,
+                commonsize:      commonsizeImg,
+                trendRasio:      trendRasioImg,
+                trendDupont:     trendDupontImg,
+                trendCommonsize: trendCommonsizeImg,
+                trendArusKas:    trendArusKasImg,
             };
 
             const doc = <AnalisisPdfDocument {...pdfProps} chartImages={chartImages} />;

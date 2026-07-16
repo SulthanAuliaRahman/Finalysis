@@ -416,7 +416,7 @@ class AnalysisFinancialService
             $Prompt .= "Net Cash Flow: " . ($net !== null ? number_format($net, 0, ',', '.') : '-') . "\n";
         }
 
-        $this->tambahkanKonteksNarasiSebelumnya($Prompt, $trendData['narasi_arus_kas_AI']);
+        $this->tambahkanKonteksNarasiSebelumnya($Prompt, $trendData['narasi_trend_arus_kas_AI']);
 
         if ($userPrompt) {
             $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";

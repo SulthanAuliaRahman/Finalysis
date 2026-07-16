@@ -55,6 +55,26 @@ class DokumenController extends Controller
             'statement_types' => 'required|array'
         ]);
 
+        $existingDokumens = Dokumen::where('perusahaan_id', $perusahaan->id)
+            ->where('periode_type', $request->periode_type)
+            ->where('tahun', $request->tahun)
+            ->where('quarter', $request->periode_type === 'quarterly' ? $request->quarter : null)
+            ->where('bulan', $request->periode_type === 'monthly' ? $request->bulan : null)
+            ->get();
+
+        foreach ($existingDokumens as $existing) {
+            $existingTypes = is_string($existing->statement_types) ? json_decode($existing->statement_types, true) : ($existing->statement_types ?? []);
+
+            $intersect = array_intersect($existingTypes, $request->statement_types);
+
+            if (count($intersect) > 0) {
+                $bentrokString = implode(', ', $intersect);
+                return back()->withErrors([
+                    'statement_types' => "Tipe laporan ({$bentrokString}) untuk periode ini sudah pernah diunggah di dokumen lain. Harap uncheck tipe laporan tersebut."
+                ]);
+            }
+        }
+
         $file = $request->file('file');
         $namaFileOriginal = $file->getClientOriginalName();
         $ukuranFile = $file->getSize();
@@ -323,8 +343,14 @@ class DokumenController extends Controller
                 ];
             })->toArray();
 
-        //  NeuronAI DataLoader ke Vector DB
-        $embeddedCount = DataLoader::embedChunks($chunksFromDb);
+        // NeuronAI DataLoader ke Vector DB
+        $embeddedCount = DataLoader::embedChunks($chunksFromDb, [
+            'company_id'  => $perusahaan->id,
+            'document_id' => $dokumen->id,
+            'company'     => $perusahaan->nama,
+            'period'      => (string) $dokumen->periode,
+            'source'      => $dokumen->nama_file,
+        ]);
 
         if ($embeddedCount > 0) {
             $dokumen->update(['status' => 'selesai']);
@@ -373,14 +399,41 @@ class DokumenController extends Controller
 
     public function destroy(Perusahaan $perusahaan, Dokumen $dokumen)
     {
-        try {
-            if (Storage::disk('local')->exists($dokumen->storage_path)) {
-                Storage::disk('local')->delete($dokumen->storage_path);
-            }
-            $dokumen->delete();
+        $storagePath = $dokumen->storage_path;
 
-            return redirect()->route('perusahaan.dokumen.index', $perusahaan->id)
-                ->with('success', 'Dokumen beserta data ekstraksi berhasil dihapus.');
+        try {
+            DB::transaction(function () use ($perusahaan, $dokumen) {
+                // Cek apakah masih ada dokumen lain (selain yang mau dihapus) untuk periode yang sama.
+                // 1 periode bisa punya banyak dokumen
+                $masihAdaDokumenLain = Dokumen::where('perusahaan_id', $perusahaan->id)
+                    ->where('periode_type', $dokumen->periode_type)
+                    ->where('tahun', $dokumen->tahun)
+                    ->where('quarter', $dokumen->quarter)
+                    ->where('bulan', $dokumen->bulan)
+                    ->where('id', '!=', $dokumen->id)
+                    ->exists();
+
+                $analisisQuery = Analisis::where('perusahaan_id', $perusahaan->id)
+                    ->where('periode_type', $dokumen->periode_type)
+                    ->where('tahun', $dokumen->tahun)
+                    ->where('quarter', $dokumen->quarter)
+                    ->where('bulan', $dokumen->bulan);
+
+                if ($masihAdaDokumenLain) {
+                    $analisisQuery->update(['status' => 'Terjadi Perubahan Data!']);
+                } else {
+                    // Ini satu-satunya dokumen untuk periode ini -> tidak ada lagi
+                    $analisisQuery->delete();
+                }
+
+                $dokumen->delete();
+            });
+
+            if (Storage::disk('local')->exists($storagePath)) {
+                Storage::disk('local')->delete($storagePath);
+            }
+
+            return redirect()->route('perusahaan.dokumen.index', $perusahaan->id)->with('success', 'Dokumen beserta data ekstraksi dan analisis terkait berhasil dihapus.');
 
         } catch (\Exception $e) {
             Log::error('Gagal menghapus dokumen: ' . $e->getMessage());

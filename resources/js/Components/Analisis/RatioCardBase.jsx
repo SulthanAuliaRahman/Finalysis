@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { router } from '@inertiajs/react';
 import { RefreshCw, Sparkles, Loader2, X, AlertCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-export function RatioCardBase({
+export const RatioCardBase = forwardRef(function RatioCardBase({
     title,
     icon,
     iconBgColor,
@@ -15,7 +15,7 @@ export function RatioCardBase({
     section,
     perusahaanId,
     analisisId,
-}) {
+}, chartRef) {
     const [isLoading, setIsLoading] = useState(false);
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
     const [userPrompt, setUserPrompt] = useState('');
@@ -107,7 +107,7 @@ export function RatioCardBase({
 
             {/* Diagram Render Area */}
             {!rasioBelumDihitung && chartData && chartData.length > 0 && (
-                <div className="h-56 mb-4 w-full">
+                <div ref={chartRef} className="h-56 mb-4 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -178,4 +178,4 @@ export function RatioCardBase({
             )}
         </div>
     );
-}
+});

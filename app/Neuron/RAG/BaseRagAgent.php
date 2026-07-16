@@ -7,6 +7,7 @@ use NeuronAI\RAG\VectorStore\VectorStoreInterface;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\RAG\Embeddings\EmbeddingsProviderInterface;
 use NeuronAI\RAG\VectorStore\FileVectorStore;
+use NeuronAI\RAG\VectorStore\ChromaVectorStore;
 
 use NeuronAI\Providers\Ollama\Ollama;
 use NeuronAI\RAG\Embeddings\OllamaEmbeddingsProvider;
@@ -14,6 +15,8 @@ use NeuronAI\Providers\Gemini\Gemini;
 use NeuronAI\RAG\Embeddings\GeminiEmbeddingsProvider;
 use NeuronAI\Providers\OpenAI\OpenAI;
 use NeuronAI\RAG\Embeddings\OpenAIEmbeddingsProvider;
+
+use NeuronAI\HttpClient\GuzzleHttpClient;
 
 abstract class BaseRagAgent extends RAG
 {
@@ -59,7 +62,8 @@ abstract class BaseRagAgent extends RAG
 
             default => new Ollama(
                 url: 'http://host.docker.internal:11434/api',
-                model: $this->aiModel
+                model: $this->aiModel,
+                httpClient: new GuzzleHttpClient(timeout: 100)
             ),
         };
     }
@@ -86,9 +90,15 @@ abstract class BaseRagAgent extends RAG
 
     protected function vectorStore(): VectorStoreInterface
     {
-        return new FileVectorStore(
-            directory: __DIR__,
-            name: 'demo'
+        // return new FileVectorStore(
+        //     directory: __DIR__,
+        //     name: 'demo'
+        // );
+
+        return new ChromaVectorStore(
+            collection: 'neuron-ai',
+            host: 'http://chroma:8000',
+            topK: 5
         );
     }
 

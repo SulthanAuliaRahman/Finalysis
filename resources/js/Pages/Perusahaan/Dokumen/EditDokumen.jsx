@@ -6,9 +6,7 @@ import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { ArrowLeft, Loader2, Calendar, Lock } from "lucide-react";
 import PdfViewer from "@/Components/Dokumen/PdfViewer";
-import EditNeracaForm from "@/Components/Dokumen/EditNeracaForm";
-import EditLabaRugiForm from "@/Components/Dokumen/EditLabaRugiForm";
-import EditArusKasForm from "@/Components/Dokumen/EditArusKasForm";
+import EditForm from "@/Components/Dokumen/EditForm";
 
 export default function EditDokumen({ perusahaan, dokumen, extractedData }) {
     const { data, setData, put, processing } = useForm({
@@ -95,21 +93,12 @@ export default function EditDokumen({ perusahaan, dokumen, extractedData }) {
                     {/* Kolom Kanan: Form Edit */}
                     <div>
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <EditNeracaForm
-                                data={data}
-                                onDataChange={handleDataChange}
-                                disabled={processing}
-                            />
-                            <EditLabaRugiForm
-                                data={data}
-                                onDataChange={handleDataChange}
-                                disabled={processing}
-                            />
-                            <EditArusKasForm
+                            <EditForm
                                 data={data}
                                 onDataChange={handleDataChange}
                                 onCashFlowComponentChange={handleCashFlowComponentChange}
                                 disabled={processing}
+                                statementTypes={dokumen.statement_types || []}
                             />
 
                             <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 sticky bottom-0 bg-white py-4 z-10">

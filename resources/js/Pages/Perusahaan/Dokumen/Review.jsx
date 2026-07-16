@@ -107,6 +107,7 @@ export default function Review({ perusahaan, dokumen, extractedData, foundAt }) 
                                 onMetadataChange={handleMetaChange}
                                 onCashFlowComponentChange={handleCashFlowComponentChange}
                                 disabled={processing}
+                                statementTypes={dokumen.statement_types || []}
                             />
 
                             <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 sticky bottom-0 bg-white py-4 z-10">

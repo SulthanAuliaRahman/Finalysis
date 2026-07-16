@@ -51,7 +51,16 @@ export default function Create({ perusahaan }) {
 
     function handleSubmit(e) {
         e.preventDefault();
-        post(`/perusahaan/${perusahaan.id}/dokumen`);
+        post(`/perusahaan/${perusahaan.id}/dokumen`, {
+            onError: (errs) => {
+                if (errs.statement_types) {
+                    alert(errs.statement_types);
+                }
+                else if (Object.keys(errs).length > 0) {
+                    alert("Terdapat isian yang belum sesuai. Silakan periksa kembali form Anda.");
+                }
+            }
+        });
     }
 
     function renderHealthBadge() {

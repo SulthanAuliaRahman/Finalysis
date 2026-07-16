@@ -1,20 +1,15 @@
 import { Layers, RefreshCw, Loader2, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { router } from '@inertiajs/react';
 import { BarChart, Bar, XAxis, ResponsiveContainer, LabelList, Cell } from 'recharts';
 
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
 
-// Helper: Mengubah persentase (15.5) kembali menjadi desimal mentah hasil bagi (0,155).
-// HANYA berlaku untuk field yang memang disimpan dalam skala % (dikali 100 saat dihitung) —
-// yaitu NPM dan ROE. TATO & Leverage TIDAK dikali 100 saat dihitung, jadi nilainya SUDAH
-// desimal murni dari awal — tidak perlu (dan tidak boleh) dibagi 100 lagi.
 const getRawDecimal = (val) => {
     if (val == null) return null;
     return Number(val / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 };
 
-// Skala relatif hanya untuk perbandingan visual antar batang (satuan asli beda: % vs x).
 const NPM_SKALA_MAX = 30;
 const TATO_SKALA_MAX = 2;
 const LEVERAGE_SKALA_MAX = 3;
@@ -24,7 +19,7 @@ function normalisasi(value, max) {
     return Math.min((value / max) * 100, 100);
 }
 
-export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, analisisId }) {
+export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, analisisId }, ref) {
     const [isLoading, setIsLoading] = useState(false);
     const belumDianalisis = !data?.narasi_dupont_AI;
 
@@ -73,20 +68,23 @@ export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, anali
             formula: 'Laba Bersih / Pendapatan',
             breakdown: labaRugi ? `${formatNum(labaRugi.laba_bersih)} / ${formatNum(labaRugi.pendapatan)}` : null,
             rawResult: data?.net_profit_margin != null ? getRawDecimal(data.net_profit_margin) : null,
+            rawNote: '(sebelum dikali 100%)' // Tambahan
         },
         {
             label: 'Total Asset Turnover (TATO)',
             value: data?.total_asset_turnover ?? null, suffix: 'x',
             formula: 'Pendapatan / Total Aset',
             breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.pendapatan)} / ${formatNum(neraca.total_assets)}` : null,
-            rawResult: null, // TATO sudah desimal murni ("x"), sama dengan value — tidak perlu ditampilkan dobel
+            rawResult: data?.total_asset_turnover != null ? data.total_asset_turnover : null, // Ubah dari null
+            rawNote: null // Kosongkan karena bukan persentase
         },
         {
             label: 'Leverage Multiplier',
             value: data?.leverage_multiplier ?? null, suffix: 'x',
             formula: 'Total Aset / Total Ekuitas',
             breakdown: neraca ? `${formatNum(neraca.total_assets)} / ${formatNum(neraca.total_equity)}` : null,
-            rawResult: null, // Leverage sudah desimal murni ("x"), sama dengan value — tidak perlu ditampilkan dobel
+            rawResult: data?.leverage_multiplier != null ? data.leverage_multiplier : null, // Ubah dari null
+            rawNote: null
         },
         {
             label: 'Return on Equity (ROE)',
@@ -94,6 +92,7 @@ export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, anali
             formula: 'NPM x TATO x Leverage',
             breakdown: data ? `${data.net_profit_margin}% x ${data.total_asset_turnover}x x ${data.leverage_multiplier}x` : null,
             rawResult: data?.roe != null ? getRawDecimal(data.roe) : null,
+            rawNote: '(sebelum dikali 100%)'
         },
     ];
 
@@ -127,20 +126,33 @@ export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, anali
                                 {ratio.value !== null ? `${ratio.value}${ratio.suffix}` : '—'}
                             </span>
                         </div>
+
                         {ratio.breakdown && ratio.value !== null && (
-                            <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[11px] font-mono text-slate-500 space-y-1">
+                            <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[11px] font-mono text-slate-500 space-y-1.5">
                                 <div className="flex gap-2">
-                                    <span className="text-slate-400 font-sans w-12 shrink-0">Rumus:</span>
+                                    <span className="text-slate-400 font-sans w-14 shrink-0">Rumus:</span>
                                     <span className="text-blue-600">{ratio.formula}</span>
                                 </div>
                                 <div className="flex gap-2">
-                                    <span className="text-slate-400 font-sans w-12 shrink-0">Data:</span>
+                                    <span className="text-slate-400 font-sans w-14 shrink-0">Angka:</span>
                                     <span className="text-slate-700">{ratio.breakdown}</span>
                                 </div>
-                                {ratio.rawResult !== null && (
-                                    <div className="flex gap-2">
-                                        <span className="text-slate-400 font-sans w-12 shrink-0">Hasil:</span>
-                                        <span className="text-slate-700">{ratio.rawResult} (sebelum dikali 100%)</span>
+
+                                {/* Row Hasil Raw yang sudah mendukung TATO & Leverage */}
+                                {ratio.rawResult !== null && ratio.rawResult !== undefined && (
+                                    <div className="flex gap-2 mt-1 pt-1.5 border-t border-slate-200 border-dashed items-center">
+                                        <span className="text-slate-500 font-sans font-medium w-14 shrink-0">Hasil:</span>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-slate-800 font-bold bg-white px-1.5 py-0.5 rounded border border-slate-200 leading-none">
+                                                {ratio.rawResult}
+                                            </span>
+                                            {/* Note hanya dirender jika ada nilainya */}
+                                            {ratio.rawNote && (
+                                                <span className="text-slate-400 font-sans italic text-[10px]">
+                                                    {ratio.rawNote}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -155,7 +167,7 @@ export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, anali
                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
                         Dekomposisi Visual
                     </p>
-                    <div style={{ width: '100%', height: 180 }}>
+                    <div ref={ref} style={{ width: '100%', height: 180 }}>
                         <ResponsiveContainer>
                             <BarChart data={chartData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
                                 <XAxis dataKey="label" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -207,4 +219,4 @@ export function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, anali
             )}
         </div>
     );
-}
+});
