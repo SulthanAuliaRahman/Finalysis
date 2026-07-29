@@ -17,6 +17,15 @@ use App\Http\Controllers\DokumenController;
 use App\Http\Controllers\AnalisisController;
 use App\Http\Controllers\UserController;
 
+use App\Http\Controllers\ImportController;
+
+Route::get('dokumen/import-excel', [DokumenController::class, 'createImportExcel'])
+    ->name('dokumen.import-excel.create');
+
+Route::post('dokumen/import-excel', [ImportController::class, 'importExcel'])
+    ->name('dokumen.import-excel.store');
+
+
 //ROLE UMUM
 Route::middleware(['auth'])->group(function(){
     // Rute Pengelolaan Dokumen Perusahaan
@@ -88,7 +97,7 @@ Route::middleware(['auth','role:super_admin,manager'])->group(function(){
     Route::put('/perusahaan/{perusahaan}', [PerusahaanController::class, 'update'])->name('perusahaan.update');
     Route::post('/perusahaan', [PerusahaanController::class, 'store'])->name('perusahaan.store');
 
-    
+
     // CRUD USER
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
@@ -98,7 +107,7 @@ Route::middleware(['auth','role:super_admin,manager'])->group(function(){
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
 
-    
+
     // Ganti rute lama ini
     Route::get('/', function () {
         return Inertia::render('LandingPage');

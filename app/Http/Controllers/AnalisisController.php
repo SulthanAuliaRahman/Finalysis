@@ -71,7 +71,8 @@ class AnalisisController extends Controller
     // ke page analisis detail
     public function analisis(Perusahaan $perusahaan, Analisis $analisis)
     {
-        abort_if($analisis->perusahaan_id !== $perusahaan->id, 404);
+        $analisis->load('dokumen');
+        abort_if($analisis->dokumen->perusahaan_id !== $perusahaan->id, 404);
 
         $analisis->load([
             'likuiditas',
@@ -82,38 +83,28 @@ class AnalisisController extends Controller
             'commonsize',
         ]);
 
+        $dokumenIni = $analisis->dokumen;
+
         $dokumenPeriode = $perusahaan->dokumen()
-            ->where('periode_type', $analisis->periode_type)
-            ->where('tahun', $analisis->tahun)
-            ->where('quarter', $analisis->quarter)
-            ->where('bulan', $analisis->bulan)
+            ->where('periode_type', $dokumenIni->periode_type)
+            ->where('tahun', $dokumenIni->tahun)
+            ->where('quarter', $dokumenIni->quarter)
+            ->where('bulan', $dokumenIni->bulan)
             ->select('id', 'nama_file', 'periode_type', 'tahun', 'quarter', 'bulan', 'status', 'created_at')
             ->latest()
             ->get();
 
-        $neraca = Neraca::whereHas('dokumen', function ($query) use ($perusahaan, $analisis) {
-            $query->where('perusahaan_id', $perusahaan->id)
-                ->where('periode_type', $analisis->periode_type)
-                ->where('tahun', $analisis->tahun)
-                ->where('quarter', $analisis->quarter)
-                ->where('bulan', $analisis->bulan);
-        })->latest()->first();
-
-        $labaRugi = LabaRugi::whereHas('dokumen', function ($query) use ($perusahaan, $analisis) {
-            $query->where('perusahaan_id', $perusahaan->id)
-                ->where('periode_type', $analisis->periode_type)
-                ->where('tahun', $analisis->tahun)
-                ->where('quarter', $analisis->quarter)
-                ->where('bulan', $analisis->bulan);
-        })->latest()->first();
+        // Neraca & Laba Rugi diambil langsung dari dokumen milik analisis ini
+        $neraca = $dokumenIni->neraca()->get();
+        $labaRugi = $dokumenIni->labaRugi()->get();
 
         return Inertia::render('Perusahaan/Analisis/Detail', [
             'perusahaan'      => $perusahaan,
             'analisis'        => [
                 'id'                 => $analisis->id,
-                'periode_label'      => $analisis->periode,
+                'periode_label'      => $dokumenIni->periode,
                 'status'             => $analisis->status,
-                'ai_summary_insight' => $analisis->AI_summary_insight,
+                'ai_summary_insight' => $analisis->executive_summary,
             ],
             'dokumenPeriode'  => $dokumenPeriode,
             'likuiditas'      => $analisis->likuiditas,
@@ -126,7 +117,6 @@ class AnalisisController extends Controller
             'trendRasio'      => $analisis->getRasioTrend(),
             'trendDupont'     => $analisis->getDupontTrend(),
             'trendCommonsize' => $analisis->getCommonsizeTrend(),
-            'trendArusKas'    => $analisis->getArusKasTrend(),
             'neraca'          => $neraca,
             'labaRugi'        => $labaRugi,
         ]);

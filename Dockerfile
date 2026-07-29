@@ -6,11 +6,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     zip \
     unzip \
+    libzip-dev \
     libpq-dev \
     libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
     libonig-dev \
     libxml2-dev \
-    && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
+        pdo \
+        pdo_pgsql \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath \
+        gd \
+        zip \
     && rm -rf /var/lib/apt/lists/*
 
 RUN echo "upload_max_filesize=10M\npost_max_size=11M\nmax_execution_time=300\nmemory_limit=256M" \

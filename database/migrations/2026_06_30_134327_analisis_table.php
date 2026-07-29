@@ -14,22 +14,15 @@ return new class extends Migration
         // Data Analisis ini tergantung dengan dokumen jika ada analisis periode Q3 2023 baru bisa ada Analisis Q3 2023
         Schema::create('analisis', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('perusahaan_id')->constrained('perusahaan')->cascadeOnDelete();
-            $table->enum('periode_type', [
-                'annual',
-                'quarterly',
-                'monthly'
-            ]);
-            $table->unsignedSmallInteger('tahun');// tahun
-            $table->unsignedTinyInteger('quarter')->nullable();// NULL jika annual
-            $table->unsignedTinyInteger('bulan')->nullable(); // NULL jika annual / quarterly
+            $table->foreignId('dokumen_id')->unique()->constrained('dokumen')->cascadeOnDelete();
+            // Periode ngikut Dokumen
             $table->enum('status', [
                 'belum dihitung',
                 'sudah dihitung',
                 'Terjadi Perubahan Data!',
             ])->default('belum dihitung');
 
-            $table->text('AI_summary_insight')->nullable();
+            $table->text('executive_summary')->nullable();// ganti nama
             $table->timestamps();
         });
 
@@ -99,7 +92,7 @@ return new class extends Migration
             // Common-size Balance Sheet (basis Total Aset = 100%)
             $table->decimal('aset_lancar_persen', 12, 2)->nullable();
             $table->decimal('aset_tetap_persen', 12, 2)->nullable();
-            $table->decimal('liabilitas_lancar_persen', 12, 2)->nullable();
+            $table->decimal('liabilitas_pendek_persen', 12, 2)->nullable();
             $table->decimal('liabilitas_panjang_persen', 12, 2)->nullable();
             $table->decimal('ekuitas_persen', 12, 2)->nullable();
 
@@ -115,7 +108,6 @@ return new class extends Migration
             $table->text('narasi_trend_rasio_AI')->nullable();
             $table->text('narasi_trend_dupont_AI')->nullable();
             $table->text('narasi_trend_commonsize_AI')->nullable();
-            $table->text('narasi_trend_arus_kas_AI')->nullable();
 
             $table->timestamps();
         });

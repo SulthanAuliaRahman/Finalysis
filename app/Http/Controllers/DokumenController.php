@@ -44,6 +44,11 @@ class DokumenController extends Controller
         ]);
     }
 
+    public function createImportExcel()
+    {
+        return Inertia::render('Perusahaan/Dokumen/ImportExcel');
+    }
+
     public function store(Request $request, Perusahaan $perusahaan)
     {
         $request->validate([

@@ -48,7 +48,6 @@ export default function Detail({
     const refTrendRasio  = useRef(null);
     const refTrendDupont  = useRef(null);
     const refTrendCommonsize  = useRef(null);
-    const refTrendArusKas  = useRef(null);
 
     const safeNama    = perusahaan.nama.replace(/[^a-zA-Z0-9]/g, '_');
     const safePeriode = analisis.periode_label.replace(/[^a-zA-Z0-9]/g, '_');
@@ -84,7 +83,6 @@ export default function Detail({
             trendRasio:         refTrendRasio,
             trendDupont:        refTrendDupont,
             trendCommonsize:    refTrendCommonsize,
-            trendArusKas:       refTrendArusKas,
         },
     });
 
@@ -169,7 +167,6 @@ export default function Detail({
                     <TrendRasioCard ref={refTrendRasio} data={trendRasio} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
                     <TrendDupontCard ref={refTrendDupont} data={trendDupont} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                     <TrendCommonsizeCard ref={refTrendCommonsize} data={trendCommonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
-                    <TrendArusKasCard ref={refTrendArusKas} data={trendArusKas} perusahaanId={perusahaan.id} analisisId={analisis.id}/>
                 </div>
             </div>
 

@@ -47,30 +47,63 @@ return new class extends Migration
         Schema::create('neraca', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dokumen_id')->unique()->constrained('dokumen')->cascadeOnDelete();
-            $table->decimal('cash_equivalent', 20, 2)->nullable();
-            $table->decimal('inventory', 20, 2)->nullable();
-            $table->decimal('total_equity', 20, 2)->nullable();
+            $table->string('nama_akun');
+            $table->enum('kelompok_akun',[
+                'kas_setara_kas',
+                'aset_lancar_selain_kas',
+                'aset_tetap',
+                'liabilitas_jangka_pendek',
+                'liabilitas_jangka_panjang',
+                'ekuitas',
+                'lainnya'
+            ])->default('lainnya');
+            $table->decimal('nilai_akun',20, 2)->nullable();
+            $table->decimal('total_kas', 20, 2)->nullable();
+            $table->decimal('total_asset_lancar', 20, 2)->nullable();
+            $table->decimal('total_asset_tetap', 20, 2)->nullable();
+            $table->decimal('total_asset', 20, 2)->nullable();
+            $table->decimal('total_liabilities_pendek', 20, 2)->nullable();
+            $table->decimal('total_liabilities_panjang', 20, 2)->nullable();
             $table->decimal('total_liabilities', 20, 2)->nullable();
-            $table->decimal('current_liabilities', 20, 2)->nullable();
-            $table->decimal('total_assets', 20, 2)->nullable();
-            $table->decimal('current_assets', 20, 2)->nullable();
+            $table->decimal('total_equitas', 20, 2)->nullable();
 
             // menyimpan posisi hasil ekstraksi
-            $table->json('found_at')->nullable();
+            $table->json('found_at')->nullable(); // nanti hapus nya bisi kepake lagi
             $table->timestamps();
         });
 
         Schema::create('laba_rugi', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dokumen_id')->unique()->constrained('dokumen')->cascadeOnDelete();
-            $table->decimal('pendapatan', 20, 2)->nullable();
-            $table->decimal('laba_kotor', 20, 2)->nullable();
-            $table->decimal('laba_bersih', 20, 2)->nullable();
+            $table->string('nama_akun');
+            $table->enum('kelompok_akun',[
+                'pendapatan_operasional',
+                'beban_hpp',
+                'beban_operasional',
+                'pendapatan_lainnya',
+                'biaya_lainnya',
+                'biaya_pajak',
+                'lainnya'
+            ])->default('lainnya');
 
+            $table->integer('nilai_akun');
+            $table->decimal('total_pendapatan_operasional', 20, 2)->nullable();
+            $table->decimal('total_beban_hpp', 20, 2)->nullable();
+            $table->decimal('total_beban_operasional', 20, 2)->nullable();
+            $table->decimal('total_pendapatan_lainnya', 20, 2)->nullable();
+            $table->decimal('total_beban_lainya', 20, 2)->nullable();
+            $table->decimal('total_biaya_pajak', 20, 2)->nullable();
+            $table->decimal('total_pendapatan', 20, 2)->nullable();
+
+            $table->decimal('laba_kotor', 20, 2)->nullable();
+            $table->decimal('laba_usaha', 20, 2)->nullable();
+            $table->decimal('laba_bersih_sebelum_pajak', 20, 2)->nullable();
+            $table->decimal('laba_bersih_sesudah_pajak', 20, 2)->nullable();
             $table->json('found_at')->nullable();
             $table->timestamps();
         });
 
+        // nanti hapus dibawah ini sekarang jangan dulu
         Schema::create('arus_kas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dokumen_id')->unique()->constrained('dokumen')->cascadeOnDelete();
