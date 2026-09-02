@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Analisis;
+use App\Models\Dokumen;
 use App\Models\Neraca;
 use App\Models\LabaRugi;
 use Illuminate\Validation\ValidationException;
@@ -18,7 +19,6 @@ use App\Neuron\RAG\TrendAkunUtamaAgent;
 use App\Neuron\RAG\TrendRasioAgent;
 use App\Neuron\RAG\TrendDupontAgent;
 use App\Neuron\RAG\TrendCommonsizeAgent;
-use App\Neuron\RAG\TrendArusKasAgent;
 use App\Neuron\RAG\SummaryAgent;
 
 use App\Services\CalculateFinancialService;
@@ -44,25 +44,79 @@ class AnalysisFinancialService
     // Delegasi ke CalculateFinancialService — controller tetap panggil method ini.
     public function hitungSemuaRasio(Analisis $analisis, Neraca $neraca, LabaRugi $labaRugi): void
     {
-        $this->calculateFinancialService->hitungSemuaRasio($analisis, $neraca, $labaRugi);
+        $neracaSebelumnya = $this->cariNeracaSebelumnya($analisis);
+
+        $this->calculateFinancialService->hitungSemuaRasio(
+            $analisis,
+            $neraca,
+            $labaRugi,
+            $neracaSebelumnya
+        );
+    }
+
+    // =====================================================================
+    // PENCARIAN PERIODE SEBELUMNYA
+    // =====================================================================
+
+    // PENTING: tabel `analisis` TIDAK punya perusahaan_id/periode_type/tahun/quarter
+    // langsung — semua itu ada di tabel `dokumen` (analisis.dokumen_id -> dokumen).
+    // Jadi pencarian periode sebelumnya dilakukan lewat Dokumen, bukan lewat Analisis.
+    private function cariNeracaSebelumnya(Analisis $analisis): ?Neraca
+    {
+        $dokumen = $analisis->dokumen;
+
+        if (!$dokumen) {
+            return null;
+        }
+
+        $query = Dokumen::query()
+            ->where('perusahaan_id', $dokumen->perusahaan_id)
+            ->where('id', '!=', $dokumen->id)
+            ->where('periode_type', $dokumen->periode_type);
+
+        if ($dokumen->periode_type === 'quarterly') {
+            $query->where(function ($q) use ($dokumen) {
+                $q->where('tahun', '<', $dokumen->tahun)
+                  ->orWhere(function ($q2) use ($dokumen) {
+                      $q2->where('tahun', $dokumen->tahun)
+                         ->where('quarter', '<', $dokumen->quarter);
+                  });
+            })->orderByDesc('tahun')->orderByDesc('quarter');
+        } elseif ($dokumen->periode_type === 'monthly') {
+            $query->where(function ($q) use ($dokumen) {
+                $q->where('tahun', '<', $dokumen->tahun)
+                  ->orWhere(function ($q2) use ($dokumen) {
+                      $q2->where('tahun', $dokumen->tahun)
+                         ->where('bulan', '<', $dokumen->bulan);
+                  });
+            })->orderByDesc('tahun')->orderByDesc('bulan');
+        } else {
+            // annual
+            $query->where('tahun', '<', $dokumen->tahun)->orderByDesc('tahun');
+        }
+
+        $dokumenSebelumnya = $query->first();
+
+        return $dokumenSebelumnya?->neraca;
     }
 
     // =====================================================================
     // HELPER
     // =====================================================================
 
-    private function npmBenchmarkUntukSektor(?string $sektor): string
-    {
-        $sektor = strtolower(trim((string) $sektor));
 
-        return match(true) {
-            str_contains($sektor, 'jasa') => 'Jasa (umumnya > 10%)',
-            str_contains($sektor, 'dagang') || str_contains($sektor, 'ritel') || str_contains($sektor, 'retail')
-                => 'Dagang/Ritel (umumnya 2-5%)',
-            str_contains($sektor, 'manufaktur') || str_contains($sektor, 'industri')
-                => 'Manufaktur (umumnya 5-10%)',
-            default => 'Umum/tidak teridentifikasi (bandingkan terutama antar periode perusahaan ini sendiri sebagai acuan utama, bukan angka mutlak)',
-        };
+
+    // Label periode untuk satu Dokumen (dipakai di prosesSummaryAnalisis, karena
+    // Analisis tidak punya kolom periode sendiri — datanya ada di Dokumen).
+    private function labelPeriodeDokumen(Dokumen $dokumen): string
+    {
+        if ($dokumen->periode_type === 'annual') {
+            return "Tahunan {$dokumen->tahun}";
+        }
+        if ($dokumen->periode_type === 'quarterly') {
+            return "Q{$dokumen->quarter} {$dokumen->tahun}";
+        }
+        return "Bulan {$dokumen->bulan} {$dokumen->tahun}";
     }
 
     // Label periode dari array (dipakai untuk data trend yang datang sebagai array, bukan model Analisis).
@@ -94,7 +148,8 @@ class AnalysisFinancialService
     public function prosesLikuiditas(Analisis $analisis, ?string $userPrompt = null): void
     {
         $data = $analisis->likuiditas;
-        $perusahaan = $analisis->perusahaan;
+        // Analisis tidak punya relasi perusahaan() langsung — lewat dokumen().
+        $perusahaan = $analisis->dokumen->perusahaan;
 
         $Prompt  = "Informasi Perusahaan\n";
         $Prompt .= "Nama Perusahaan: {$perusahaan->nama}\n";
@@ -103,7 +158,6 @@ class AnalysisFinancialService
 
         $Prompt .= "Berikan narasi analisis likuiditas berdasarkan data berikut: \n";
         $Prompt .= "Current Ratio (CR): " . $data->current_ratio . "x\n";
-        $Prompt .= "Quick Ratio (QR): " . $data->quick_ratio . "x\n";
         $Prompt .= "Cash Ratio (CSR): " . $data->cash_ratio . "x\n";
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $data->narasi_likuiditas_AI);
@@ -122,12 +176,10 @@ class AnalysisFinancialService
     public function prosesProfitabilitas(Analisis $analisis, ?string $userPrompt = null): void
     {
         $data = $analisis->profitabilitas;
-        $sektor = $analisis->perusahaan->sektor;
+        $sektor = $analisis->dokumen->perusahaan->sektor;
         $benchmarkNpm = $this->npmBenchmarkUntukSektor($sektor);
 
         $Prompt  = "Berikan narasi analisis profitabilitas berdasarkan data berikut: \n";
-        $Prompt .= "Sektor Perusahaan: " . ($sektor ?: 'Tidak diketahui') . "\n";
-        $Prompt .= "Benchmark NPM untuk sektor ini: {$benchmarkNpm}\n";
         $Prompt .= "Net Profit Margin (NPM): " . $data->net_profit_margin . "%\n";
         $Prompt .= "Return on Assets (ROA): " . $data->ROA . "%\n";
         $Prompt .= "Return on Equity (ROE): " . $data->ROE . "%\n";
@@ -152,6 +204,7 @@ class AnalysisFinancialService
         $Prompt  = "Berikan narasi analisis solvabilitas berdasarkan data berikut: \n";
         $Prompt .= "Debt to Equity Ratio (DER): " . $data->debt_to_equity . "x\n";
         $Prompt .= "Debt to Asset Ratio (DAR): " . $data->debt_to_asset . "x\n";
+        $Prompt .= "Financial Leverage: " . $data->leverage_multiplier . "x\n";
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $data->narasi_solvabilitas_AI);
 
@@ -172,6 +225,8 @@ class AnalysisFinancialService
 
         $Prompt  = "Berikan narasi analisis aktivitas operasional berdasarkan data berikut: \n";
         $Prompt .= "Total Asset Turnover (TATO): " . $data->total_asset_turnover . "x\n";
+        $Prompt .= "Working Capital Turnover (WCT): " . $data->working_capital_turnover . "x\n";
+        $Prompt .= "Fixed Asset Turnover (FAT): " . $data->fixed_asset_turnover . "x\n";
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $data->narasi_aktivitas_AI);
 
@@ -188,13 +243,18 @@ class AnalysisFinancialService
 
     public function prosesDupont(Analisis $analisis, ?string $userPrompt = null): void
     {
+        // analisis_dupont cuma menyimpan roe_dupont. NPM, TATO, dan Leverage
+        // yang jadi komponen pembentuknya diambil dari tabel masing-masing.
         $data = $analisis->dupont;
+        $npm      = $analisis->profitabilitas?->net_profit_margin;
+        $tato     = $analisis->aktivitas?->total_asset_turnover;
+        $leverage = $analisis->solvabilitas?->leverage_multiplier;
 
         $Prompt  = "Berikan narasi analisis DuPont berdasarkan data berikut: \n";
-        $Prompt .= "Net Profit Margin (NPM): " . $data->net_profit_margin . "%\n";
-        $Prompt .= "Total Asset Turnover (TATO): " . $data->total_asset_turnover . " kali\n";
-        $Prompt .= "Leverage Multiplier (Total Aset / Ekuitas): " . $data->leverage_multiplier . " kali\n";
-        $Prompt .= "Hasil ROE = NPM x TATO x Leverage: " . $data->roe . "%\n";
+        $Prompt .= "Net Profit Margin (NPM): " . $npm . "%\n";
+        $Prompt .= "Total Asset Turnover (TATO): " . $tato . " kali\n";
+        $Prompt .= "Leverage Multiplier (Total Aset / Ekuitas): " . $leverage . " kali\n";
+        $Prompt .= "Hasil ROE = NPM x TATO x Leverage: " . $data->roe_dupont . "%\n";
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $data->narasi_dupont_AI);
 
@@ -214,17 +274,14 @@ class AnalysisFinancialService
         $data = $analisis->commonsize;
 
         $Prompt  = "Berikan narasi analisis common-size berdasarkan data berikut: \n";
-        $Prompt .= "--- Common-Size Income Statement (basis Pendapatan = 100%) ---\n";
-        $Prompt .= "Pendapatan Usaha: 100%\n";
-        $Prompt .= "HPP: " . $data->hpp_persen . "%\n";
-        $Prompt .= "Laba Kotor: " . $data->laba_kotor_persen . "%\n";
-        $Prompt .= "Beban Lain-lain & Pajak (gabungan OpEx+Bunga+Pajak): " . $data->beban_lain_pajak_persen . "%\n";
+        $Prompt .= "--- Common-Size Laporan Laba Rugi (basis Pendapatan = 100%) ---\n";
+        $Prompt .= "Pendapatan: " . $data->pendapatan_persen . "%\n";
+        $Prompt .= "Beban (termasuk beban pajak): " . $data->beban_persen . "%\n";
         $Prompt .= "Laba Bersih: " . $data->laba_bersih_persen . "%\n";
-        $Prompt .= "PENTING: sumber data hanya mencatat Pendapatan, Laba Kotor, dan Laba Bersih. OpEx, EBIT, dan Beban Bunga TIDAK tercatat terpisah, sehingga digabung jadi satu pos 'Beban Lain-lain & Pajak'. JANGAN memecah/mengarang angka OpEx, EBIT, atau Bunga secara individual — bahas pos gabungan ini apa adanya.\n";
-        $Prompt .= "--- Common-Size Balance Sheet (basis Total Aset = 100%) ---\n";
+        $Prompt .= "--- Common-Size Laporan Posisi Keuangan (basis Total Aset = 100%) ---\n";
         $Prompt .= "Aset Lancar: " . $data->aset_lancar_persen . "%\n";
         $Prompt .= "Aset Tetap: " . $data->aset_tetap_persen . "%\n";
-        $Prompt .= "Liabilitas Lancar: " . $data->liabilitas_lancar_persen . "%\n";
+        $Prompt .= "Liabilitas Jangka Pendek: " . $data->liabilitas_pendek_persen . "%\n";
         $Prompt .= "Liabilitas Jangka Panjang: " . $data->liabilitas_panjang_persen . "%\n";
         $Prompt .= "Ekuitas: " . $data->ekuitas_persen . "%\n";
 
@@ -242,8 +299,9 @@ class AnalysisFinancialService
     }
 
     // =====================================================================
-    // NARASI AI PER SECTION (TREND, 5 KATEGORI TERPISAH)
+    // NARASI AI PER SECTION (TREND, 4 KATEGORI TERPISAH)
     // Data diambil live dari Analisis::getXxxTrend(), bukan dari snapshot.
+    // Trend Arus Kas SUDAH DIHAPUS (tidak dipakai lagi).
     // =====================================================================
 
     public function prosesTrendAkunUtama(Analisis $analisis, ?string $userPrompt = null): void
@@ -251,7 +309,7 @@ class AnalysisFinancialService
         $trendData = $analisis->getAkunUtamaTrend();
         $periodeData = $trendData['periode_data'];
 
-        $Prompt = "Berikan narasi analisis tren akun utama (Pendapatan, Laba Kotor, Laba Bersih, Total Aset, Kas Setara Kas, Total Ekuitas, Net Cash Flow) lintas periode berikut: \n";
+        $Prompt = "Berikan narasi analisis tren akun utama (Pendapatan, Laba Bersih, Total Aset, Kas Setara Kas, Total Ekuitas) lintas periode berikut: \n";
         $Prompt .= "STATUS DATA: " . count($periodeData) . " periode tersedia dalam scope";
         $Prompt .= $trendData['has_gap']
             ? ", namun ada periode dengan data tidak lengkap — fokuskan narasi hanya pada periode yang datanya tersedia.\n"
@@ -260,13 +318,11 @@ class AnalysisFinancialService
         foreach ($periodeData as $titik) {
             $label = $this->labelPeriodeArray($titik['analisis']);
             $Prompt .= "--- {$label} ---\n";
-            $Prompt .= "Pendapatan: " . number_format($titik['pendapatan'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_pendapatan'] !== null ? round($titik['growth_pendapatan'], 2) . '%' : '-') . ")\n";
-            $Prompt .= "Laba Kotor: " . number_format($titik['laba_kotor'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_laba_kotor'] !== null ? round($titik['growth_laba_kotor'], 2) . '%' : '-') . ")\n";
-            $Prompt .= "Laba Bersih: " . number_format($titik['laba_bersih'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_laba_bersih'] !== null ? round($titik['growth_laba_bersih'], 2) . '%' : '-') . ")\n";
-            $Prompt .= "Total Aset: " . number_format($titik['total_assets'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_total_assets'] !== null ? round($titik['growth_total_assets'], 2) . '%' : '-') . ")\n";
-            $Prompt .= "Kas Setara Kas: " . number_format($titik['kas_setara_kas'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_kas_setara_kas'] !== null ? round($titik['growth_kas_setara_kas'], 2) . '%' : '-') . ")\n";
-            $Prompt .= "Total Ekuitas: " . number_format($titik['total_equity'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_total_equity'] !== null ? round($titik['growth_total_equity'], 2) . '%' : '-') . ")\n";
-            $Prompt .= "Net Cash Flow: " . number_format($titik['net_cash_flow'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_net_cash_flow'] !== null ? round($titik['growth_net_cash_flow'], 2) . '%' : '-') . ")\n";
+            $Prompt .= "Pendapatan: " . number_format($titik['total_pendapatan'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_total_pendapatan'] !== null ? round($titik['growth_total_pendapatan'], 2) . '%' : '-') . ")\n";
+            $Prompt .= "Laba Bersih: " . number_format($titik['laba_bersih_sesudah_pajak'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_laba_bersih_sesudah_pajak'] !== null ? round($titik['growth_laba_bersih_sesudah_pajak'], 2) . '%' : '-') . ")\n";
+            $Prompt .= "Total Aset: " . number_format($titik['total_asset'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_total_asset'] !== null ? round($titik['growth_total_asset'], 2) . '%' : '-') . ")\n";
+            $Prompt .= "Kas Setara Kas: " . number_format($titik['total_kas_setara_kas'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_total_kas_setara_kas'] !== null ? round($titik['growth_total_kas_setara_kas'], 2) . '%' : '-') . ")\n";
+            $Prompt .= "Total Ekuitas: " . number_format($titik['total_equitas'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_total_equitas'] !== null ? round($titik['growth_total_equitas'], 2) . '%' : '-') . ")\n";
         }
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $trendData['narasi_trend_akun_utama_AI']);
@@ -300,10 +356,10 @@ class AnalysisFinancialService
             $a = $titik['analisis'];
             $label = $this->labelPeriodeArray($a);
             $Prompt .= "--- {$label} ---\n";
-            $Prompt .= "CR: " . ($a['likuiditas']['current_ratio'] ?? '-') . "%, QR: " . ($a['likuiditas']['quick_ratio'] ?? '-') . "%, CSR: " . ($a['likuiditas']['cash_ratio'] ?? '-') . "%\n";
+            $Prompt .= "CR: " . ($a['likuiditas']['current_ratio'] ?? '-') . "%, CSR: " . ($a['likuiditas']['cash_ratio'] ?? '-') . "%\n";
             $Prompt .= "NPM: " . ($a['profitabilitas']['net_profit_margin'] ?? '-') . "%, ROA: " . ($a['profitabilitas']['ROA'] ?? '-') . "%, ROE: " . ($a['profitabilitas']['ROE'] ?? '-') . "%\n";
-            $Prompt .= "DER: " . ($a['solvabilitas']['debt_to_equity'] ?? '-') . "%, DAR: " . ($a['solvabilitas']['debt_to_asset'] ?? '-') . "%\n";
-            $Prompt .= "TATO: " . ($a['aktivitas']['total_asset_turnover'] ?? '-') . "x\n";
+            $Prompt .= "DER: " . ($a['solvabilitas']['debt_to_equity'] ?? '-') . "%, DAR: " . ($a['solvabilitas']['debt_to_asset'] ?? '-') . "%, Financial Leverage: " . ($a['solvabilitas']['leverage_multiplier'] ?? '-') . "x\n";
+            $Prompt .= "TATO: " . ($a['aktivitas']['total_asset_turnover'] ?? '-') . "x, WCT: " . ($a['aktivitas']['working_capital_turnover'] ?? '-') . "x, FAT: " . ($a['aktivitas']['fixed_asset_turnover'] ?? '-') . "x\n";
         }
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $trendData['narasi_trend_rasio_AI']);
@@ -336,9 +392,8 @@ class AnalysisFinancialService
         foreach ($periodeData as $titik) {
             $a = $titik['analisis'];
             $label = $this->labelPeriodeArray($a);
-            $d = $a['dupont'];
             $Prompt .= "--- {$label} ---\n";
-            $Prompt .= "NPM: " . ($d['net_profit_margin'] ?? '-') . "%, TATO: " . ($d['total_asset_turnover'] ?? '-') . "x, Leverage: " . ($d['leverage_multiplier'] ?? '-') . "x, ROE: " . ($d['roe'] ?? '-') . "%\n";
+            $Prompt .= "NPM: " . ($a['profitabilitas']['net_profit_margin'] ?? '-') . "%, TATO: " . ($a['aktivitas']['total_asset_turnover'] ?? '-') . "x, Leverage: " . ($a['solvabilitas']['leverage_multiplier'] ?? '-') . "x, ROE Dupont: " . ($a['dupont']['roe_dupont'] ?? '-') . "%\n";
         }
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $trendData['narasi_trend_dupont_AI']);
@@ -373,8 +428,8 @@ class AnalysisFinancialService
             $label = $this->labelPeriodeArray($a);
             $c = $a['commonsize'];
             $Prompt .= "--- {$label} ---\n";
-            $Prompt .= "HPP: " . ($c['hpp_persen'] ?? '-') . "%, Laba Kotor: " . ($c['laba_kotor_persen'] ?? '-') . "%, Beban Lain & Pajak: " . ($c['beban_lain_pajak_persen'] ?? '-') . "%, Laba Bersih: " . ($c['laba_bersih_persen'] ?? '-') . "%\n";
-            $Prompt .= "Aset Lancar: " . ($c['aset_lancar_persen'] ?? '-') . "%, Aset Tetap: " . ($c['aset_tetap_persen'] ?? '-') . "%, Liabilitas Lancar: " . ($c['liabilitas_lancar_persen'] ?? '-') . "%, Liabilitas Jk. Panjang: " . ($c['liabilitas_panjang_persen'] ?? '-') . "%, Ekuitas: " . ($c['ekuitas_persen'] ?? '-') . "%\n";
+            $Prompt .= "Beban: " . ($c['beban_persen'] ?? '-') . "%, Laba Bersih: " . ($c['laba_bersih_persen'] ?? '-') . "%\n";
+            $Prompt .= "Aset Lancar: " . ($c['aset_lancar_persen'] ?? '-') . "%, Aset Tetap: " . ($c['aset_tetap_persen'] ?? '-') . "%, Liabilitas Jk. Pendek: " . ($c['liabilitas_pendek_persen'] ?? '-') . "%, Liabilitas Jk. Panjang: " . ($c['liabilitas_panjang_persen'] ?? '-') . "%, Ekuitas: " . ($c['ekuitas_persen'] ?? '-') . "%\n";
         }
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $trendData['narasi_trend_commonsize_AI']);
@@ -393,59 +448,24 @@ class AnalysisFinancialService
         );
     }
 
-    public function prosesTrendArusKas(Analisis $analisis, ?string $userPrompt = null): void
-    {
-        $trendData = $analisis->getArusKasTrend();
-        $periodeData = $trendData['periode_data'];
-
-        $Prompt = "Berikan narasi analisis tren arus kas (Kas Masuk, Kas Keluar, Net Cash Flow) lintas periode berikut: \n";
-        $Prompt .= "STATUS DATA: " . count($periodeData) . " periode tersedia dalam scope";
-        $Prompt .= $trendData['has_gap']
-            ? ", namun ada periode dengan data tidak lengkap — fokuskan narasi hanya pada periode yang datanya tersedia.\n"
-            : ", seluruh data lengkap.\n";
-
-        foreach ($periodeData as $titik) {
-            $label = $this->labelPeriodeArray($titik['analisis']);
-            $kasMasuk = $titik['kas_masuk'];
-            $kasKeluar = $titik['kas_keluar'];
-            $net = ($kasMasuk !== null && $kasKeluar !== null) ? $kasMasuk - $kasKeluar : null;
-
-            $Prompt .= "--- {$label} ---\n";
-            $Prompt .= "Kas Masuk: " . ($kasMasuk !== null ? number_format($kasMasuk, 0, ',', '.') : '-') . "\n";
-            $Prompt .= "Kas Keluar: " . ($kasKeluar !== null ? number_format($kasKeluar, 0, ',', '.') : '-') . "\n";
-            $Prompt .= "Net Cash Flow: " . ($net !== null ? number_format($net, 0, ',', '.') : '-') . "\n";
-        }
-
-        $this->tambahkanKonteksNarasiSebelumnya($Prompt, $trendData['narasi_trend_arus_kas_AI']);
-
-        if ($userPrompt) {
-            $Prompt .= "\nInstruksi Tambahan dari Pengguna: " . $userPrompt . "\n";
-        }
-
-        $response = TrendArusKasAgent::make()->chat(new UserMessage($Prompt));
-        $narasi = $response->getMessage()->getContent() ?? 'Tidak ada insight.';
-        $narasi = TextCleanerService::bersihkanMarkdown($narasi);
-
-        $analisis->trend()->updateOrCreate(
-            ['analisis_id' => $analisis->id],
-            ['narasi_trend_arus_kas_AI' => $narasi]
-        );
-    }
-
     public function prosesSummaryAnalisis(Analisis $analisis, ?string $userPrompt = null): void
     {
+        // Analisis tidak punya relasi perusahaan()/kolom periode langsung — lewat dokumen().
+        $dokumen = $analisis->dokumen;
+        $perusahaan = $dokumen->perusahaan;
+        $labelPeriode = $this->labelPeriodeDokumen($dokumen);
+
         $Prompt = "Susun Executive Summary berdasarkan seluruh hasil analisis keuangan yang tersedia.\n";
 
         $Prompt .= "=== INFORMASI PERUSAHAAN ===\n";
-        $Prompt .= "Perusahaan : {$analisis->perusahaan->nama}\n";
-        $Prompt .= "Sektor : {$analisis->perusahaan->sektor}\n";
-        $Prompt .= "Periode Analisis : {$analisis->periode}\n";
+        $Prompt .= "Perusahaan : {$perusahaan->nama}\n";
+        $Prompt .= "Sektor : {$perusahaan->sektor}\n";
+        $Prompt .= "Periode Analisis : {$labelPeriode}\n";
 
         $Prompt .= "Gunakan seluruh hasil analisis berikut sebagai dasar penyusunan Executive Summary.\n";
         $Prompt .= "Apabila suatu analisis tidak tersedia maka abaikan, jangan membuat asumsi.\n";
 
-
-         if ($analisis->likuiditas?->narasi_likuiditas_AI) {
+        if ($analisis->likuiditas?->narasi_likuiditas_AI) {
             $Prompt .= "=== ANALISIS LIKUIDITAS ===\n";
             $Prompt .= $analisis->likuiditas->narasi_likuiditas_AI . "\n";
         }
@@ -496,16 +516,11 @@ class AnalysisFinancialService
                 $Prompt .= "=== TREND COMMON SIZE ===\n";
                 $Prompt .= $analisis->trend->narasi_trend_commonsize_AI . "\n";
             }
-
-            if ($analisis->trend->narasi_trend_arus_kas_AI) {
-                $Prompt .= "=== TREND ARUS KAS ===\n";
-                $Prompt .= $analisis->trend->narasi_trend_arus_kas_AI . "\n";
-            }
         }
 
-        if ($analisis->AI_summary_insight) {
+        if ($analisis->ringkasan_laporan) {
             $Prompt .= "=== EXECUTIVE SUMMARY SEBELUMNYA ===\n";
-            $Prompt .= $analisis->AI_summary_insight . "\n";
+            $Prompt .= $analisis->ringkasan_laporan . "\n";
         }
 
         if ($userPrompt) {
@@ -520,7 +535,7 @@ class AnalysisFinancialService
         $narasi = TextCleanerService::bersihkanMarkdown($narasi);
 
         $analisis->update([
-            'AI_summary_insight' => $narasi,
+            'ringkasan_laporan' => $narasi,
         ]);
     }
 }
