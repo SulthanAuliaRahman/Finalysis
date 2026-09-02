@@ -2,88 +2,37 @@ import { Link, router } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
-import {
-    Upload, FileText, Trash2, CheckCircle2,
-    Clock, Loader2, Building2, ArrowRight, Eye, Pencil
-} from "lucide-react";
+import { Upload, FileText, Trash2, Building2, Eye } from "lucide-react";
 
-function StatusBadge({ status }) {
-    const badges = {
-        menunggu: { bg: "bg-slate-100 border-slate-200 text-slate-600", icon: <Clock className="w-3 h-3" />, label: "Menunggu" },
-        diekstrak: { bg: "bg-blue-50 border-blue-200 text-blue-700", icon: <Loader2 className="w-3 h-3 text-blue-500 animate-spin" />, label: "Diekstrak" },
-        dichunk: { bg: "bg-amber-50 border-amber-200 text-amber-700", icon: <FileText className="w-3 h-3 text-amber-500" />, label: "Dichunk" },
-        diembed: { bg: "bg-indigo-50 border-indigo-200 text-indigo-700", icon: <Loader2 className="w-3 h-3 text-indigo-500 animate-pulse" />, label: "Diembed" },
-        selesai: { bg: "bg-green-50 border-green-200 text-green-700", icon: <CheckCircle2 className="w-3 h-3" />, label: "Selesai" }
-    };
-    const current = badges[status] || badges['menunggu'];
-    return (
-        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-xs font-medium ${current.bg}`}>
-            {current.icon} {current.label}
-        </span>
-    );
+const BULAN_LABELS = {
+    1: "Januari", 2: "Februari", 3: "Maret", 4: "April", 5: "Mei", 6: "Juni",
+    7: "Juli", 8: "Agustus", 9: "September", 10: "Oktober", 11: "November", 12: "Desember",
+};
+
+// Format kolom Periode dari periode_type + tahun + quarter/bulan
+function formatPeriode(dokumen) {
+    if (dokumen.periode_type === "quarterly") {
+        return `Q${dokumen.quarter} ${dokumen.tahun}`;
+    }
+    if (dokumen.periode_type === "monthly") {
+        return `${BULAN_LABELS[dokumen.bulan] ?? dokumen.bulan} ${dokumen.tahun}`;
+    }
+    return `Tahunan ${dokumen.tahun}`;
+}
+
+function formatTanggal(value) {
+    if (!value) return "-";
+    return new Date(value).toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    });
 }
 
 export default function Index({ perusahaan, dokumenList }) {
-
     function handleDelete(documentId) {
-        if (confirm("Apakah Anda yakin ingin menghapus berkas laporan keuangan ini beserta seluruh data olahan AI di dalamnya?")) {
+        if (confirm("Apakah Anda yakin ingin menghapus berkas laporan keuangan ini beserta seluruh data hasil ekstraksinya?")) {
             router.delete(`/perusahaan/${perusahaan.id}/dokumen/${documentId}`);
-        }
-    }
-
-    // Fungsi Render Tombol Aksi Dinamis Kontekstual Berdasarkan Status Dokumen
-    function renderActionButtons(dokumenData) {
-        const editButton = (
-            <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/edit`}>
-                <Button size="sm" variant="ghost" className="h-7 text-xs text-slate-500 hover:text-slate-700 gap-1">
-                    <Pencil className="w-3 h-3" /> Edit
-                </Button>
-            </Link>
-        );
-
-        switch (dokumenData.status) {
-            case "menunggu":
-                return null;
-
-            case "diekstrak":
-                return (
-                    <div className="flex items-center gap-1.5">
-                        {editButton}
-                        <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/review`}>
-                            <Button size="sm" variant="outline" className="h-7 text-xs text-blue-600 border-blue-200 bg-blue-50/50 hover:bg-blue-50 gap-1">
-                                Lanjut Review <ArrowRight className="w-3 h-3" />
-                            </Button>
-                        </Link>
-                    </div>
-                );
-
-            case "dichunk":
-                return (
-                    <div className="flex items-center gap-1.5">
-                        {editButton}
-                        <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/embed`}>
-                            <Button size="sm" variant="outline" className="h-7 text-xs text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-50 gap-1">
-                                Lanjut Embed <ArrowRight className="w-3 h-3" />
-                            </Button>
-                        </Link>
-                    </div>
-                );
-
-            case "diembed":
-            case "selesai":
-                return (
-                    <div className="flex items-center gap-1.5">
-                        {editButton}
-                        <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumenData.id}/chunks`}>
-                            <Button size="sm" variant="outline" className="h-7 text-xs text-slate-700 gap-1">
-                                <Eye className="w-3 h-3" /> Lihat Chunks
-                            </Button>
-                        </Link>
-                    </div>
-                );
-
-            default:
-                return null;
         }
     }
 
@@ -116,34 +65,43 @@ export default function Index({ perusahaan, dokumenList }) {
                                 <tr className="border-b border-slate-200 bg-slate-50/50 text-slate-500 text-xs uppercase font-semibold">
                                     <th className="px-5 py-3.5">Nama File</th>
                                     <th className="px-5 py-3.5">Periode</th>
-                                    <th className="px-5 py-3.5">Ukuran</th>
-                                    <th className="px-5 py-3.5">Status</th>
-                                    <th className="px-5 py-3.5">Progres AI</th>
+                                    <th className="px-5 py-3.5">Diunggah</th>
                                     <th className="px-5 py-3.5"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-slate-700">
                                 {dokumenList.map((dokumen) => (
                                     <tr key={dokumen.id} className="hover:bg-slate-50/40 transition-colors">
-                                        <td className="px-5 py-4 flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
-                                                <FileText className="w-4 h-4 text-blue-600" />
+                                        <td className="px-5 py-4">
+                                            <Link
+                                                href={`/perusahaan/${perusahaan.id}/dokumen/${dokumen.id}/detail`}
+                                                className="flex items-center gap-3 group w-fit"
+                                            >
+                                                <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
+                                                    <FileText className="w-4 h-4 text-blue-600" />
+                                                </div>
+                                                <span className="font-mono text-xs text-slate-900 font-medium truncate max-w-xs group-hover:underline">
+                                                    {dokumen.nama_file}
+                                                </span>
+                                            </Link>
+                                        </td>
+                                        <td className="px-5 py-4">
+                                            <Badge variant="outline">{formatPeriode(dokumen)}</Badge>
+                                        </td>
+                                        <td className="px-5 py-4 text-xs text-slate-500">
+                                            {formatTanggal(dokumen.created_at)}
+                                        </td>
+                                        <td className="px-5 py-4 text-right whitespace-nowrap">
+                                            <div className="flex items-center justify-end gap-1.5">
+                                                <Link href={`/perusahaan/${perusahaan.id}/dokumen/${dokumen.id}/detail`}>
+                                                    <Button size="sm" variant="ghost" className="h-7 text-xs text-slate-500 hover:text-slate-700 gap-1">
+                                                        <Eye className="w-3 h-3" /> Detail
+                                                    </Button>
+                                                </Link>
+                                                <Button variant="ghost" size="icon" onClick={() => handleDelete(dokumen.id)}>
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </Button>
                                             </div>
-                                            <span className="font-mono text-xs text-slate-900 font-medium truncate max-w-xs">{dokumen.nama_file}</span>
-                                        </td>
-                                        {/* Properti 'periode' ini bisa diakses langsung berkat $appends di Model */}
-                                        <td className="px-5 py-4"><Badge variant="outline">{dokumen.periode}</Badge></td>
-                                        <td className="px-5 py-4 font-mono text-xs text-slate-400">
-                                            {dokumen.ukuran_file ? `${(dokumen.ukuran_file / 1024 / 1024).toFixed(2)} MB` : "—"}
-                                        </td>
-                                        <td className="px-5 py-4"><StatusBadge status={dokumen.status} /></td>
-
-                                        {/* Kolom Tombol Alur Kontekstual Dinamis */}
-                                        <td className="px-5 py-4 whitespace-nowrap">{renderActionButtons(dokumen)}</td>
-                                        <td className="px-5 py-4 text-right">
-                                            <Button variant="ghost" size="icon" onClick={() => handleDelete(dokumen.id)}>
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </Button>
                                         </td>
                                     </tr>
                                 ))}

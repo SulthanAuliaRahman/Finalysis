@@ -2,21 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Neraca extends Model
 {
-    use HasFactory;
+    use HasFactory,HasUuids;
 
     protected $table = 'neraca';
 
     protected $fillable = [
         'dokumen_id',
-        'nama_akun',
-        'kelompok_akun',
-        'nilai_akun',
-        'total_kas',
+        'total_kas_setara_kas',
         'total_asset_lancar',
         'total_asset_tetap',
         'total_asset',
@@ -24,12 +22,10 @@ class Neraca extends Model
         'total_liabilities_panjang',
         'total_liabilities',
         'total_equitas',
-        'found_at',
     ];
 
     protected $casts = [
-        'nilai_akun' => 'decimal:2',
-        'total_kas' => 'decimal:2',
+        'total_kas_setara_kas' => 'decimal:2',
         'total_asset_lancar' => 'decimal:2',
         'total_asset_tetap' => 'decimal:2',
         'total_asset' => 'decimal:2',
@@ -37,11 +33,11 @@ class Neraca extends Model
         'total_liabilities_panjang' => 'decimal:2',
         'total_liabilities' => 'decimal:2',
         'total_equitas' => 'decimal:2',
-        'found_at' => 'array',
     ];
 
     public function dokumen()
     {
         return $this->belongsTo(Dokumen::class);
     }
+    
 }

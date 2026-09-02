@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Dokumen extends Model
 {
-    use HasFactory;
+    use HasFactory,HasUuids;
 
     protected $table = 'dokumen';
 
@@ -20,7 +21,6 @@ class Dokumen extends Model
         'quarter',
         'bulan',
         'statement_types',
-        'ukuran_file',
         'status',
     ];
 
@@ -37,12 +37,17 @@ class Dokumen extends Model
 
     public function neraca()
     {
-        return $this->hasMany(Neraca::class);
+        return $this->hasOne(Neraca::class);
     }
 
     public function labaRugi()
     {
-        return $this->hasMany(LabaRugi::class);
+        return $this->hasOne(LabaRugi::class);
+    }
+
+    public function chartOfAccounts()
+    {
+        return $this->hasMany(ChartOfAccount::class);
     }
 
     public function analisis()

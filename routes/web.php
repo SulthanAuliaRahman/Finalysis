@@ -28,31 +28,12 @@ Route::post('dokumen/import-excel', [ImportController::class, 'importExcel'])
 
 //ROLE UMUM
 Route::middleware(['auth'])->group(function(){
-    // Rute Pengelolaan Dokumen Perusahaan
+
+// Rute Pengelolaan Dokumen Perusahaan
     Route::get('/perusahaan/{perusahaan}/dokumen', [DokumenController::class, 'index'])->name('perusahaan.dokumen.index');
-
-    // Halaman Alur Pros
-    Route::get('/python-health', [DokumenController::class, 'checkPythonHealth'])->name('python.health');
-
-    // Extract
     Route::get('/perusahaan/{perusahaan}/dokumen/create', [DokumenController::class, 'create'])->name('perusahaan.dokumen.create');
-    Route::post('/perusahaan/{perusahaan}/dokumen', [DokumenController::class, 'store'])->name('perusahaan.dokumen.store');
-
-    //Review & StartChunking
-    Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/view-pdf', [DokumenController::class, 'viewPdf'])->name('perusahaan.dokumen.view-pdf');
-    Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/review', [DokumenController::class, 'review'])->name('perusahaan.dokumen.review');
-    Route::post('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunk', [DokumenController::class, 'chunk'])->name('perusahaan.dokumen.chunk');
-
-    Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/edit', [DokumenController::class, 'edit'])->name('perusahaan.dokumen.edit');
-    Route::put('/perusahaan/{perusahaan}/dokumen/{dokumen}', [DokumenController::class, 'update'])->name('perusahaan.dokumen.update');
-
-    // Start Embedding
-    Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'embedPage'])->name('perusahaan.dokumen.embed');
-    Route::post('/perusahaan/{perusahaan}/dokumen/{dokumen}/embed', [DokumenController::class, 'startEmbedding'])->name('perusahaan.dokumen.embed.run');
-
-    //Data Loading Done Sudah ada di vectorstore
-    Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/chunks', [DokumenController::class, 'showChunks'])->name('perusahaan.dokumen.chunks');
-
+    Route::post('/perusahaan/{perusahaan}/dokumen/create', [DokumenController::class, 'importExcel'])->name('perusahaan.dokumen.import-excel.store');
+    Route::get('/perusahaan/{perusahaan}/dokumen/{dokumen}/detail', [DokumenController::class, 'detail'])->name('perusahaan.dokumen.detail');
     Route::delete('/perusahaan/{perusahaan}/dokumen/{dokumen}', [DokumenController::class, 'destroy'])->name('perusahaan.dokumen.destroy');
 
     // Rute Pengelolaan Analisis Perusahaan
