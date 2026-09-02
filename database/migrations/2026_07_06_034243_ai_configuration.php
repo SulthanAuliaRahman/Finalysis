@@ -14,31 +14,11 @@ return new class extends Migration
             $table->id();
 
             //LLM
-            $table->string('llm_provider',50);
-            $table->string('llm_url',255)->nullable();
-            $table->string('llm_model',100);
+            $table->enum('llm_provider', ['openai','gemini','anthropic','ollama']);
+            $table->string('base_url')->nullable();
+            $table->string('llm_model');
             $table->text('llm_api_key')->nullable();
             
-            //Embedding
-            $table->string('embedding_provider',50);
-            $table->string('embedding_url',255)->nullable();
-            $table->string('embedding_model',100);
-            $table->text('embedding_api_key')->nullable();
-
-            //Reranker
-            $table->string('reranker_provider', 50);
-            $table->string('reranker_model', 100);
-            $table->unsignedTinyInteger('reranker_top_n')->default(3);
-            $table->string('reranker_api_key')->nullable();
-            $table->string('localai_url')->nullable();
-
-            //Vector Store
-            $table->string('vector_store_driver')->default('file');
-            $table->string('vector_store_path')->nullable();
-            $table->string('vector_store_name')->default('demo');
-
-            // Prompt
-            $table->longText('system_prompt')->nullable();
 
             $table->timestamps();
         });
