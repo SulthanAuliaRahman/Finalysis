@@ -14,6 +14,7 @@ class AnalisisAktivitas extends Model
     protected $fillable = [
         'analisis_id',
         'total_asset_turnover',
+        'working_capital_turnover',
         'narasi_aktivitas_AI',
     ];
 

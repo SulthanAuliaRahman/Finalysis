@@ -13,13 +13,12 @@ class AnalisisCommonsize extends Model
 
     protected $fillable = [
         'analisis_id',
-        'hpp_persen',
-        'laba_kotor_persen',
-        'beban_lain_pajak_persen',
+        'pendapatan_persen',
+        'beban_persen',
         'laba_bersih_persen',
         'aset_lancar_persen',
         'aset_tetap_persen',
-        'liabilitas_lancar_persen',
+        'liabilitas_pendek_persen',
         'liabilitas_panjang_persen',
         'ekuitas_persen',
         'narasi_commonsize_AI',

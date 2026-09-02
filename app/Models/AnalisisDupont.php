@@ -13,10 +13,7 @@ class AnalisisDupont extends Model
 
     protected $fillable = [
         'analisis_id',
-        'net_profit_margin',
-        'total_asset_turnover',
-        'leverage_multiplier',
-        'roe',
+        'roe_dupont',
         'narasi_dupont_AI',
     ];
 

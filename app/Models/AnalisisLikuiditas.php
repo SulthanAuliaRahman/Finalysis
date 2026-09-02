@@ -14,7 +14,7 @@ class AnalisisLikuiditas extends Model
     protected $fillable = [
         'analisis_id',
         'current_ratio',
-        'quick_ratio',
+
         'cash_ratio',
         'narasi_likuiditas_AI',
     ];
