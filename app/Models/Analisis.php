@@ -13,8 +13,7 @@ class Analisis extends Model
 
     protected $fillable = [
         'dokumen_id',
-        'status',
-        'executive_summary',
+        'ringkasan_laporan',
     ];
 
     public function dokumen()
@@ -77,6 +76,4 @@ class Analisis extends Model
     {
         return $this->dokumen->getAkunUtamaTrend();
     }
-
-    // getArusKasTrend() dihapus permanen — Arus Kas sudah tidak dipakai.
 }

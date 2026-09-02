@@ -55,6 +55,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
             $table->decimal('total_asset_turnover',     5, 2)->nullable(); // data = 1.23  (FE  1.23x)
+            $table->decimal('working_capital_turnover', 5, 2)->nullable(); // data = 1.23  (FE  1.23x)
+            $table->decimal('fixed_asset_turnover',     5, 2)->nullable(); // data = 1.23  (FE  1.23x)
             $table->text('narasi_aktivitas_AI')->nullable();
 
             $table->timestamps();

@@ -15,6 +15,7 @@ class AnalisisSolvabilitas extends Model
         'analisis_id',
         'debt_to_equity',
         'debt_to_asset',
+        'leverage_multiplier',
         'narasi_solvabilitas_AI',
     ];
 

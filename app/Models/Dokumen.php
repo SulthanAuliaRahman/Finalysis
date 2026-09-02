@@ -123,10 +123,10 @@ class Dokumen extends Model
 
         $dokumenList = $this->buildPeriodeQuery()
             ->with([
-                'analisis.likuiditas:analisis_id,current_ratio,quick_ratio,cash_ratio',
+                'analisis.likuiditas:analisis_id,current_ratio,cash_ratio',
                 'analisis.profitabilitas:analisis_id,ROE,ROA,net_profit_margin',
-                'analisis.solvabilitas:analisis_id,debt_to_equity,debt_to_asset',
-                'analisis.aktivitas:analisis_id,total_asset_turnover',
+                'analisis.solvabilitas:analisis_id,debt_to_equity,debt_to_asset,leverage_multiplier',
+                'analisis.aktivitas:analisis_id,total_asset_turnover,working_capital_turnover,fixed_asset_turnover',
             ])
             ->get()
             ->reverse()
@@ -154,7 +154,6 @@ class Dokumen extends Model
                     'bulan'          => $dokumenPeriode->bulan,
                     'likuiditas'     => $analisisPeriode?->likuiditas ? [
                         'current_ratio' => $analisisPeriode->likuiditas->current_ratio,
-                        'quick_ratio'   => $analisisPeriode->likuiditas->quick_ratio,
                         'cash_ratio'    => $analisisPeriode->likuiditas->cash_ratio,
                     ] : null,
                     'profitabilitas' => $analisisPeriode?->profitabilitas ? [
@@ -163,11 +162,14 @@ class Dokumen extends Model
                         'ROE'               => $analisisPeriode->profitabilitas->ROE,
                     ] : null,
                     'solvabilitas'   => $analisisPeriode?->solvabilitas ? [
-                        'debt_to_equity' => $analisisPeriode->solvabilitas->debt_to_equity,
-                        'debt_to_asset'  => $analisisPeriode->solvabilitas->debt_to_asset,
+                        'debt_to_equity'      => $analisisPeriode->solvabilitas->debt_to_equity,
+                        'debt_to_asset'       => $analisisPeriode->solvabilitas->debt_to_asset,
+                        'leverage_multiplier' => $analisisPeriode->solvabilitas->leverage_multiplier,
                     ] : null,
                     'aktivitas'      => $analisisPeriode?->aktivitas ? [
-                        'total_asset_turnover' => $analisisPeriode->aktivitas->total_asset_turnover,
+                        'total_asset_turnover'     => $analisisPeriode->aktivitas->total_asset_turnover,
+                        'working_capital_turnover' => $analisisPeriode->aktivitas->working_capital_turnover,
+                        'fixed_asset_turnover'     => $analisisPeriode->aktivitas->fixed_asset_turnover,
                     ] : null,
                 ],
             ];
@@ -185,31 +187,47 @@ class Dokumen extends Model
         $this->loadMissing('analisis.trend');
 
         $dokumenList = $this->buildPeriodeQuery()
-            ->with(['analisis.dupont:analisis_id,net_profit_margin,total_asset_turnover,leverage_multiplier,roe'])
+            ->with([
+                'analisis.profitabilitas:analisis_id,net_profit_margin',
+                'analisis.aktivitas:analisis_id,total_asset_turnover',
+                'analisis.solvabilitas:analisis_id,leverage_multiplier',
+                'analisis.dupont:analisis_id,roe_dupont',
+            ])
             ->get()
             ->reverse()
             ->values();
 
         $hasGap = $dokumenList->contains(function ($dokumenPeriode) {
-            return $dokumenPeriode->analisis === null || $dokumenPeriode->analisis->dupont === null;
+            $a = $dokumenPeriode->analisis;
+            return $a === null
+                || $a->profitabilitas === null
+                || $a->aktivitas === null
+                || $a->solvabilitas === null
+                || $a->dupont === null;
         });
 
         $periodeData = $dokumenList->map(function ($dokumenPeriode, $index) {
-            $analisisPeriode = $dokumenPeriode->analisis;
+            $a = $dokumenPeriode->analisis;
 
             return [
                 'urutan'   => $index + 1,
                 'analisis' => [
-                    'id'           => $analisisPeriode?->id,
-                    'periode_type' => $dokumenPeriode->periode_type,
-                    'tahun'        => $dokumenPeriode->tahun,
-                    'quarter'      => $dokumenPeriode->quarter,
-                    'bulan'        => $dokumenPeriode->bulan,
-                    'dupont'       => $analisisPeriode?->dupont ? [
-                        'net_profit_margin'    => $analisisPeriode->dupont->net_profit_margin,
-                        'total_asset_turnover' => $analisisPeriode->dupont->total_asset_turnover,
-                        'leverage_multiplier'  => $analisisPeriode->dupont->leverage_multiplier,
-                        'roe'                  => $analisisPeriode->dupont->roe,
+                    'id'             => $a?->id,
+                    'periode_type'   => $dokumenPeriode->periode_type,
+                    'tahun'          => $dokumenPeriode->tahun,
+                    'quarter'        => $dokumenPeriode->quarter,
+                    'bulan'          => $dokumenPeriode->bulan,
+                    'profitabilitas' => $a?->profitabilitas ? [
+                        'net_profit_margin' => $a->profitabilitas->net_profit_margin,
+                    ] : null,
+                    'aktivitas'      => $a?->aktivitas ? [
+                        'total_asset_turnover' => $a->aktivitas->total_asset_turnover,
+                    ] : null,
+                    'solvabilitas'   => $a?->solvabilitas ? [
+                        'leverage_multiplier' => $a->solvabilitas->leverage_multiplier,
+                    ] : null,
+                    'dupont'         => $a?->dupont ? [
+                        'roe_dupont' => $a->dupont->roe_dupont,
                     ] : null,
                 ],
             ];
@@ -222,13 +240,14 @@ class Dokumen extends Model
         ];
     }
 
+
     public function getCommonsizeTrend(): array
     {
         $this->loadMissing('analisis.trend');
 
         $dokumenList = $this->buildPeriodeQuery()
             ->with([
-                'analisis.commonsize:analisis_id,hpp_persen,laba_kotor_persen,beban_lain_pajak_persen,laba_bersih_persen,aset_lancar_persen,aset_tetap_persen,liabilitas_lancar_persen,liabilitas_panjang_persen,ekuitas_persen',
+                'analisis.commonsize:analisis_id,pendapatan_persen,beban_persen,laba_bersih_persen,aset_lancar_persen,aset_tetap_persen,liabilitas_pendek_persen,liabilitas_panjang_persen,ekuitas_persen',
             ])
             ->get()
             ->reverse()
@@ -250,13 +269,11 @@ class Dokumen extends Model
                     'quarter'      => $dokumenPeriode->quarter,
                     'bulan'        => $dokumenPeriode->bulan,
                     'commonsize'   => $analisisPeriode?->commonsize ? [
-                        'hpp_persen'                => $analisisPeriode->commonsize->hpp_persen,
-                        'laba_kotor_persen'         => $analisisPeriode->commonsize->laba_kotor_persen,
-                        'beban_lain_pajak_persen'   => $analisisPeriode->commonsize->beban_lain_pajak_persen,
+                        'beban_persen'              => $analisisPeriode->commonsize->beban_persen,
                         'laba_bersih_persen'        => $analisisPeriode->commonsize->laba_bersih_persen,
                         'aset_lancar_persen'        => $analisisPeriode->commonsize->aset_lancar_persen,
                         'aset_tetap_persen'         => $analisisPeriode->commonsize->aset_tetap_persen,
-                        'liabilitas_lancar_persen'  => $analisisPeriode->commonsize->liabilitas_lancar_persen,
+                        'liabilitas_pendek_persen'  => $analisisPeriode->commonsize->liabilitas_pendek_persen,
                         'liabilitas_panjang_persen' => $analisisPeriode->commonsize->liabilitas_panjang_persen,
                         'ekuitas_persen'            => $analisisPeriode->commonsize->ekuitas_persen,
                     ] : null,
@@ -271,10 +288,6 @@ class Dokumen extends Model
         ];
     }
 
-    /**
-     * total_* diambil dari baris pertama koleksi neraca/labaRugi milik dokumen
-     * (nilainya identik di semua baris per dokumen, redundant by design).
-     */
     public function getAkunUtamaTrend(): array
     {
         $this->loadMissing('analisis.trend');
@@ -286,12 +299,12 @@ class Dokumen extends Model
             ->values();
 
         $hasGap = $dokumenList->contains(function ($dokumenPeriode) {
-            return $dokumenPeriode->neraca->isEmpty() && $dokumenPeriode->labaRugi->isEmpty();
+            return $dokumenPeriode->neraca === null || $dokumenPeriode->labaRugi === null;
         });
 
         $periodeData = $dokumenList->map(function ($dokumenPeriode, $index) {
-            $neraca = $dokumenPeriode->neraca->first();
-            $labaRugi = $dokumenPeriode->labaRugi->first();
+            $neraca = $dokumenPeriode->neraca;
+            $labaRugi = $dokumenPeriode->labaRugi;
 
             return [
                 'urutan'                    => $index + 1,
@@ -303,17 +316,16 @@ class Dokumen extends Model
                     'bulan'        => $dokumenPeriode->bulan,
                 ],
                 'total_pendapatan'          => $labaRugi?->total_pendapatan,
-                'laba_kotor'                => $labaRugi?->laba_kotor,
                 'laba_bersih_sesudah_pajak' => $labaRugi?->laba_bersih_sesudah_pajak,
                 'total_asset'               => $neraca?->total_asset,
-                'total_kas'                 => $neraca?->total_kas,
+                'total_kas_setara_kas'      => $neraca?->total_kas_setara_kas,
                 'total_equitas'             => $neraca?->total_equitas,
             ];
         })->all();
 
         foreach ($periodeData as $i => &$data) {
             $prev = $i > 0 ? $periodeData[$i - 1] : null;
-            $keys = ['total_pendapatan', 'laba_kotor', 'laba_bersih_sesudah_pajak', 'total_asset', 'total_kas', 'total_equitas'];
+            $keys = ['total_pendapatan', 'laba_bersih_sesudah_pajak', 'total_asset', 'total_kas_setara_kas', 'total_equitas'];
 
             foreach ($keys as $key) {
                 $growthKey = 'growth_' . $key;

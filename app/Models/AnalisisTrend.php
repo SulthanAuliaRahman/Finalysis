@@ -17,7 +17,7 @@ class AnalisisTrend extends Model
         'narasi_trend_rasio_AI',
         'narasi_trend_dupont_AI',
         'narasi_trend_commonsize_AI',
-        'narasi_trend_arus_kas_AI',
+        
     ];
 
     public function analisis()
