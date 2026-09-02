@@ -16,17 +16,23 @@ import {
 	FileCode2,
 } from "lucide-react";
 
-function SectionCard({ icon: Icon, title, description, children }) {
+function SectionCard({ icon: Icon, title, description, action, children }) {
 	return (
 		<section className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
 			<div className="flex items-start gap-3 p-5 border-b border-slate-100 bg-slate-50/70">
 				<div className="p-2 rounded-lg bg-blue-50 border border-blue-100 text-blue-700">
 					<Icon className="w-4 h-4" />
 				</div>
-				<div className="min-w-0">
+				<div className="min-w-0 flex-1">
 					<h3 className="text-sm font-bold text-slate-900">{title}</h3>
 					<p className="text-xs text-slate-500 mt-0.5">{description}</p>
 				</div>
+				{/* Tombol / action */}
+                {action && (
+                    <div className="shrink-0">
+                        {action}
+                    </div>
+                )}
 			</div>
 
 			<div className="p-5 space-y-4">{children}</div>
@@ -76,13 +82,7 @@ export default function Index({ configuration }) {
 							</p>
 						</div>
 					</div>
-                    <div className="flex flex-col sm:flex-row justify-end gap-2 pt-1">
-                                    <Link href="/settings/ai/edit">
-                                        <Button variant="outline" className="w-full sm:w-auto">
-                                            <Edit3 className="w-4 h-4 mr-1.5" /> Edit
-                                        </Button>
-                                    </Link>
-                    </div>
+
 
 					{/* <div className="flex items-center gap-2 self-start rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-emerald-700">
 						<ShieldCheck className="w-4 h-4" />
@@ -94,24 +94,37 @@ export default function Index({ configuration }) {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+			{/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 				<Pill label="LLM" value={configuration?.llm_model} />
 				<Pill label="Embedding" value={configuration?.embedding_model} />
 				<Pill label="Reranker" value={configuration?.reranker_model} />
-			</div>
+			</div> */}
 
 			<SectionCard
-				icon={BrainCircuit}
+			
+			icon={BrainCircuit}
 				title="LLM"
 				description="Model utama yang digunakan untuk menghasilkan jawaban dan analisis naratif."
+				action={
+						<Link href="/settings/ai/edit">
+							<Button variant="outline" className="w-full sm:w-auto">
+								<Edit3 className="w-4 h-4 mr-1.5" /> Edit
+							</Button>
+						</Link>
+				}
+				
 			>
+				
 				<DetailRow label="Provider" value={configuration?.llm_provider} />
 				<DetailRow label="Model" value={configuration?.llm_model} />
-				<DetailRow label="Base URL" value={configuration?.llm_url} mono />
-				<DetailRow label="API Key" value={configuration?.llm_api_key ? "Tersimpan" : "Tidak ada"} />
+				{configuration?.llm_provider === "ollama" ? (
+					<DetailRow label="Base URL" value={configuration?.base_url} mono />
+				) : (
+					<DetailRow label="API Key" value={configuration?.llm_api_key ? "Tersimpan" : "Tidak ada"} />
+				)}
 			</SectionCard>
 
-			<SectionCard
+			{/* <SectionCard
 				icon={Database}
 				title="Embedding"
 				description="Konfigurasi embedding untuk indexing dan pencarian semantik."
@@ -120,9 +133,9 @@ export default function Index({ configuration }) {
 				<DetailRow label="Model" value={configuration?.embedding_model} />
 				<DetailRow label="Base URL" value={configuration?.embedding_url} mono />
 				<DetailRow label="API Key" value={configuration?.embedding_api_key ? "Tersimpan" : "Tidak ada"} />
-			</SectionCard>
+			</SectionCard> */}
 
-			<SectionCard
+			{/* <SectionCard
 				icon={Layers3}
 				title="Reranker dan Vector Store"
 				description="Bagian yang mengatur ranking ulang hasil retrieval dan storage vektor."
@@ -141,7 +154,7 @@ export default function Index({ configuration }) {
 						<DetailRow label="Vector Store Path" value={configuration?.vector_store_path} mono />
 					</div>
 				</div>
-			</SectionCard>
+			</SectionCard> */}
 
 			{/* <SectionCard
 				icon={Wand2}

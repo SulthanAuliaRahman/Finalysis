@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Neuron\RAG;
+namespace App\Neuron\Agent;
 
 use NeuronAI\Agent\SystemPrompt;
 
-class TrendCommonsizeAgent extends BaseRagAgent
+class TrendCommonsizeAgent extends BaseAgent
 {
     protected function instructions(): string
     {

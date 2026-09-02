@@ -45,23 +45,10 @@ function Field({ label, htmlFor, children, hint, required = false }) {
 
 export default function Edit({ configuration }) {
 	const { data, setData, put, processing, errors } = useForm({
-		llm_provider: configuration?.llm_provider ?? "",
-		llm_url: configuration?.llm_url ?? "",
+		llm_provider: configuration?.llm_provider ?? "gemini",
+		base_url: configuration?.base_url ?? "",
 		llm_model: configuration?.llm_model ?? "",
-		llm_api_key: configuration?.llm_api_key ?? "",
-		embedding_provider: configuration?.embedding_provider ?? "",
-		embedding_url: configuration?.embedding_url ?? "",
-		embedding_model: configuration?.embedding_model ?? "",
-		embedding_api_key: configuration?.embedding_api_key ?? "",
-		reranker_provider: configuration?.reranker_provider ?? "",
-		reranker_model: configuration?.reranker_model ?? "",
-		reranker_top_n: configuration?.reranker_top_n ?? 3,
-		reranker_api_key: configuration?.reranker_api_key ?? "",
-		localai_url: configuration?.localai_url ?? "",
-		vector_store_driver: configuration?.vector_store_driver ?? "file",
-		vector_store_path: configuration?.vector_store_path ?? "",
-		vector_store_name: configuration?.vector_store_name ?? "demo",
-		system_prompt: configuration?.system_prompt ?? "",
+		llm_api_key: "",
 	});
 
 	function handleSubmit(e) {
@@ -69,94 +56,85 @@ export default function Edit({ configuration }) {
 		put("/settings/ai");
 	}
 
+	const isOllama = data.llm_provider === "ollama";
+
 	return (
 		<div className="max-w-5xl mx-auto space-y-4">
 			<Link href="/settings/ai" className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-slate-800 gap-1 transition-colors">
 				<ArrowLeft className="w-3.5 h-3.5" /> Kembali
 			</Link>
 
-			{/* <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-2">
-				<div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-					<div className="space-y-2">
-						<div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-[11px] font-semibold uppercase tracking-wide">
-							<Sparkles className="w-3.5 h-3.5" /> AI Configuration
-						</div>
-						<div>
-							<h2 className="text-lg font-bold text-slate-900">Pengaturan Model dan Retrieval</h2>
-							<p className="text-xs text-slate-500 mt-0.5 max-w-2xl">
-								Atur provider, model, vector store, dan prompt sistem yang dipakai oleh pipeline analisis.
-							</p>
-						</div>
-					</div>
-
-					<div className="flex items-center gap-2 self-start rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-emerald-700">
-						<ShieldCheck className="w-4 h-4" />
-						<div className="text-xs">
-							<p className="font-semibold">Konfigurasi aktif</p>
-							<p className="text-emerald-600/80">Disimpan sebagai satu profil AI</p>
-						</div>
-					</div>
-				</div>
-			</div> */}
-
-			<form onSubmit={handleSubmit} className="space-y-5">
+			<form onSubmit={handleSubmit} className="space-y-5" >
 				<SectionCard
 					icon={BrainCircuit}
 					title="LLM"
 					description="Pengaturan model utama untuk menjawab, menganalisis, dan menulis narasi hasil."
 				>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<Field label="Provider" htmlFor="llm_provider" required hint="Contoh: openai, ollama, localai">
-							<input
+						<Field label="Provider" htmlFor="llm_provider" required hint="Pilih provider LLM yang ingin digunakan.">
+							<select
 								id="llm_provider"
-								type="text"
 								value={data.llm_provider}
 								onChange={e => setData("llm_provider", e.target.value)}
-								className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+								className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
 								disabled={processing}
-							/>
+							>
+								<option value="gemini">Gemini (Google)</option>
+								<option value="openai">OpenAI</option>
+								<option value="anthropic">Anthropic (Claude)</option>
+								<option value="ollama">Ollama (Local)</option>
+							</select>
 							{errors.llm_provider && <p className="text-xs text-red-500">{errors.llm_provider}</p>}
 						</Field>
 
-						<Field label="Model" htmlFor="llm_model" required hint="Nama model yang dipanggil backend.">
+						<Field label="Model" htmlFor="llm_model" required hint="Nama model yang dipanggil backend (misal: gemini-1.5-pro, gpt-4o, llama3).">
 							<input
 								id="llm_model"
 								type="text"
 								value={data.llm_model}
 								onChange={e => setData("llm_model", e.target.value)}
+								placeholder="misal: gemini-1.5-pro"
 								className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
 								disabled={processing}
+								autoComplete="new-password"
 							/>
 							{errors.llm_model && <p className="text-xs text-red-500">{errors.llm_model}</p>}
 						</Field>
 
-						<Field label="Base URL" htmlFor="llm_url" hint="Opsional, untuk endpoint custom atau local server.">
-							<input
-								id="llm_url"
-								type="text"
-								value={data.llm_url}
-								onChange={e => setData("llm_url", e.target.value)}
-								placeholder="https://api.example.com/v1"
-								className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-								disabled={processing}
-							/>
-							{errors.llm_url && <p className="text-xs text-red-500">{errors.llm_url}</p>}
-						</Field>
-
-						<Field label="API Key" htmlFor="llm_api_key" hint="Simpan jika provider memerlukannya.">
-							<input
-								id="llm_api_key"
-								type="password"
-								value={data.llm_api_key}
-								onChange={e => setData("llm_api_key", e.target.value)}
-								className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-								disabled={processing}
-							/>
-							{errors.llm_api_key && <p className="text-xs text-red-500">{errors.llm_api_key}</p>}
-						</Field>
+						{isOllama ? (
+							<Field label="Base URL" htmlFor="base_url" required hint="Endpoint local server Ollama.">
+								<input
+									id="base_url"
+									type="text"
+									value={data.base_url}
+									onChange={e => setData("base_url", e.target.value)}
+									placeholder="http://localhost:11434"
+									className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+									disabled={processing}
+								/>
+								{errors.base_url && <p className="text-xs text-red-500">{errors.base_url}</p>}
+							</Field>
+						) : (
+							<Field
+								label="API Key"
+								htmlFor="llm_api_key"
+								hint={configuration?.has_api_key ? "API Key tersimpan. Biarkan kosong jika tidak ingin mengubah." : "Masukkan API key provider."}
+							>
+								<input
+									id="llm_api_key"
+									type="password"
+									value={data.llm_api_key}
+									onChange={e => setData("llm_api_key", e.target.value)}
+									placeholder={configuration?.has_api_key ? "••••••••••••••••" : "Masukkan API Key"}
+									className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+									disabled={processing}
+								/>
+								{errors.llm_api_key && <p className="text-xs text-red-500">{errors.llm_api_key}</p>}
+							</Field>
+						)}
 					</div>
 				</SectionCard>
-
+{/* 
 				<SectionCard
 					icon={Database}
 					title="Embedding"
@@ -211,8 +189,8 @@ export default function Edit({ configuration }) {
 							{errors.embedding_api_key && <p className="text-xs text-red-500">{errors.embedding_api_key}</p>}
 						</Field>
 					</div>
-				</SectionCard>
-
+				</SectionCard> */}
+{/* 
 				<SectionCard
 					icon={Layers3}
 					title="Reranker dan Vector Store"
@@ -317,8 +295,8 @@ export default function Edit({ configuration }) {
 							{errors.vector_store_path && <p className="text-xs text-red-500">{errors.vector_store_path}</p>}
 						</Field>
 					</div>
-				</SectionCard>
-
+				</SectionCard> */}
+{/* 
 				<SectionCard
 					icon={Wand2}
 					title="System Prompt"
@@ -339,7 +317,7 @@ export default function Edit({ configuration }) {
 						/>
 						{errors.system_prompt && <p className="text-xs text-red-500">{errors.system_prompt}</p>}
 					</Field>
-				</SectionCard>
+				</SectionCard> */}
 
 				<div className="flex flex-col sm:flex-row justify-end gap-2 pt-1">
 					<Link href="/dashboard">

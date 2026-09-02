@@ -1,17 +1,10 @@
 <?php
 
-namespace App\Neuron\RAG;
+namespace App\Neuron\Agent;
 
-use NeuronAI\RAG\RAG;
 use NeuronAI\Agent\SystemPrompt;
-use NeuronAI\Providers\AIProviderInterface;
-use NeuronAI\Providers\Ollama\Ollama;
-use NeuronAI\RAG\Embeddings\EmbeddingsProviderInterface;
-use NeuronAI\RAG\Embeddings\OllamaEmbeddingsProvider;
-use NeuronAI\RAG\VectorStore\VectorStoreInterface;
-use NeuronAI\RAG\VectorStore\FileVectorStore;
 
-class CommonsizeAgent extends BaseRagAgent
+class CommonsizeAgent extends BaseAgent
 {
     protected function instructions(): string
     {
