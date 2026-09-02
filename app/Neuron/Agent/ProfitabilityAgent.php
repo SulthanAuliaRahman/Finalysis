@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Neuron\RAG;
+namespace App\Neuron\Agent;
 
 use NeuronAI\Agent\SystemPrompt;
 
-class ProfitabilityAgent extends BaseRagAgent
+class ProfitabilityAgent extends BaseAgent
 {
     protected function instructions(): string
     {
