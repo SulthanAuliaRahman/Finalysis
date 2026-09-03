@@ -17,14 +17,13 @@ export default function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobile
     const userRole = props.auth?.user?.role;
     const user = props.auth?.user;
     console.log(props.auth.user);
-    
+
     const navItems = [
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
         ...(userRole === 'super_admin' ? [{ href: "/perusahaan", label: "Perusahaan", icon: Building2 }] : []),
-        { href: `/perusahaan/${user.perusahaan_id}/dokumen`, label: "Dokumen", icon: FileText},
-        { href: `/perusahaan/${user.perusahaan_id}/analisis`, label: "Analisis", icon: BarChart3},
-        ...(userRole === 'manager' ? [{href: `/perusahaan/${user.perusahaan_id}/edit`, label: "perusahaan", icon:Building}] : []),
-        ...(userRole === 'super_admin' || userRole === 'manager' ? [{ href: "/users", label: "Kelola User", icon: Users }] : []),
+        { href: `/perusahaan/${user.perusahaan_id}/dokumen`, label: "Dokumen", icon: FileText },
+        { href: `/perusahaan/${user.perusahaan_id}/analisis`, label: "Analisis", icon: BarChart3 },
+        ...(userRole === 'super_admin' ? [{ href: "/users", label: "Kelola User", icon: Users }] : []),
         { href: "/settings/ai", label: "Konfigurasi AI", icon: Settings2 },
     ];
 
@@ -40,11 +39,9 @@ export default function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobile
 
             {/* Sidebar Container */}
             <aside
-                className={`fixed md:relative z-50 md:z-auto flex flex-col h-full bg-slate-900 text-slate-300 border-r border-slate-800 transition-all duration-200 ${
-                    collapsed ? "w-16" : "w-64"
-                } ${
-                    mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-                }`}
+                className={`fixed md:relative z-50 md:z-auto flex flex-col h-full bg-slate-900 text-slate-300 border-r border-slate-800 transition-all duration-200 ${collapsed ? "w-16" : "w-64"
+                    } ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+                    }`}
             >
                 {/* Logo & Identitas Aplikasi */}
                 <div className={`flex items-center gap-3 px-4 py-5 border-b border-slate-800 ${collapsed && "justify-center px-2"}`}>
@@ -72,13 +69,11 @@ export default function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobile
                                 key={href}
                                 href={href}
                                 onClick={() => setMobileOpen(false)}
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-md transition-all text-sm ${
-                                    collapsed ? "justify-center px-2" : ""
-                                } ${
-                                    isActive
+                                className={`flex items-center gap-3 px-3 py-2.5 rounded-md transition-all text-sm ${collapsed ? "justify-center px-2" : ""
+                                    } ${isActive
                                         ? "bg-blue-600/10 text-blue-400 font-medium"
                                         : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
-                                }`}
+                                    }`}
                                 title={collapsed ? label : undefined}
                             >
                                 <Icon className={`flex-shrink-0 ${collapsed ? "w-5 h-5" : "w-4 h-4"}`} />
@@ -92,9 +87,8 @@ export default function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobile
                 <div className="hidden md:flex p-2 border-t border-slate-800">
                     <button
                         onClick={() => setCollapsed(!collapsed)}
-                        className={`flex items-center justify-center w-full py-2 rounded-md text-slate-500 hover:text-white hover:bg-slate-800 transition-colors ${
-                            collapsed ? "px-2" : "px-3 gap-2"
-                        }`}
+                        className={`flex items-center justify-center w-full py-2 rounded-md text-slate-500 hover:text-white hover:bg-slate-800 transition-colors ${collapsed ? "px-2" : "px-3 gap-2"
+                            }`}
                     >
                         {collapsed ? (
                             <ChevronRight className="w-4 h-4" />
@@ -109,5 +103,4 @@ export default function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobile
             </aside>
         </>
     );
-    
 }

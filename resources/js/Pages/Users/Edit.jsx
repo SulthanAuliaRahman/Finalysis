@@ -4,10 +4,6 @@ import { Button } from "@/Components/ui/button";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 
 export default function Edit({ user, perusahaanList }) {
-    const { auth } = usePage().props;
-    const currentUser = auth?.user;
-    const isManager = currentUser?.role === "manager";
-
     const { data, setData, put, processing, errors } = useForm({
         name: user.name ?? "",
         email: user.email ?? "",
@@ -25,8 +21,8 @@ export default function Edit({ user, perusahaanList }) {
     return (
         <div className="max-w-2xl mx-auto space-y-4">
             {/* Tombol Kembali */}
-            <Link 
-                href="/users" 
+            <Link
+                href="/users"
                 className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-slate-800 gap-1 transition-colors"
             >
                 <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Daftar Pengguna
@@ -100,7 +96,7 @@ export default function Edit({ user, perusahaanList }) {
                             value={data.perusahaan_id}
                             onChange={e => setData("perusahaan_id", e.target.value)}
                             className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white disabled:bg-slate-50 disabled:text-slate-500"
-                            disabled={processing || isManager}
+                            disabled={processing}
                         >
                             <option value="">Pilih Perusahaan...</option>
                             {perusahaanList.map(p => (
@@ -120,11 +116,10 @@ export default function Edit({ user, perusahaanList }) {
                             value={data.role}
                             onChange={e => setData("role", e.target.value)}
                             className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white disabled:bg-slate-50 disabled:text-slate-500"
-                            disabled={processing || isManager}
+                            disabled={processing}
                         >
                             <option value="">Pilih Peran...</option>
                             <option value="super_admin">Super Admin</option>
-                            <option value="manager">Manager</option>
                             <option value="user">User</option>
                         </select>
                         {errors.role && <p className="text-xs text-red-500">{errors.role}</p>}

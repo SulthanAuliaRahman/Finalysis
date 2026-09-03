@@ -2,15 +2,15 @@ import { Link, usePage } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
-import { 
-    Building2, 
-    Users, 
-    FileText, 
-    BarChart3, 
-    Plus, 
-    ArrowRight, 
-    Settings, 
-    FileUp, 
+import {
+    Building2,
+    Users,
+    FileText,
+    BarChart3,
+    Plus,
+    ArrowRight,
+    Settings,
+    FileUp,
     Compass,
     Activity,
     FolderOpen
@@ -38,23 +38,23 @@ export default function Dashboard({ role, stats, ...props }) {
 
     if (role === "super_admin") {
         return (
-            <SuperAdminDashboard 
-                user={currentUser} 
-                stats={stats} 
-                recentPerusahaan={props.recentPerusahaan} 
-                recentDokumen={props.recentDokumen} 
+            <SuperAdminDashboard
+                user={currentUser}
+                stats={stats}
+                recentPerusahaan={props.recentPerusahaan}
+                recentDokumen={props.recentDokumen}
             />
         );
     }
 
     return (
-        <CompanyDashboard 
-            user={currentUser} 
-            role={role} 
-            perusahaan={props.perusahaan} 
-            stats={stats} 
-            recentDokumen={props.recentDokumen} 
-            recentAnalisis={props.recentAnalisis} 
+        <CompanyDashboard
+            user={currentUser}
+            role={role}
+            perusahaan={props.perusahaan}
+            stats={stats}
+            recentDokumen={props.recentDokumen}
+            recentAnalisis={props.recentAnalisis}
         />
     );
 }
@@ -65,14 +65,6 @@ export default function Dashboard({ role, stats, ...props }) {
 function SuperAdminDashboard({ user, stats, recentPerusahaan, recentDokumen }) {
     return (
         <div className="space-y-8">
-            {/* Welcoming Header */}
-            <div>
-                <h1 className="text-2xl font-bold text-slate-900">Halo, {user.name} 👋</h1>
-                <p className="text-xs text-slate-500 mt-1">
-                    Sistem RAG Analisis Laporan Keuangan Keuangan terpusat. Kelola konfigurasi dan korporasi terdaftar di bawah ini.
-                </p>
-            </div>
-
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {/* Total Perusahaan */}
@@ -199,64 +191,6 @@ function SuperAdminDashboard({ user, stats, recentPerusahaan, recentDokumen }) {
                                     )}
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Area: Quick Action Panel */}
-                <div className="space-y-6">
-                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 text-white shadow-xs space-y-4">
-                        <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-                            <Compass className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="text-sm font-bold">Menu Pintasan Admin</h3>
-                            <p className="text-[11px] text-slate-400 mt-1">
-                                Tambahkan entitas korporasi baru, konfigurasikan alokasi API LLM, atau kelola akun operator.
-                            </p>
-                        </div>
-                        <div className="flex flex-col gap-2 pt-2 border-t border-slate-800">
-                            <Link href="/perusahaan/create">
-                                <Button className="w-full justify-start text-xs bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700 hover:text-white" variant="outline" size="sm">
-                                    <Plus className="w-3.5 h-3.5 mr-2" /> Tambah Perusahaan
-                                </Button>
-                            </Link>
-                            <Link href="/users/create">
-                                <Button className="w-full justify-start text-xs bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700 hover:text-white" variant="outline" size="sm">
-                                    <Plus className="w-3.5 h-3.5 mr-2" /> Tambah Akun / User
-                                </Button>
-                            </Link>
-                            <Link href="/settings/ai">
-                                <Button className="w-full justify-start text-xs bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700 hover:text-white" variant="outline" size="sm">
-                                    <Settings className="w-3.5 h-3.5 mr-2" /> Konfigurasi AI RAG
-                                </Button>
-                            </Link>
-                        </div>
-                    </div>
-
-                    <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
-                        <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
-                            <Activity className="w-4 h-4 text-emerald-500" /> Status Koneksi RAG
-                        </h4>
-                        <div className="space-y-3 pt-1">
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-slate-500">Koneksi Database</span>
-                                <span className="font-semibold text-emerald-600 flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Terkoneksi
-                                </span>
-                            </div>
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-slate-500">Vector Store (ChromaDB)</span>
-                                <span className="font-semibold text-emerald-600 flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Aktif
-                                </span>
-                            </div>
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-slate-500">Python RAG Worker</span>
-                                <span className="font-semibold text-emerald-600 flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Sehat (Online)
-                                </span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -400,21 +334,6 @@ function CompanyDashboard({ user, role, perusahaan, stats, recentDokumen, recent
                             )}
                         </div>
                     </div>
-
-                    {/* Akses Cepat */}
-                    {role === "manager" && (
-                        <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 shadow-xs space-y-3">
-                            <h3 className="text-xs font-bold text-blue-800">Akses Manajer Tim</h3>
-                            <p className="text-[11px] text-blue-600 leading-relaxed">
-                                Tambahkan atau perbarui data akun tim analis pada perusahaan Anda untuk berkolaborasi dalam RAG.
-                            </p>
-                            <Link href="/users" className="block">
-                                <Button className="w-full text-xs bg-blue-600 hover:bg-blue-700 text-white border-0" size="sm">
-                                    <Users className="w-3.5 h-3.5 mr-1.5" /> Kelola Anggota Tim
-                                </Button>
-                            </Link>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>
