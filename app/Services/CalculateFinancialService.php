@@ -27,16 +27,30 @@ class CalculateFinancialService
         return $revenue == 0 ? 0 : $netProfit / $revenue;
     }
 
+    // ROA = Net Income / Average Total Assets (CFA Exhibit 7-12). Parameter
+    // $totalAssets di sini BISA rata-rata (kalau ada periode sebelumnya) ATAU
+    // nilai akhir periode langsung (laporan pertama) — keputusan itu dilakukan
+    // di hitungProfitabilitas(), bukan di sini.
     public function returnOnAssets(float $netProfit, float $totalAssets): float
     {
         return $totalAssets == 0 ? 0 : $netProfit / $totalAssets;
     }
 
+    // ROE = Net Income / Average Total Equity (CFA Exhibit 7-12). Sama seperti
+    // ROA, $totalEquity di sini bisa rata-rata atau nilai akhir periode.
     public function returnOnEquity(float $netProfit, float $totalEquity): float
     {
         return $totalEquity == 0 ? 0 : $netProfit / $totalEquity;
     }
 
+    // Debt-to-Equity & Debt-to-Asset: sengaja TIDAK pakai "Total Debt" (utang
+    // berbunga saja) seperti definisi ketat CFA Exhibit 7-11, karena skema
+    // Neraca kita tidak memisahkan mana liabilitas berbunga vs non-berbunga.
+    // Numerator di sini = total_liabilities (SELURUH liabilitas/utang),
+    // pendekatan yang CFA sendiri akui sebagai alternatif valid ("more
+    // inclusive (e.g., all liabilities)"). CFA juga tidak merata-ratakan
+    // kedua rasio ini (cuma Financial Leverage yang dirata-ratakan), jadi
+    // saldo akhir periode di sini sudah sesuai konvensi.
     public function debtToEquity(float $totalLiabilities, float $totalEquity): float
     {
         return $totalEquity == 0 ? 0 : $totalLiabilities / $totalEquity;
@@ -84,7 +98,8 @@ class CalculateFinancialService
         return $baseValue == 0 ? 0 : ($accountValue / $baseValue) * 100;
     }
 
-    // Rata-rata dua nilai (awal periode + akhir periode) / 2 — Financial Leverage, WCT, FAT.
+    // Rata-rata dua nilai (awal periode + akhir periode) / 2 — dipakai ROA, ROE,
+    // Financial Leverage, WCT, FAT.
     private function rataRataDuaPeriode(float $awal, float $akhir): float
     {
         return ($awal + $akhir) / 2;
@@ -95,8 +110,9 @@ class CalculateFinancialService
     // =====================================================================
 
     // $neracaSebelumnya: Neraca periode tepat sebelumnya, atau null kalau ini
-    // laporan pertama yang diupload untuk perusahaan ini. Kalau null, Financial
-    // Leverage/WCT/FAT dihitung langsung dari nilai akhir periode (tanpa rata-rata).
+    // laporan pertama yang diupload untuk perusahaan ini. Kalau null, ROA, ROE,
+    // Financial Leverage, WCT, FAT dihitung langsung dari nilai akhir periode
+    // (tanpa rata-rata).
     public function hitungSemuaRasio(
         Analisis $analisis,
         Neraca $neraca,
@@ -104,7 +120,7 @@ class CalculateFinancialService
         ?Neraca $neracaSebelumnya = null
     ): void {
         $this->hitungLikuiditas($analisis, $neraca);
-        $this->hitungProfitabilitas($analisis, $neraca, $labaRugi);
+        $this->hitungProfitabilitas($analisis, $neraca, $labaRugi, $neracaSebelumnya);
         $this->hitungSolvabilitas($analisis, $neraca, $neracaSebelumnya);
         $this->hitungAktivitas($analisis, $neraca, $labaRugi, $neracaSebelumnya);
         $this->hitungDupont($analisis, $neraca, $labaRugi, $neracaSebelumnya);
@@ -125,13 +141,30 @@ class CalculateFinancialService
         );
     }
 
-    public function hitungProfitabilitas(Analisis $analisis, Neraca $neraca, LabaRugi $labaRugi): void
-    {
+    public function hitungProfitabilitas(
+        Analisis $analisis,
+        Neraca $neraca,
+        LabaRugi $labaRugi,
+        ?Neraca $neracaSebelumnya = null
+    ): void {
         $labaBersih = (float) $labaRugi->laba_bersih_sesudah_pajak;
+        $revenue    = (float) $labaRugi->total_pendapatan;
 
-        $npm = $this->netProfitMargin($labaBersih, (float) $labaRugi->total_pendapatan);
-        $roa = $this->returnOnAssets($labaBersih, (float) $neraca->total_asset);
-        $roe = $this->returnOnEquity($labaBersih, (float) $neraca->total_equitas);
+        // NPM murni dari Laporan Laba Rugi, tidak menyentuh Neraca sama
+        // sekali — tidak butuh rata-rata (CFA Exhibit 7-12).
+        $npm = $this->netProfitMargin($labaBersih, $revenue);
+
+        // ROA & ROE = Net Income / Average Total Assets|Equity (CFA Exhibit
+        // 7-12). DIPERBAIKI: sebelumnya pakai saldo akhir periode saja,
+        // sekarang konsisten dengan TATO/WCT/FAT/Financial Leverage.
+        [$totalAssetUntukRoa, $totalEquityUntukRoe] = $this->nilaiUntukRataRata(
+            (float) $neraca->total_asset,
+            (float) $neraca->total_equitas,
+            $neracaSebelumnya
+        );
+
+        $roa = $this->returnOnAssets($labaBersih, $totalAssetUntukRoa);
+        $roe = $this->returnOnEquity($labaBersih, $totalEquityUntukRoe);
 
         $analisis->profitabilitas()->updateOrCreate(
             ['analisis_id' => $analisis->id],
@@ -175,8 +208,13 @@ class CalculateFinancialService
     ): void {
         $revenue = (float) $labaRugi->total_pendapatan;
 
-        // TATO tidak pakai rata-rata (rumus II.11: Pendapatan / Total Aset akhir periode).
-        $tato = $this->totalAssetTurnover($revenue, (float) $neraca->total_asset);
+        // TATO = Revenue / Average Total Assets (CFA Exhibit 7-9), konsisten
+        // dengan WCT & FAT — BUKAN lagi Revenue / Total Aset akhir periode saja.
+        $totalAssetUntukTato = $neracaSebelumnya === null
+            ? (float) $neraca->total_asset
+            : $this->rataRataDuaPeriode((float) $neracaSebelumnya->total_asset, (float) $neraca->total_asset);
+
+        $tato = $this->totalAssetTurnover($revenue, $totalAssetUntukTato);
 
         $modalKerjaSekarang = $this->workingCapital(
             (float) $neraca->total_asset_lancar,
@@ -218,8 +256,7 @@ class CalculateFinancialService
         LabaRugi $labaRugi,
         ?Neraca $neracaSebelumnya = null
     ): void {
-        $npm  = $this->netProfitMargin((float) $labaRugi->laba_bersih_sesudah_pajak, (float) $labaRugi->total_pendapatan);
-        $tato = $this->totalAssetTurnover((float) $labaRugi->total_pendapatan, (float) $neraca->total_asset);
+        $npm = $this->netProfitMargin((float) $labaRugi->laba_bersih_sesudah_pajak, (float) $labaRugi->total_pendapatan);
 
         [$totalAssetsUntukLeverage, $totalEquityUntukLeverage] = $this->nilaiUntukRataRata(
             (float) $neraca->total_asset,
@@ -227,12 +264,14 @@ class CalculateFinancialService
             $neracaSebelumnya
         );
 
+        // TATO di sini WAJIB pakai basis Total Aset yang SAMA dengan Leverage
+        // (rata-rata 2 periode) — supaya identitas ROE = NPM x TATO x Leverage
+        // benar-benar match dengan angka TATO yang tampil di section Aktivitas.
+        $tato = $this->totalAssetTurnover((float) $labaRugi->total_pendapatan, $totalAssetsUntukLeverage);
+
         $leverage  = $this->financialLeverage($totalAssetsUntukLeverage, $totalEquityUntukLeverage);
         $roeDupont = $npm * $tato * $leverage;
 
-        // Tabel analisis_dupont hanya menyimpan roe_dupont — NPM/TATO/Leverage
-        // sudah tersimpan masing-masing di analisis_profitabilitas, analisis_aktivitas,
-        // dan analisis_solvabilitas, jadi tidak perlu diduplikasi di sini.
         $analisis->dupont()->updateOrCreate(
             ['analisis_id' => $analisis->id],
             ['roe_dupont' => round($roeDupont * 100, 2)]
@@ -276,8 +315,8 @@ class CalculateFinancialService
     }
 
     // Helper bersama: tentukan nilai Total Aset & Total Ekuitas yang dipakai untuk
-    // Financial Leverage — rata-rata kalau ada periode sebelumnya, langsung nilai
-    // akhir periode kalau ini laporan pertama.
+    // ROA, ROE, Financial Leverage, dan TATO (dupont) — rata-rata kalau ada
+    // periode sebelumnya, langsung nilai akhir periode kalau ini laporan pertama.
     private function nilaiUntukRataRata(float $totalAssetSekarang, float $totalEquitySekarang, ?Neraca $neracaSebelumnya): array
     {
         if ($neracaSebelumnya === null) {
