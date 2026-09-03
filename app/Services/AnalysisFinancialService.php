@@ -6,20 +6,22 @@ use App\Models\Analisis;
 use App\Models\Dokumen;
 use App\Models\Neraca;
 use App\Models\LabaRugi;
+use App\Models\Perusahaan;
+use App\Models\ChartOfAccount;
 use Illuminate\Validation\ValidationException;
 use NeuronAI\Chat\Messages\UserMessage;
 
-use App\Neuron\RAG\ProfitabilityAgent;
-use App\Neuron\RAG\LiquidityAnalystAgent;
-use App\Neuron\RAG\SolvencyAgent;
-use App\Neuron\RAG\ActivityAgent;
-use App\Neuron\RAG\CommonsizeAgent;
-use App\Neuron\RAG\DupontAgent;
-use App\Neuron\RAG\TrendAkunUtamaAgent;
-use App\Neuron\RAG\TrendRasioAgent;
-use App\Neuron\RAG\TrendDupontAgent;
-use App\Neuron\RAG\TrendCommonsizeAgent;
-use App\Neuron\RAG\SummaryAgent;
+use App\Neuron\Agent\ProfitabilityAgent;
+use App\Neuron\Agent\LiquidityAnalystAgent;
+use App\Neuron\Agent\SolvencyAgent;
+use App\Neuron\Agent\ActivityAgent;
+use App\Neuron\Agent\CommonsizeAgent;
+use App\Neuron\Agent\DupontAgent;
+use App\Neuron\Agent\TrendAkunUtamaAgent;
+use App\Neuron\Agent\TrendRasioAgent;
+use App\Neuron\Agent\TrendDupontAgent;
+use App\Neuron\Agent\TrendCommonsizeAgent;
+use App\Neuron\Agent\SummaryAgent;
 
 use App\Services\CalculateFinancialService;
 
@@ -101,10 +103,78 @@ class AnalysisFinancialService
     }
 
     // =====================================================================
-    // HELPER
+    // HELPER — KONTEN PROMPT
     // =====================================================================
 
+    // Blok info perusahaan: Nama, Sektor, Deskripsi. Dipakai di SEMUA prompt
+    // (per-section maupun trend) supaya AI selalu punya konteks perusahaan.
+    private function blokInfoPerusahaan(Perusahaan $perusahaan): string
+    {
+        $blok  = "=== INFORMASI PERUSAHAAN ===\n";
+        $blok .= "Nama Perusahaan: {$perusahaan->nama}\n";
+        $blok .= "Sektor: {$perusahaan->sektor}\n";
+        $blok .= "Deskripsi: {$perusahaan->deskripsi}\n";
 
+        return $blok;
+    }
+
+    // Blok laporan keuangan MENTAH (seluruh field Neraca + LabaRugi, bukan cuma
+    // yang relevan ke section tertentu) — supaya AI punya angka asal di balik
+    // rasio yang dihitung, mengurangi risiko narasi yang "lepas konteks".
+    private function blokLaporanKeuanganMentah(?Neraca $neraca, ?LabaRugi $labaRugi): string
+    {
+        $blok  = "=== LAPORAN KEUANGAN (DATA MENTAH) ===\n";
+        $blok .= "--- Neraca / Laporan Posisi Keuangan ---\n";
+        $blok .= "Total Kas & Setara Kas: " . number_format((float) ($neraca->total_kas_setara_kas ?? 0), 0, ',', '.') . "\n";
+        $blok .= "Total Aset Lancar: " . number_format((float) ($neraca->total_asset_lancar ?? 0), 0, ',', '.') . "\n";
+        $blok .= "Total Aset Tetap: " . number_format((float) ($neraca->total_asset_tetap ?? 0), 0, ',', '.') . "\n";
+        $blok .= "Total Aset: " . number_format((float) ($neraca->total_asset ?? 0), 0, ',', '.') . "\n";
+        $blok .= "Total Liabilitas Jangka Pendek: " . number_format((float) ($neraca->total_liabilities_pendek ?? 0), 0, ',', '.') . "\n";
+        $blok .= "Total Liabilitas Jangka Panjang: " . number_format((float) ($neraca->total_liabilities_panjang ?? 0), 0, ',', '.') . "\n";
+        $blok .= "Total Liabilitas: " . number_format((float) ($neraca->total_liabilities ?? 0), 0, ',', '.') . "\n";
+        $blok .= "Total Ekuitas: " . number_format((float) ($neraca->total_equitas ?? 0), 0, ',', '.') . "\n";
+        $blok .= "--- Laporan Laba Rugi ---\n";
+        $blok .= "Total Pendapatan: " . number_format((float) ($labaRugi->total_pendapatan ?? 0), 0, ',', '.') . "\n";
+        $blok .= "Total Beban: " . number_format((float) ($labaRugi->total_beban ?? 0), 0, ',', '.') . "\n";
+        $blok .= "Total Biaya Pajak: " . number_format((float) ($labaRugi->total_biaya_pajak ?? 0), 0, ',', '.') . "\n";
+        $blok .= "Laba Bersih Sebelum Pajak: " . number_format((float) ($labaRugi->laba_bersih_sebelum_pajak ?? 0), 0, ',', '.') . "\n";
+        $blok .= "Laba Bersih Sesudah Pajak: " . number_format((float) ($labaRugi->laba_bersih_sesudah_pajak ?? 0), 0, ',', '.') . "\n";
+
+        return $blok;
+    }
+
+    // Gabungan info perusahaan + laporan keuangan mentah. Dipakai di awal
+    // SEMUA prompt per-section (likuiditas, profitabilitas, solvabilitas,
+    // aktivitas, dupont, commonsize).
+
+    // Rincian akun INDIVIDUAL (bukan total per kelompok) untuk sub_kelompok_akun
+    // tertentu — dipakai di section yang butuh AI menyebut akun spesifik sebagai
+    // bukti pendukung narasi, bukan cuma angka agregat dari tabel neraca/laba_rugi.
+    private function blokDetailAkun(Dokumen $dokumen, array $subKelompokAkun, string $judul): string
+    {
+        $akun = ChartOfAccount::query()
+            ->where('dokumen_id', $dokumen->id)
+            ->whereIn('sub_kelompok_akun', $subKelompokAkun)
+            ->orderByDesc('nilai_akun')
+            ->get();
+
+        if ($akun->isEmpty()) {
+            return '';
+        }
+
+        $blok = "=== {$judul} ===\n";
+        foreach ($akun as $a) {
+            $blok .= "- {$a->nama_akun}: " . number_format((float) $a->nilai_akun, 0, ',', '.') . "\n";
+        }
+
+        return $blok;
+    }
+
+    private function konteksDasarPrompt(Dokumen $dokumen): string
+    {
+        return $this->blokInfoPerusahaan($dokumen->perusahaan)
+            . $this->blokLaporanKeuanganMentah($dokumen->neraca, $dokumen->labaRugi);
+    }
 
     // Label periode untuk satu Dokumen (dipakai di prosesSummaryAnalisis, karena
     // Analisis tidak punya kolom periode sendiri — datanya ada di Dokumen).
@@ -145,20 +215,31 @@ class AnalysisFinancialService
     // NARASI AI PER SECTION (1 PERIODE)
     // =====================================================================
 
+    // GANTI method prosesLikuiditas() yang lama dengan versi ini.
+// Perubahan: tambah $aktivitas dan blok data WCT sebagai konteks pendukung,
+// supaya klaim "idle assets" di LiquidityAnalystAgent bisa dikonfirmasi
+// silang dengan angka WCT yang sebenarnya (bukan asumsi tanpa data).
+
     public function prosesLikuiditas(Analisis $analisis, ?string $userPrompt = null): void
     {
         $data = $analisis->likuiditas;
-        // Analisis tidak punya relasi perusahaan() langsung — lewat dokumen().
-        $perusahaan = $analisis->dokumen->perusahaan;
+        $dokumen = $analisis->dokumen;
+        $aktivitas = $analisis->aktivitas;
 
-        $Prompt  = "Informasi Perusahaan\n";
-        $Prompt .= "Nama Perusahaan: {$perusahaan->nama}\n";
-        $Prompt .= "Sektor: {$perusahaan->sektor}\n";
-        $Prompt .= "Deskripsi: {$perusahaan->deskripsi}\n";
-
-        $Prompt .= "Berikan narasi analisis likuiditas berdasarkan data berikut: \n";
+        $Prompt  = $this->konteksDasarPrompt($dokumen);
+        $Prompt .= "=== DATA RASIO LIKUIDITAS ===\n";
         $Prompt .= "Current Ratio (CR): " . $data->current_ratio . "x\n";
         $Prompt .= "Cash Ratio (CSR): " . $data->cash_ratio . "x\n";
+
+        if ($aktivitas) {
+            $Prompt .= "=== DATA RASIO AKTIVITAS (konteks pendukung, bukan topik utama) ===\n";
+            $Prompt .= "Working Capital Turnover (WCT): " . $aktivitas->working_capital_turnover . "x\n";
+        }
+
+        $Prompt .= "\nBerikan narasi analisis likuiditas berdasarkan data di atas. ";
+        $Prompt .= "Gunakan data WCT HANYA sebagai konfirmasi silang jika Current Ratio relatif tinggi ";
+        $Prompt .= "(CR tinggi + WCT rendah = indikasi modal kerja menganggur/idle assets; CR tinggi + WCT wajar = modal kerja tetap produktif). ";
+        $Prompt .= "Jangan menjadikan aktivitas sebagai topik utama narasi.\n";
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $data->narasi_likuiditas_AI);
 
@@ -176,13 +257,30 @@ class AnalysisFinancialService
     public function prosesProfitabilitas(Analisis $analisis, ?string $userPrompt = null): void
     {
         $data = $analisis->profitabilitas;
-        $sektor = $analisis->dokumen->perusahaan->sektor;
-        $benchmarkNpm = $this->npmBenchmarkUntukSektor($sektor);
+        $dokumen = $analisis->dokumen;
+        $aktivitas = $analisis->aktivitas;
+        $solvabilitas = $analisis->solvabilitas;
 
-        $Prompt  = "Berikan narasi analisis profitabilitas berdasarkan data berikut: \n";
+        $Prompt  = $this->konteksDasarPrompt($dokumen);
+        $Prompt .= "=== DATA RASIO PROFITABILITAS ===\n";
         $Prompt .= "Net Profit Margin (NPM): " . $data->net_profit_margin . "%\n";
         $Prompt .= "Return on Assets (ROA): " . $data->ROA . "%\n";
         $Prompt .= "Return on Equity (ROE): " . $data->ROE . "%\n";
+
+        if ($aktivitas) {
+            $Prompt .= "=== DATA RASIO AKTIVITAS (konteks pendukung, bukan topik utama) ===\n";
+            $Prompt .= "Total Asset Turnover (TATO): " . $aktivitas->total_asset_turnover . "x\n";
+        }
+
+        if ($solvabilitas) {
+            $Prompt .= "=== DATA RASIO SOLVABILITAS (konteks pendukung, bukan topik utama) ===\n";
+            $Prompt .= "Financial Leverage: " . $solvabilitas->leverage_multiplier . "x\n";
+        }
+
+        $Prompt .= "\nBerikan narasi analisis profitabilitas berdasarkan data di atas. ";
+        $Prompt .= "Gunakan data TATO dan Financial Leverage HANYA sebagai konfirmasi silang saat menjelaskan ROA/ROE ";
+        $Prompt .= "(mis. ROE jauh lebih tinggi dari ROA mengindikasikan peran leverage; ROA rendah bisa ditelusuri dari TATO rendah atau NPM yang tipis). ";
+        $Prompt .= "Jangan menjadikan aktivitas/solvabilitas sebagai topik utama narasi.\n";
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $data->narasi_profitabilitas_AI);
 
@@ -200,11 +298,19 @@ class AnalysisFinancialService
     public function prosesSolvabilitas(Analisis $analisis, ?string $userPrompt = null): void
     {
         $data = $analisis->solvabilitas;
+        $dokumen = $analisis->dokumen;
 
-        $Prompt  = "Berikan narasi analisis solvabilitas berdasarkan data berikut: \n";
+        $Prompt  = $this->konteksDasarPrompt($dokumen);
+        $Prompt .= "=== DATA RASIO SOLVABILITAS ===\n";
         $Prompt .= "Debt to Equity Ratio (DER): " . $data->debt_to_equity . "x\n";
         $Prompt .= "Debt to Asset Ratio (DAR): " . $data->debt_to_asset . "x\n";
         $Prompt .= "Financial Leverage: " . $data->leverage_multiplier . "x\n";
+
+        $Prompt .= $this->blokDetailAkun($dokumen, ['liabilitas_jangka_pendek'], 'RINCIAN AKUN LIABILITAS JANGKA PENDEK');
+        $Prompt .= $this->blokDetailAkun($dokumen, ['liabilitas_jangka_panjang'], 'RINCIAN AKUN LIABILITAS JANGKA PANJANG');
+
+        $Prompt .= "\nBerikan narasi analisis solvabilitas berdasarkan data di atas. ";
+        $Prompt .= "Manfaatkan rincian akun individual di atas (jika tersedia) untuk menyebut akun spesifik mana yang paling memengaruhi DAR/DER, bukan cuma menyebut total agregatnya.\n";
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $data->narasi_solvabilitas_AI);
 
@@ -222,11 +328,30 @@ class AnalysisFinancialService
     public function prosesAktivitas(Analisis $analisis, ?string $userPrompt = null): void
     {
         $data = $analisis->aktivitas;
+        $dokumen = $analisis->dokumen;
+        $likuiditas = $analisis->likuiditas;
 
-        $Prompt  = "Berikan narasi analisis aktivitas operasional berdasarkan data berikut: \n";
+        $Prompt  = $this->konteksDasarPrompt($dokumen);
+        $Prompt .= "=== DATA RASIO AKTIVITAS ===\n";
         $Prompt .= "Total Asset Turnover (TATO): " . $data->total_asset_turnover . "x\n";
         $Prompt .= "Working Capital Turnover (WCT): " . $data->working_capital_turnover . "x\n";
         $Prompt .= "Fixed Asset Turnover (FAT): " . $data->fixed_asset_turnover . "x\n";
+
+        $Prompt .= $this->blokDetailAkun($dokumen, ['aset_tetap'], 'RINCIAN AKUN ASET TETAP (relevan untuk FAT)');
+        $Prompt .= $this->blokDetailAkun($dokumen, ['kas_setara_kas', 'aset_lancar_selain_kas'], 'RINCIAN AKUN ASET LANCAR (relevan untuk WCT)');
+        $Prompt .= $this->blokDetailAkun($dokumen, ['liabilitas_jangka_pendek'], 'RINCIAN AKUN LIABILITAS JANGKA PENDEK (relevan untuk WCT)');
+
+        if ($likuiditas) {
+            $Prompt .= "=== DATA RASIO LIKUIDITAS (konteks pendukung, bukan topik utama) ===\n";
+            $Prompt .= "Current Ratio (CR): " . $likuiditas->current_ratio . "x\n";
+            $Prompt .= "Cash Ratio (CSR): " . $likuiditas->cash_ratio . "x\n";
+        }
+
+        $Prompt .= "\nBerikan narasi analisis aktivitas operasional berdasarkan data di atas. ";
+        $Prompt .= "Manfaatkan rincian akun individual di atas (jika tersedia) untuk menyebut akun spesifik mana yang paling memengaruhi FAT atau WCT, bukan cuma menyebut total agregatnya. ";
+        $Prompt .= "Gunakan data likuiditas HANYA sebagai konfirmasi silang jika ada pola yang relevan ";
+        $Prompt .= "(contoh: WCT rendah namun Current Ratio tinggi bisa mengindikasikan modal kerja menumpuk idle, bukan sekadar kondisi likuid). ";
+        $Prompt .= "Jangan menjadikan likuiditas sebagai topik utama narasi.\n";
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $data->narasi_aktivitas_AI);
 
@@ -246,15 +371,27 @@ class AnalysisFinancialService
         // analisis_dupont cuma menyimpan roe_dupont. NPM, TATO, dan Leverage
         // yang jadi komponen pembentuknya diambil dari tabel masing-masing.
         $data = $analisis->dupont;
+        $dokumen = $analisis->dokumen;
         $npm      = $analisis->profitabilitas?->net_profit_margin;
         $tato     = $analisis->aktivitas?->total_asset_turnover;
         $leverage = $analisis->solvabilitas?->leverage_multiplier;
+        $der      = $analisis->solvabilitas?->debt_to_equity;
+        $dar      = $analisis->solvabilitas?->debt_to_asset;
 
-        $Prompt  = "Berikan narasi analisis DuPont berdasarkan data berikut: \n";
+        $Prompt  = $this->konteksDasarPrompt($dokumen);
+        $Prompt .= "=== DATA ANALISIS DUPONT ===\n";
         $Prompt .= "Net Profit Margin (NPM): " . $npm . "%\n";
         $Prompt .= "Total Asset Turnover (TATO): " . $tato . " kali\n";
         $Prompt .= "Leverage Multiplier (Total Aset / Ekuitas): " . $leverage . " kali\n";
         $Prompt .= "Hasil ROE = NPM x TATO x Leverage: " . $data->roe_dupont . "%\n";
+
+        if ($der !== null || $dar !== null) {
+            $Prompt .= "=== DATA RASIO SOLVABILITAS (konteks pendukung) ===\n";
+            $Prompt .= "Debt to Equity Ratio (DER): " . $der . "x\n";
+            $Prompt .= "Debt to Asset Ratio (DAR): " . $dar . "x\n";
+        }
+
+        $Prompt .= "\nBerikan narasi analisis DuPont berdasarkan data di atas.\n";
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $data->narasi_dupont_AI);
 
@@ -272,8 +409,12 @@ class AnalysisFinancialService
     public function prosesCommonsize(Analisis $analisis, ?string $userPrompt = null): void
     {
         $data = $analisis->commonsize;
+        $dokumen = $analisis->dokumen;
+        $likuiditas = $analisis->likuiditas;
+        $solvabilitas = $analisis->solvabilitas;
 
-        $Prompt  = "Berikan narasi analisis common-size berdasarkan data berikut: \n";
+        $Prompt  = $this->konteksDasarPrompt($dokumen);
+        $Prompt .= "=== DATA COMMON-SIZE (PERSENTASE) ===\n";
         $Prompt .= "--- Common-Size Laporan Laba Rugi (basis Pendapatan = 100%) ---\n";
         $Prompt .= "Pendapatan: " . $data->pendapatan_persen . "%\n";
         $Prompt .= "Beban (termasuk beban pajak): " . $data->beban_persen . "%\n";
@@ -284,6 +425,18 @@ class AnalysisFinancialService
         $Prompt .= "Liabilitas Jangka Pendek: " . $data->liabilitas_pendek_persen . "%\n";
         $Prompt .= "Liabilitas Jangka Panjang: " . $data->liabilitas_panjang_persen . "%\n";
         $Prompt .= "Ekuitas: " . $data->ekuitas_persen . "%\n";
+
+        if ($likuiditas) {
+            $Prompt .= "=== DATA RASIO LIKUIDITAS (konteks pendukung) ===\n";
+            $Prompt .= "Current Ratio (CR): " . $likuiditas->current_ratio . "x\n";
+        }
+
+        if ($solvabilitas) {
+            $Prompt .= "=== DATA RASIO SOLVABILITAS (konteks pendukung) ===\n";
+            $Prompt .= "Debt to Asset Ratio (DAR): " . $solvabilitas->debt_to_asset . "x\n";
+        }
+
+        $Prompt .= "\nBerikan narasi analisis common-size berdasarkan data di atas.\n";
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $data->narasi_commonsize_AI);
 
@@ -309,7 +462,9 @@ class AnalysisFinancialService
         $trendData = $analisis->getAkunUtamaTrend();
         $periodeData = $trendData['periode_data'];
 
-        $Prompt = "Berikan narasi analisis tren akun utama (Pendapatan, Laba Bersih, Total Aset, Kas Setara Kas, Total Ekuitas) lintas periode berikut: \n";
+        $Prompt  = $this->blokInfoPerusahaan($analisis->dokumen->perusahaan);
+        $Prompt .= "=== TREN AKUN UTAMA ===\n";
+        $Prompt .= "Berikan narasi analisis tren akun utama (Pendapatan, Laba Bersih, Total Aset, Kas Setara Kas, Total Ekuitas) lintas periode berikut: \n";
         $Prompt .= "STATUS DATA: " . count($periodeData) . " periode tersedia dalam scope";
         $Prompt .= $trendData['has_gap']
             ? ", namun ada periode dengan data tidak lengkap — fokuskan narasi hanya pada periode yang datanya tersedia.\n"
@@ -346,7 +501,9 @@ class AnalysisFinancialService
         $trendData = $analisis->getRasioTrend();
         $periodeData = $trendData['periode_data'];
 
-        $Prompt = "Berikan narasi analisis tren rasio keuangan (likuiditas, profitabilitas, solvabilitas, aktivitas) lintas periode berikut: \n";
+        $Prompt  = $this->blokInfoPerusahaan($analisis->dokumen->perusahaan);
+        $Prompt .= "=== TREN RASIO KEUANGAN ===\n";
+        $Prompt .= "Berikan narasi analisis tren rasio keuangan (likuiditas, profitabilitas, solvabilitas, aktivitas) lintas periode berikut: \n";
         $Prompt .= "STATUS DATA: " . count($periodeData) . " periode tersedia dalam scope";
         $Prompt .= $trendData['has_gap']
             ? ", namun ada periode dengan data tidak lengkap — fokuskan narasi hanya pada periode yang datanya tersedia.\n"
@@ -383,7 +540,9 @@ class AnalysisFinancialService
         $trendData = $analisis->getDupontTrend();
         $periodeData = $trendData['periode_data'];
 
-        $Prompt = "Berikan narasi analisis tren DuPont (NPM, TATO, Leverage Multiplier, ROE) lintas periode berikut: \n";
+        $Prompt  = $this->blokInfoPerusahaan($analisis->dokumen->perusahaan);
+        $Prompt .= "=== TREN DUPONT ===\n";
+        $Prompt .= "Berikan narasi analisis tren DuPont (NPM, TATO, Leverage Multiplier, ROE) lintas periode berikut: \n";
         $Prompt .= "STATUS DATA: " . count($periodeData) . " periode tersedia dalam scope";
         $Prompt .= $trendData['has_gap']
             ? ", namun ada periode dengan data tidak lengkap — fokuskan narasi hanya pada periode yang datanya tersedia.\n"
@@ -417,7 +576,9 @@ class AnalysisFinancialService
         $trendData = $analisis->getCommonsizeTrend();
         $periodeData = $trendData['periode_data'];
 
-        $Prompt = "Berikan narasi analisis tren common-size (proporsi vertikal Laba Rugi & Neraca) lintas periode berikut: \n";
+        $Prompt  = $this->blokInfoPerusahaan($analisis->dokumen->perusahaan);
+        $Prompt .= "=== TREN COMMON-SIZE ===\n";
+        $Prompt .= "Berikan narasi analisis tren common-size (proporsi vertikal Laba Rugi & Neraca) lintas periode berikut: \n";
         $Prompt .= "STATUS DATA: " . count($periodeData) . " periode tersedia dalam scope";
         $Prompt .= $trendData['has_gap']
             ? ", namun ada periode dengan data tidak lengkap — fokuskan narasi hanya pada periode yang datanya tersedia.\n"
