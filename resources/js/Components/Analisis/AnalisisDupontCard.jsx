@@ -19,9 +19,18 @@ function normalisasi(value, max) {
     return Math.min((value / max) * 100, 100);
 }
 
-export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({ data, neraca, labaRugi, perusahaanId, analisisId }, ref) {
+export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
+    data,
+    profitabilitas,
+    aktivitas,
+    solvabilitas,
+    neraca,
+    labaRugi,
+    perusahaanId,
+    analisisId
+}, ref) {
     const [isLoading, setIsLoading] = useState(false);
-    const belumDianalisis = !data?.narasi_dupont_AI;
+    const sudahDianalisis = data?.narasi_dupont_AI;
 
     function handleTrigger() {
         setIsLoading(true);
@@ -36,25 +45,25 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({ data,
         {
             key: 'npm',
             label: 'Net Profit Margin',
-            value: data?.net_profit_margin ?? null,
+            value: profitabilitas?.net_profit_margin ?? null,
             unit: '%',
-            skala: normalisasi(data?.net_profit_margin, NPM_SKALA_MAX),
+            skala: normalisasi(profitabilitas?.net_profit_margin, NPM_SKALA_MAX),
             color: '#0d9488',
         },
         {
             key: 'tato',
             label: 'Asset Turnover',
-            value: data?.total_asset_turnover ?? null,
+            value: aktivitas?.total_asset_turnover ?? null,
             unit: 'x',
-            skala: normalisasi(data?.total_asset_turnover, TATO_SKALA_MAX),
+            skala: normalisasi(aktivitas?.total_asset_turnover, TATO_SKALA_MAX),
             color: '#2563eb',
         },
         {
             key: 'leverage',
             label: 'Leverage Factor',
-            value: data?.leverage_multiplier ?? null,
+            value: solvabilitas?.leverage_multiplier ?? null,
             unit: 'x',
-            skala: normalisasi(data?.leverage_multiplier, LEVERAGE_SKALA_MAX),
+            skala: normalisasi(solvabilitas?.leverage_multiplier, LEVERAGE_SKALA_MAX),
             color: '#ea580c',
         },
     ];
@@ -64,34 +73,34 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({ data,
     const ratios = [
         {
             label: 'Net Profit Margin (NPM)',
-            value: data?.net_profit_margin ?? null, suffix: '%',
+            value: profitabilitas?.net_profit_margin ?? null, suffix: '%',
             formula: 'Laba Bersih / Pendapatan',
-            breakdown: labaRugi ? `${formatNum(labaRugi.laba_bersih)} / ${formatNum(labaRugi.pendapatan)}` : null,
-            rawResult: data?.net_profit_margin != null ? getRawDecimal(data.net_profit_margin) : null,
-            rawNote: '(sebelum dikali 100%)' // Tambahan
+            breakdown: labaRugi ? `${formatNum(labaRugi.laba_bersih_sesudah_pajak)} / ${formatNum(labaRugi.total_pendapatan)}` : null,
+            rawResult: profitabilitas?.net_profit_margin != null ? getRawDecimal(profitabilitas.net_profit_margin) : null,
+            rawNote: '(sebelum dikali 100%)'
         },
         {
             label: 'Total Asset Turnover (TATO)',
-            value: data?.total_asset_turnover ?? null, suffix: 'x',
+            value: aktivitas?.total_asset_turnover ?? null, suffix: 'x',
             formula: 'Pendapatan / Total Aset',
-            breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.pendapatan)} / ${formatNum(neraca.total_assets)}` : null,
-            rawResult: data?.total_asset_turnover != null ? data.total_asset_turnover : null, // Ubah dari null
-            rawNote: null // Kosongkan karena bukan persentase
-        },
-        {
-            label: 'Leverage Multiplier',
-            value: data?.leverage_multiplier ?? null, suffix: 'x',
-            formula: 'Total Aset / Total Ekuitas',
-            breakdown: neraca ? `${formatNum(neraca.total_assets)} / ${formatNum(neraca.total_equity)}` : null,
-            rawResult: data?.leverage_multiplier != null ? data.leverage_multiplier : null, // Ubah dari null
+            breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.total_pendapatan)} / ${formatNum(neraca.total_asset)}` : null,
+            rawResult: aktivitas?.total_asset_turnover != null ? aktivitas.total_asset_turnover : null,
             rawNote: null
         },
         {
-            label: 'Return on Equity (ROE)',
-            value: data?.roe ?? null, suffix: '%',
+            label: 'Leverage Multiplier',
+            value: solvabilitas?.leverage_multiplier ?? null, suffix: 'x',
+            formula: 'Total Aset / Total Ekuitas',
+            breakdown: neraca ? `${formatNum(neraca.total_asset)} / ${formatNum(neraca.total_equitas)}` : null,
+            rawResult: solvabilitas?.leverage_multiplier != null ? solvabilitas.leverage_multiplier : null,
+            rawNote: null
+        },
+        {
+            label: 'Return on Equity (Dupont)',
+            value: data?.roe_dupont ?? null, suffix: '%',
             formula: 'NPM x TATO x Leverage',
-            breakdown: data ? `${data.net_profit_margin}% x ${data.total_asset_turnover}x x ${data.leverage_multiplier}x` : null,
-            rawResult: data?.roe != null ? getRawDecimal(data.roe) : null,
+            breakdown: data ? `${profitabilitas?.net_profit_margin ?? 0}% x ${aktivitas?.total_asset_turnover ?? 0}x x ${solvabilitas?.leverage_multiplier ?? 0}x` : null,
+            rawResult: data?.roe_dupont != null ? getRawDecimal(data.roe_dupont) : null,
             rawNote: '(sebelum dikali 100%)'
         },
     ];
@@ -106,14 +115,17 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({ data,
                     </div>
                     <h3 className="font-semibold text-slate-900">DuPont Analysis</h3>
                 </div>
-                <button
-                    onClick={handleTrigger}
-                    disabled={isLoading}
-                    className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                    {belumDianalisis ? 'Mulai Analisis' : 'Regenerasi'}
-                </button>
+
+                {sudahDianalisis && (
+                    <button
+                        onClick={() => setIsPromptModalOpen(true)}
+                        disabled={isLoading}
+                        className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                        Regenerasi
+                    </button>
+                )}
             </div>
 
             {/* Detail Rumus & Angka Mentah */}
@@ -189,10 +201,10 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({ data,
                         Batang divisualisasikan pada skala relatif agar mudah dibandingkan; nilai asli tiap komponen ditampilkan di atas batang.
                     </p>
 
-                    {data?.roe !== null && data?.roe !== undefined && (
+                    {data?.roe_dupont !== null && data?.roe_dupont !== undefined && (
                         <div className="mt-3 p-2.5 bg-indigo-50 border border-indigo-100 rounded-lg text-center">
                             <span className="text-xs font-semibold text-indigo-700">
-                                NPM ({data.net_profit_margin}%) × TATO ({data.total_asset_turnover}x) × Leverage ({data.leverage_multiplier}x) = ROE {data.roe}%
+                                NPM ({profitabilitas?.net_profit_margin ?? 0}%) × TATO ({aktivitas?.total_asset_turnover ?? 0}x) × Leverage ({solvabilitas?.leverage_multiplier ?? 0}x) = ROE {data.roe_dupont}%
                             </span>
                         </div>
                     )}
@@ -204,17 +216,18 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({ data,
             )}
 
             {/* Narasi AI */}
-            {belumDianalisis ? (
-                <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-lg p-4 text-center">
-                    <p className="text-xs text-slate-400">Analisis DuPont belum pernah dijalankan pada periode ini.</p>
-                </div>
-            ) : (
+            {sudahDianalisis ? (
                 <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3">
                     <div className="flex items-center gap-1.5 mb-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-blue-500" />
                         <span className="text-xs font-medium text-blue-700">Insight AI</span>
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{data.narasi_dupont_AI}</p>
+                </div>
+            ) : (
+
+                <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-lg p-4 text-center">
+                    <p className="text-xs text-slate-400">Analisis DuPont belum pernah dijalankan pada periode ini.</p>
                 </div>
             )}
         </div>

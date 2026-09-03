@@ -16,6 +16,7 @@ class AnalisisCommonsize extends Model
         'pendapatan_persen',
         'beban_persen',
         'laba_bersih_persen',
+        
         'aset_lancar_persen',
         'aset_tetap_persen',
         'liabilitas_pendek_persen',

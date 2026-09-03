@@ -1,7 +1,10 @@
 import { PieChart, RefreshCw, Loader2, Sparkles } from 'lucide-react';
 import { useState, forwardRef } from 'react';
 import { router } from '@inertiajs/react';
-import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import {
+    PieChart as RePieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip,
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList
+} from 'recharts';
 
 const formatPersen = (val) => {
     if (val === null || val === undefined) return null;
@@ -84,7 +87,7 @@ function DonutChart({ title, data, height = 200 }) {
 
 export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard({ data, perusahaanId, analisisId }, ref) {
     const [isLoading, setIsLoading] = useState(false);
-    const belumDianalisis = !data?.narasi_commonsize_AI;
+    const sudahDianalisis = data?.narasi_commonsize_AI;
 
     function handleTrigger() {
         setIsLoading(true);
@@ -95,19 +98,24 @@ export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard
         );
     }
 
+    // Data Laba Rugi untuk Bar Chart
     const incomeStatementData = [
-        { label: 'HPP', value: toNum(data?.hpp_persen), color: '#f97316' },
-        { label: 'Beban Lain & Pajak', value: toNum(data?.beban_lain_pajak_persen), color: '#ef4444' },
+        { label: 'Pendapatan', value: toNum(data?.pendapatan_persen), color: '#3b82f6' }, // 100% baseline
+        { label: 'Beban', value: toNum(data?.beban_persen), color: '#f97316' },
         { label: 'Laba Bersih', value: toNum(data?.laba_bersih_persen), color: '#16a34a' },
     ];
 
+    const adaLabaRugiData = incomeStatementData.some((d) => d.value !== null && d.value !== undefined);
+
+    // Data Aset untuk Donut Chart
     const asetData = [
         { label: 'Aset Lancar', value: toNum(data?.aset_lancar_persen), color: '#3b82f6' },
         { label: 'Aset Tetap', value: toNum(data?.aset_tetap_persen), color: '#1e3a8a' },
     ];
 
+    // Data Liabilitas & Ekuitas untuk Donut Chart
     const liabilitasEkuitasData = [
-        { label: 'Liabilitas Lancar', value: toNum(data?.liabilitas_lancar_persen), color: '#eab308' },
+        { label: 'Liabilitas Pendek', value: toNum(data?.liabilitas_pendek_persen), color: '#eab308' },
         { label: 'Liabilitas Jk. Panjang', value: toNum(data?.liabilitas_panjang_persen), color: '#f97316' },
         { label: 'Ekuitas', value: toNum(data?.ekuitas_persen), color: '#a855f7' },
     ];
@@ -122,14 +130,17 @@ export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard
                     </div>
                     <h3 className="font-semibold text-slate-900">Common-Size Analysis</h3>
                 </div>
-                <button
-                    onClick={handleTrigger}
-                    disabled={isLoading}
-                    className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                    {belumDianalisis ? 'Mulai Analisis' : 'Regenerasi'}
-                </button>
+
+                {sudahDianalisis && (
+                    <button
+                        onClick={() => setIsPromptModalOpen(true)}
+                        disabled={isLoading}
+                        className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                        Regenerasi
+                    </button>
+                )}
             </div>
 
             {/* Area yang di-capture PDF */}
@@ -139,8 +150,8 @@ export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard
                         <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3">
                             Laba Rugi (basis Pendapatan)
                         </p>
-                        <PercentBar label="HPP" value={data?.hpp_persen ?? null} color="bg-orange-500" />
-                        <PercentBar label="Beban Lain & Pajak" value={data?.beban_lain_pajak_persen ?? null} color="bg-red-500" />
+                        <PercentBar label="Pendapatan" value={data?.pendapatan_persen ?? null} color="bg-blue-500" />
+                        <PercentBar label="Beban" value={data?.beban_persen ?? null} color="bg-orange-500" />
                         <PercentBar label="Laba Bersih" value={data?.laba_bersih_persen ?? null} color="bg-green-600" />
                     </div>
                     <div>
@@ -149,24 +160,44 @@ export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard
                         </p>
                         <PercentBar label="Aset Lancar" value={data?.aset_lancar_persen ?? null} color="bg-blue-500" />
                         <PercentBar label="Aset Tetap" value={data?.aset_tetap_persen ?? null} color="bg-indigo-500" />
-                        <PercentBar label="Liabilitas Lancar" value={data?.liabilitas_lancar_persen ?? null} color="bg-yellow-500" />
+                        <PercentBar label="Liabilitas Pendek" value={data?.liabilitas_pendek_persen ?? null} color="bg-yellow-500" />
                         <PercentBar label="Liabilitas Jk. Panjang" value={data?.liabilitas_panjang_persen ?? null} color="bg-orange-600" />
                         <PercentBar label="Ekuitas" value={data?.ekuitas_persen ?? null} color="bg-purple-500" />
                     </div>
                 </div>
-
-                {data?.beban_lain_pajak_persen !== null && data?.beban_lain_pajak_persen !== undefined && (
-                    <p className="text-[10px] text-slate-400 italic">
-                        *"Beban Lain & Pajak" adalah gabungan OpEx, Bunga, dan Pajak - dihitung dari laba kotor - laba bersih
-                    </p>
-                )}
             </div>
             {/* Akhir area capture PDF */}
 
-            {/* Donut chart (gak ke pdf) */}
-            <div className="mt-6 mb-5">
-                <DonutChart title="Income Statement (basis Pendapatan)" data={incomeStatementData} />
+            {/* Bar Chart Laba Rugi */}
+            <div className="mt-6 mb-8">
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3 text-center">
+                    Visualisasi Laba Rugi (basis Pendapatan)
+                </p>
+                <div style={{ width: '100%', height: 220 }}>
+                    {adaLabaRugiData ? (
+                        <ResponsiveContainer>
+                            <BarChart data={incomeStatementData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis dataKey="label" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(val) => `${val}%`} />
+                                <Tooltip formatter={(val) => `${formatPersen(val)}%`} cursor={{ fill: '#f8fafc' }} />
+                                <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={60}>
+                                    {incomeStatementData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                    <LabelList dataKey="value" position="top" formatter={(val) => `${formatPersen(val)}%`} style={{ fontSize: 11, fontWeight: 600, fill: '#475569' }} />
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <div className="h-full rounded-lg bg-slate-50 border border-dashed border-slate-200 flex items-center justify-center">
+                            <span className="text-xs text-slate-400">Belum ada data visualisasi Laba Rugi</span>
+                        </div>
+                    )}
+                </div>
             </div>
+
+            {/* Donut Charts Neraca */}
             <div className="mb-5">
                 <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2 text-center">
                     Balance Sheet — Keseimbangan Aset = Liabilitas + Ekuitas
@@ -178,17 +209,19 @@ export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard
             </div>
 
             {/* Narasi AI */}
-            {belumDianalisis ? (
-                <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-lg p-4 text-center mt-4">
-                    <p className="text-xs text-slate-400">Analisis Common-size belum pernah dijalankan pada periode ini.</p>
-                </div>
-            ) : (
+            {sudahDianalisis ? (
                 <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 mt-4">
                     <div className="flex items-center gap-1.5 mb-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-blue-500" />
                         <span className="text-xs font-medium text-blue-700">Insight AI</span>
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{data.narasi_commonsize_AI}</p>
+                </div>
+            ) : (
+
+
+                <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-lg p-4 text-center mt-4">
+                    <p className="text-xs text-slate-400">Belum Ada narasi Commonsize.</p>
                 </div>
             )}
         </div>

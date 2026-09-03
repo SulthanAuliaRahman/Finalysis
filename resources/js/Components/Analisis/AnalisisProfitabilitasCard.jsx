@@ -15,16 +15,10 @@ const getRawDecimal = (val) => {
 
 export const AnalisisProfitabilitasCard = forwardRef(function AnalisisProfitabilitasCard({ data, neraca, labaRugi, perusahaanId, analisisId, sektor }, ref) {
 
-    // Logika Dinamis Benchmark NPM berdasarkan sektor
-    let npmBenchmark = null;
-    if (sektor === "Jasa") npmBenchmark = 10;
-    else if (sektor === "Manufaktur") npmBenchmark = 7.5;
-    else if (sektor === "Perdagangan") npmBenchmark = 3.5;
-
     const chartData = [
-        { name: 'NPM', value: parseVal(data?.net_profit_margin), benchmark: npmBenchmark },
-        { name: 'ROA', value: parseVal(data?.ROA), benchmark: 5 },
-        { name: 'ROE', value: parseVal(data?.ROE), benchmark: 15 },
+        { name: 'NPM', value: parseVal(data?.net_profit_margin)},
+        { name: 'ROA', value: parseVal(data?.ROA) },
+        { name: 'ROE', value: parseVal(data?.ROE) },
     ];
 
     return (
@@ -42,7 +36,7 @@ export const AnalisisProfitabilitasCard = forwardRef(function AnalisisProfitabil
                     value: data?.net_profit_margin ?? null,
                     suffix: '%',
                     formula: 'Laba Bersih / Pendapatan',
-                    breakdown: labaRugi ? `${formatNum(labaRugi.laba_bersih)} / ${formatNum(labaRugi.pendapatan)}` : null,
+                    breakdown: labaRugi ? `${formatNum(labaRugi.laba_bersih_sesudah_pajak)} / ${formatNum(labaRugi.total_pendapatan)}` : null,
                     rawResult: data?.net_profit_margin != null ? getRawDecimal(data.net_profit_margin) : null
                 },
                 {
@@ -50,7 +44,7 @@ export const AnalisisProfitabilitasCard = forwardRef(function AnalisisProfitabil
                     value: data?.ROA ?? null,
                     suffix: '%',
                     formula: 'Laba Bersih / Total Aset',
-                    breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.laba_bersih)} / ${formatNum(neraca.total_assets)}` : null,
+                    breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.laba_bersih_sesudah_pajak)} / ${formatNum(neraca.total_asset)}` : null,
                     rawResult: data?.ROA != null ? getRawDecimal(data.ROA) : null
                 },
                 {
@@ -58,7 +52,7 @@ export const AnalisisProfitabilitasCard = forwardRef(function AnalisisProfitabil
                     value: data?.ROE ?? null,
                     suffix: '%',
                     formula: 'Laba Bersih / Total Ekuitas',
-                    breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.laba_bersih)} / ${formatNum(neraca.total_equity)}` : null,
+                    breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.laba_bersih_sesudah_pajak)} / ${formatNum(neraca.total_equitas)}` : null,
                     rawResult: data?.ROE != null ? getRawDecimal(data.ROE) : null
                 },
             ]}

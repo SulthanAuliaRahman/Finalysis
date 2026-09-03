@@ -8,9 +8,8 @@ const parseVal = (val) => val != null ? Number(val) : 0;
 export const AnalisisLikuiditasCard = forwardRef(function AnalisisLikuiditasCard({ data, neraca, perusahaanId, analisisId }, ref) {
 
     const chartData = [
-        { name: 'CR', value: parseVal(data?.current_ratio), benchmark: 1.5 },
-        { name: 'QR', value: parseVal(data?.quick_ratio), benchmark: 1.0 },
-        { name: 'Cash', value: parseVal(data?.cash_ratio), benchmark: 0.2 },
+        { name: 'CR', value: parseVal(data?.current_ratio) },
+        { name: 'Cash', value: parseVal(data?.cash_ratio) },
     ];
 
     return (
@@ -27,24 +26,16 @@ export const AnalisisLikuiditasCard = forwardRef(function AnalisisLikuiditasCard
                     label: 'Current Ratio',
                     value: data?.current_ratio != null ? parseVal(data.current_ratio) : null,
                     suffix: 'x',
-                    formula: 'Aset Lancar / Kewajiban Lancar',
-                    breakdown: neraca ? `${formatNum(neraca.current_assets)} / ${formatNum(neraca.current_liabilities)}` : null,
+                    formula: 'Total Aset Lancar / Total Liabilitas Pendek',
+                    breakdown: neraca ? `${formatNum(neraca.total_asset_lancar)} / ${formatNum(neraca.total_liabilities_pendek)}` : null,
                     rawResult: data?.current_ratio != null ? `${parseVal(data.current_ratio)}` : null
-                },
-                {
-                    label: 'Quick Ratio',
-                    value: data?.quick_ratio != null ? parseVal(data.quick_ratio) : null,
-                    suffix: 'x',
-                    formula: '(Aset Lancar - Persediaan) / Kewajiban Lancar',
-                    breakdown: neraca ? `(${formatNum(neraca.current_assets)} - ${formatNum(neraca.inventory)} ) / ${formatNum(neraca.current_liabilities)}` : null,
-                    rawResult: data?.quick_ratio != null ? `${parseVal(data.quick_ratio)}` : null
                 },
                 {
                     label: 'Cash Ratio',
                     value: data?.cash_ratio != null ? parseVal(data.cash_ratio) : null,
                     suffix: 'x',
-                    formula: 'Kas / Kewajiban Lancar',
-                    breakdown: neraca ? `${formatNum(neraca.cash_equivalent)} / ${formatNum(neraca.current_liabilities)}` : null,
+                    formula: 'Total Kas & Setara Kas / Total Liabilitas Pendek',
+                    breakdown: neraca ? `${formatNum(neraca.total_kas_setara_kas)} / ${formatNum(neraca.total_liabilities_pendek)}` : null,
                     rawResult: data?.cash_ratio != null ? `${parseVal(data.cash_ratio)}` : null
                 },
             ]}

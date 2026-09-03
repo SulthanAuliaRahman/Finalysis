@@ -4,10 +4,10 @@ import { TrendCardBase } from './TrendCardBase';
 import { TabelPeriode, LineChartBlock } from './trendHelpers';
 
 const DUPONT_ROWS = [
-    { label: 'Net Profit Margin',    get: (a) => a?.dupont?.net_profit_margin,    suffix: '%' },
-    { label: 'Total Asset Turnover', get: (a) => a?.dupont?.total_asset_turnover, suffix: 'x' },
-    { label: 'Leverage Multiplier',  get: (a) => a?.dupont?.leverage_multiplier,  suffix: 'x' },
-    { label: 'ROE',                  get: (a) => a?.dupont?.roe,                  suffix: '%' },
+    { label: 'Net Profit Margin',    get: (a) => a?.profitabilitas?.net_profit_margin,    suffix: '%' },
+    { label: 'Total Asset Turnover', get: (a) => a?.aktivitas?.total_asset_turnover, suffix: 'x' },
+    { label: 'Leverage Multiplier',  get: (a) => a?.solvabilitas?.leverage_multiplier,  suffix: 'x' },
+    { label: 'ROE Dupont',                  get: (a) => a?.dupont?.roe_dupont,                  suffix: '%' },
 ].map((r) => ({
     label: r.label,
     render: (p) => {
@@ -21,10 +21,10 @@ const DUPONT_ROWS = [
 }));
 
 const DUPONT_LINES = [
-    { key: 'npm',      label: 'NPM',      color: '#16a34a', axis: 'left',  get: (a) => a?.dupont?.net_profit_margin },
-    { key: 'roe',      label: 'ROE',      color: '#dc2626', axis: 'left',  get: (a) => a?.dupont?.roe },
-    { key: 'tato',     label: 'TATO',     color: '#2563eb', axis: 'right', get: (a) => a?.dupont?.total_asset_turnover },
-    { key: 'leverage', label: 'Leverage', color: '#ea580c', axis: 'right', get: (a) => a?.dupont?.leverage_multiplier },
+    { key: 'npm',      label: 'NPM',      color: '#16a34a', axis: 'left',  get: (a) => a?.profitabilitas?.net_profit_margin},
+    { key: 'roe_dupont',      label: 'ROE Dupont',      color: '#dc2626', axis: 'left',  get: (a) => a?.dupont?.roe_dupont },
+    { key: 'tato',     label: 'TATO',     color: '#2563eb', axis: 'right', get: (a) => a?.aktivitas?.total_asset_turnover },
+    { key: 'leverage', label: 'Leverage', color: '#ea580c', axis: 'right', get: (a) => a?.solvabilitas?.leverage_multiplier},
 ];
 
 export const TrendDupontCard = forwardRef(function TrendDupontCard({ data, perusahaanId, analisisId }, ref) {

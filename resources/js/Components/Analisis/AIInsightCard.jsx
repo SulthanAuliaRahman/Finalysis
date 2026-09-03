@@ -7,7 +7,7 @@ export function AIInsightCard({ narasi, perusahaanId, analisisId }) {
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
     const [userPrompt, setUserPrompt] = useState('');
 
-    const belumDianalisis = !narasi;
+    const sudahDianalisis = Boolean(narasi);
 
     function handleTrigger() {
         if (belumDianalisis) {
@@ -42,29 +42,28 @@ export function AIInsightCard({ narasi, perusahaanId, analisisId }) {
                     </div>
                     <h3 className="font-semibold text-slate-900">Summary & Insight</h3>
                 </div>
-                <button
-                    onClick={handleTrigger}
-                    disabled={isLoading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-blue-700 hover:bg-blue-50 transition-colors text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed z-0"
-                >
-                    {isLoading ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                        <RefreshCw className="w-3.5 h-3.5" />
-                    )}
-                    {belumDianalisis ? 'Mulai Analisis' : 'Regenerasi'}
-                </button>
+                {sudahDianalisis && (
+                    <button
+                        onClick={() => setIsPromptModalOpen(true)}
+                        disabled={isLoading}
+                        className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                        Regenerasi
+                    </button>
+                )}
             </div>
 
-            {belumDianalisis ? (
+            {sudahDianalisis ? (
+                <div className="bg-white/70 border border-blue-100 rounded-lg p-5">
+                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{narasi}</p>
+                </div>
+
+            ) : (
                 <div className="bg-white/60 border border-dashed border-blue-200 rounded-lg p-5 text-center">
                     <p className="text-sm text-slate-400 italic">
                         Ringkasan akan tersedia setelah terdapat analisis.
                     </p>
-                </div>
-            ) : (
-                <div className="bg-white/70 border border-blue-100 rounded-lg p-5">
-                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{narasi}</p>
                 </div>
             )}
 

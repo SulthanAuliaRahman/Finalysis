@@ -15,6 +15,7 @@ class AnalisisAktivitas extends Model
         'analisis_id',
         'total_asset_turnover',
         'working_capital_turnover',
+        'fixed_asset_turnover',
         'narasi_aktivitas_AI',
     ];
 

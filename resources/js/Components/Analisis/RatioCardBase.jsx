@@ -1,7 +1,7 @@
 import { useState, forwardRef } from 'react';
 import { router } from '@inertiajs/react';
 import { RefreshCw, Sparkles, Loader2, X, AlertCircle } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export const RatioCardBase = forwardRef(function RatioCardBase({
     title,
@@ -20,16 +20,8 @@ export const RatioCardBase = forwardRef(function RatioCardBase({
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
     const [userPrompt, setUserPrompt] = useState('');
 
-    const belumDianalisis = !narasi;
+    const sudahDianalisis = Boolean(narasi);
     const rasioBelumDihitung = ratios.every(r => r.value === null || r.value === undefined);
-
-    function handleTrigger() {
-        if (belumDianalisis) {
-            submitAnalisis();
-        } else {
-            setIsPromptModalOpen(true);
-        }
-    }
 
     function submitAnalisis(customPrompt = '') {
         setIsLoading(true);
@@ -56,14 +48,17 @@ export const RatioCardBase = forwardRef(function RatioCardBase({
                     </div>
                     <h3 className="font-semibold text-slate-900">{title}</h3>
                 </div>
-                <button
-                    onClick={handleTrigger}
-                    disabled={isLoading || rasioBelumDihitung}
-                    className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                    {belumDianalisis ? 'Mulai Analisis' : 'Regenerasi'}
-                </button>
+
+                {sudahDianalisis && (
+                    <button
+                        onClick={() => setIsPromptModalOpen(true)}
+                        disabled={isLoading}
+                        className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                        Regenerasi
+                    </button>
+                )}
             </div>
 
             <div className="space-y-2.5 mb-4">
@@ -77,7 +72,7 @@ export const RatioCardBase = forwardRef(function RatioCardBase({
                                 </span>
                             </div>
 
-                            {/* --- AREA BREAKDOWN YANG DIPERBARUI --- */}
+                            {/* AREA BREAKDOWN */}
                             {ratio.breakdown && ratio.value !== null && ratio.value !== undefined && (
                                 <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[11px] font-mono text-slate-500 space-y-1.5">
                                     <div className="flex gap-2">
@@ -117,9 +112,7 @@ export const RatioCardBase = forwardRef(function RatioCardBase({
                                 cursor={{ fill: '#f8fafc' }}
                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
                             />
-                            <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
                             <Bar dataKey="value" name="Nilai Aktual" fill={chartColor || '#3b82f6'} radius={[4, 4, 0, 0]} />
-                            <Bar dataKey="benchmark" name="Benchmark" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -130,13 +123,13 @@ export const RatioCardBase = forwardRef(function RatioCardBase({
                     <div className="bg-amber-50/70 border border-amber-200 rounded-lg p-3 flex gap-2 items-start text-amber-700">
                         <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                         <p className="text-xs">
-                            Silakan klik <strong>"Hitung Data Finansial"</strong> di bagian atas untuk mengkalkulasi rasio sebelum melakukan analisis AI.
+                            Data rasio belum tersedia untuk periode ini.
                         </p>
                     </div>
-                ) : belumDianalisis ? (
+                ) : !sudahDianalisis ? (
                     <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-lg p-4 text-center">
                         <p className="text-xs text-slate-400">
-                            Analisis untuk {title.toLowerCase()} belum pernah dijalankan pada periode ini.
+                            Analisis AI untuk {title.toLowerCase()} belum di-generate. Klik <strong>"Generate analisis"</strong> di bagian atas halaman.
                         </p>
                     </div>
                 ) : (

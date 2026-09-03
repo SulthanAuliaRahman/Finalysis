@@ -200,7 +200,7 @@ const COMMONSIZE_ROWS = [
     { label: 'Laba Bersih', get: (a) => a?.commonsize?.laba_bersih_persen },
     { label: 'Aset Lancar', get: (a) => a?.commonsize?.aset_lancar_persen },
     { label: 'Aset Tetap', get: (a) => a?.commonsize?.aset_tetap_persen },
-    { label: 'Liabilitas Lancar', get: (a) => a?.commonsize?.liabilitas_lancar_persen },
+    { label: 'Liabilitas Lancar', get: (a) => a?.commonsize?.liabilitas_pendek_persen },
     { label: 'Liabilitas Jk. Panjang', get: (a) => a?.commonsize?.liabilitas_panjang_persen },
     { label: 'Ekuitas', get: (a) => a?.commonsize?.ekuitas_persen },
 ].map((r) => ({
@@ -311,7 +311,7 @@ export function AnalisisTrendCard({ data, perusahaanId, analisisId }) {
                     </div>
                     <NarasiBlock title="Rasio" text={data?.narasi_rasio_AI} />
 
-                    
+
 
                     {/* 3. Tren DuPont — tabel, narasi, 1 chart dual-axis */}
                     <TabelPeriode title="DuPont" rows={DUPONT_ROWS} periodeData={periodeData} />
@@ -332,9 +332,9 @@ export function AnalisisTrendCard({ data, perusahaanId, analisisId }) {
                             />
                         </div>
                     </div>
-                
+
                     <NarasiBlock title="DuPont" text={data?.narasi_dupont_AI} />
-                    
+
 
                     {/* 4. Tren Common-size — tabel gabung, narasi, 2 chart terpisah basis */}
                     <TabelPeriode title="Common-size" rows={COMMONSIZE_ROWS} periodeData={periodeData} />
@@ -361,7 +361,7 @@ export function AnalisisTrendCard({ data, perusahaanId, analisisId }) {
                         />
                     </div>
                     <NarasiBlock title="Common-size" text={data?.narasi_commonsize_AI} />
-                    
+
                 </>
             )}
         </div>

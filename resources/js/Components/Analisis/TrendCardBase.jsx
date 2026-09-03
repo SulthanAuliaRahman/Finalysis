@@ -41,7 +41,7 @@ export function TrendCardBase({
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
     const [userPrompt, setUserPrompt] = useState('');
 
-    const belumDianalisis = !narasi;
+    const sudahDianalisis = Boolean(narasi);
 
     function handleTrigger() {
         if (belumDianalisis) {
@@ -77,17 +77,16 @@ export function TrendCardBase({
                     </div>
                     <h3 className="font-semibold text-slate-900">{title}</h3>
                 </div>
-                <button
-                    onClick={handleTrigger}
-                    disabled={isLoading || dataKurang}
-                    className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isLoading
-                        ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        : <RefreshCw className="w-3.5 h-3.5" />
-                    }
-                    {belumDianalisis ? 'Mulai Analisis' : 'Regenerasi'}
-                </button>
+                 {sudahDianalisis && (
+                    <button
+                        onClick={() => setIsPromptModalOpen(true)}
+                        disabled={isLoading}
+                        className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                        Regenerasi
+                    </button>
+                )}
             </div>
 
             {/* Warning: ada gap data di tengah periode */}

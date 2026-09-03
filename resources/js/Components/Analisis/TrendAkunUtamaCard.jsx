@@ -11,13 +11,11 @@ const formatPercentStr = (val) => {
 
 // Row definitions
 const AKUN_UTAMA = [
-    { key: 'pendapatan',      growthKey: 'growth_pendapatan',      label: 'Pendapatan' },
-    { key: 'laba_kotor',      growthKey: 'growth_laba_kotor',      label: 'Laba Kotor' },
-    { key: 'laba_bersih',     growthKey: 'growth_laba_bersih',     label: 'Laba Bersih' },
-    { key: 'total_assets',    growthKey: 'growth_total_assets',    label: 'Total Aset' },
-    { key: 'kas_setara_kas',  growthKey: 'growth_kas_setara_kas',  label: 'Kas & Setara Kas' },
-    { key: 'total_equity',    growthKey: 'growth_total_equity',    label: 'Total Ekuitas' },
-    { key: 'net_cash_flow',   growthKey: 'growth_net_cash_flow',   label: 'Net Cash Flow' },
+    { key: 'total_asset',       growthKey: 'growth_total_asset',        label: 'Total Aset' },
+    { key: 'total_liabilities', growthKey: 'growth_total_liabilities',  label: 'Total Liabilitas' },
+    { key: 'total_equitas',     growthKey: 'growth_total_equitas',      label: 'Total Ekuitas' },
+    { key: 'total_pendapatan',  growthKey: 'growth_total_pendapatan',   label: 'Total Pendapatan' },
+    { key: 'total_beban',       growthKey: 'growth_total_beban',        label: 'Total Beban' },
 ];
 
 const ROWS = AKUN_UTAMA.map((akun) => ({

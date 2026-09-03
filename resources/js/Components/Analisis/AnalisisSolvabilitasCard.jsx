@@ -8,8 +8,9 @@ const parseVal = (val) => val ? parseFloat(val) : 0;
 export const AnalisisSolvabilitasCard = forwardRef(function AnalisisSolvabilitasCard({ data, neraca, perusahaanId, analisisId }, ref) {
 
     const chartData = [
-        { name: 'DER', value: parseVal(data?.debt_to_equity), benchmark: 2.0 },
-        { name: 'DAR', value: parseVal(data?.debt_to_asset), benchmark: 0.5 },
+        { name: 'DER', value: parseVal(data?.debt_to_equity)},
+        { name: 'DAR', value: parseVal(data?.debt_to_asset)},
+        { name: 'leverage', value: parseVal(data?.leverage_multiplier)},
     ];
 
     return (
@@ -27,16 +28,24 @@ export const AnalisisSolvabilitasCard = forwardRef(function AnalisisSolvabilitas
                     value: data?.debt_to_equity != null ? parseVal(data.debt_to_equity) : null,
                     suffix: 'x',
                     formula: 'Total Kewajiban / Total Ekuitas',
-                    breakdown: neraca ? `${formatNum(neraca.total_liabilities)} / ${formatNum(neraca.total_equity)}` : null,
+                    breakdown: neraca ? `${formatNum(neraca.total_liabilities)} / ${formatNum(neraca.total_equitas)}` : null,
                     rawResult: data?.debt_to_equity != null ? parseVal(data.debt_to_equity) : null
                 },
                 {
                     label: 'Debt to Asset (DAR)',
-                    value: data?.debt_to_asset != null ? parseVal(data.debt_to_asset): null,
+                    value: data?.debt_to_asset != null ? parseVal(data.debt_to_asset) : null,
                     suffix: 'x',
                     formula: 'Total Kewajiban / Total Aset',
-                    breakdown: neraca ? `${formatNum(neraca.total_liabilities)} / ${formatNum(neraca.total_assets)}` : null,
-                    rawResult: data?.debt_to_asset != null ? parseVal(data.debt_to_asset): null,
+                    breakdown: neraca ? `${formatNum(neraca.total_liabilities)} / ${formatNum(neraca.total_asset)}` : null,
+                    rawResult: data?.debt_to_asset != null ? parseVal(data.debt_to_asset) : null,
+                },
+                {
+                    label: 'Leverage Multiplier',
+                    value: data?.leverage_multiplier != null ? parseVal(data.leverage_multiplier) : null,
+                    suffix: 'x',
+                    formula: 'Total Aset / Total Ekuitas',
+                    breakdown: neraca ? `${formatNum(neraca.total_asset)} / ${formatNum(neraca.total_equitas)}` : null,
+                    rawResult: data?.leverage_multiplier != null ? parseVal(data.leverage_multiplier) : null,
                 },
             ]}
             narasi={data?.narasi_solvabilitas_AI}

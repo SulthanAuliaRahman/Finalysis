@@ -12,7 +12,6 @@ import { TrendAkunUtamaCard } from "@/Components/Analisis/TrendAkunUtamaCard";
 import { TrendRasioCard } from "@/Components/Analisis/TrendRasioCard";
 import { TrendDupontCard } from "@/Components/Analisis/TrendDupontCard";
 import { TrendCommonsizeCard } from "@/Components/Analisis/TrendCommonsizeCard";
-import { TrendArusKasCard } from "@/Components/Analisis/TrendArusKasCard";
 import { AIInsightCard } from "@/Components/Analisis/AIInsightCard";
 import { usePdfGenerator } from "@/Components/Analisis/PDF/usePdfGenerator";
 import { FileDown, Calculator, Loader2 } from "lucide-react";
@@ -31,7 +30,6 @@ export default function Detail({
     trendDupont,
     trendCommonsize,
     trendAkunUtama,
-    trendArusKas,
     neraca,
     labaRugi,
 }) {
@@ -69,7 +67,7 @@ export default function Detail({
             trendRasio,
             trendDupont,
             trendCommonsize,
-            trendArusKas,
+
             fileName,
         },
         chartRefs: {
@@ -94,16 +92,10 @@ export default function Detail({
         generatePdf();
     }
 
-    function handleHitungRasio() {
-        setIsCalculating(true);
-        router.post(
-            `/perusahaan/${perusahaan.id}/analisis/${analisis.id}/hitung-rasio`,
-            {},
-            {
-                preserveScroll: true,
-                onFinish: () => setIsCalculating(false),
-            }
-        );
+    function handleGenerateAnalisis() {
+        // TODO: belum diimplementasi — nanti panggil endpoint generate
+        // Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/generate')
+        alert('Fitur Generate Analisis masih dalam pengembangan.');
     }
 
     return (
@@ -115,28 +107,28 @@ export default function Detail({
                     </h2>
                     <div className="flex items-center gap-3 mt-1">
                         <p className="text-slate-500">Ringkasan dan insight keuangan perusahaan</p>
-                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
-                            Status: {analisis.status}
-                        </span>
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <button
-                        onClick={handleHitungRasio}
-                        disabled={isCalculating}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex-shrink-0 disabled:opacity-50"
-                    >
-                        {isCalculating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
-                        Hitung Data Finansial
-                    </button>
-                    <button
-                        onClick={handleDownloadPdf}
-                        disabled={isGenerating}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium flex-shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                        {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-                        {isGenerating ? 'Membuat PDF...' : 'Download PDF'}
-                    </button>
+                    {analisis.ai_summary_insight ? (
+                        <button
+                            onClick={handleHitungRasio}
+                            disabled={isCalculating}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex-shrink-0 disabled:opacity-50"
+                        >
+                            {isCalculating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
+                            Generate analisis
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleGenerateAnalisis}
+                            disabled={isCalculating}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex-shrink-0 disabled:opacity-50"
+                        >
+                            {isCalculating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
+                            Generate analisis
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -155,7 +147,10 @@ export default function Detail({
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Analisis Struktural</h3>
                 <div className="grid grid-cols-1 gap-6">
-                    <AnalisisDupontCard ref={refDupont} data={dupont} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} />
+                    <AnalisisDupontCard
+                        ref={refDupont}data={dupont}profitabilitas={profitabilitas} aktivitas={aktivitas} solvabilitas={solvabilitas}
+                        neraca={neraca}labaRugi={labaRugi}perusahaanId={perusahaan.id} analisisId={analisis.id}
+                    />
                     <AnalisisCommonsizeCard ref={refCommonsize} data={commonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} />
                 </div>
             </div>

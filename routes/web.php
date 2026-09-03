@@ -17,15 +17,6 @@ use App\Http\Controllers\DokumenController;
 use App\Http\Controllers\AnalisisController;
 use App\Http\Controllers\UserController;
 
-use App\Http\Controllers\ImportController;
-
-Route::get('dokumen/import-excel', [DokumenController::class, 'createImportExcel'])
-    ->name('dokumen.import-excel.create');
-
-Route::post('dokumen/import-excel', [ImportController::class, 'importExcel'])
-    ->name('dokumen.import-excel.store');
-
-
 //ROLE UMUM
 Route::middleware(['auth'])->group(function(){
 
@@ -38,7 +29,9 @@ Route::middleware(['auth'])->group(function(){
 
     // Rute Pengelolaan Analisis Perusahaan
     Route::get('/perusahaan/{perusahaan}/analisis', [AnalisisController::class, 'index'])->name('perusahaan.analisis.index');
-    Route::get('/perusahaan/{perusahaan}/analisis/{analisis}', [AnalisisController::class, 'analisis'])->name('perusahaan.analisis.detail');
+    Route::get('/perusahaan/{perusahaan}/analisis/{analisis}', [AnalisisController::class, 'detail'])->name('perusahaan.analisis.detail');
+    Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/generate', [AnalisisController::class, 'generateSeluruhAnalisis'])->name('perusahaan.analisis.generateSeluruhAnalisis');
+    Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/regenerasi', [AnalisisController::class, 'generateAnalisis'])->name('perusahaan.analisis.regenerasi');
 
     //Settings
     Route::prefix('settings')->name('settings.')->group(function () {
@@ -50,9 +43,6 @@ Route::middleware(['auth'])->group(function(){
 
     });
 
-    // Alur Proses Generate Analisis RAG
-    Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/regenerasi', [AnalisisController::class, 'regenerasi'])->name('perusahaan.analisis.regenerasi');
-    Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/hitung-rasio', [AnalisisController::class, 'hitungRasio'])->name('perusahaan.analisis.hitung-rasio');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

@@ -14,7 +14,7 @@ return new class extends Migration
         // Data Analisis ini tergantung dengan dokumen jika ada analisis periode Q3 2023 baru bisa ada Analisis Q3 2023
         Schema::create('analisis', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('dokumen_id')->unique()->constrained('dokumen')->cascadeOnDelete();
+            $table->foreignUuid('dokumen_id')->unique()->constrained('dokumen')->cascadeOnDelete();
             $table->text('ringkasan_laporan')->nullable();
             $table->timestamps();
         });
@@ -45,7 +45,7 @@ return new class extends Migration
             $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
             $table->decimal('debt_to_equity', 5, 2)->nullable();   // data = 0.65     (FE  65.43%)
             $table->decimal('debt_to_asset', 5, 2)->nullable();    // data = 0.43     (FE  43.21%)
-            $table->decimal('leverage_multiplier', 5, 2)->nullable();    // data = 0.43     (FE  43.21%)
+            $table->decimal('leverage_multiplier', 5, 2)->nullable();    // data = 0.43     (FE  8.21x)
             $table->text('narasi_solvabilitas_AI')->nullable();
 
             $table->timestamps();
@@ -76,8 +76,11 @@ return new class extends Migration
             $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
 
             // Common-size posisi keuangan
+            //sisi aset
             $table->decimal('aset_lancar_persen', 5, 2)->nullable();
             $table->decimal('aset_tetap_persen', 5, 2)->nullable();
+
+            //sisi liabilitas dan ekuitas
             $table->decimal('liabilitas_pendek_persen', 5, 2)->nullable();
             $table->decimal('liabilitas_panjang_persen', 5, 2)->nullable();
             $table->decimal('ekuitas_persen', 5, 2)->nullable();

@@ -269,6 +269,7 @@ class Dokumen extends Model
                     'quarter'      => $dokumenPeriode->quarter,
                     'bulan'        => $dokumenPeriode->bulan,
                     'commonsize'   => $analisisPeriode?->commonsize ? [
+                        'pendapatan_persen'         => $analisisPeriode->commonsize->pendapatan_persen,
                         'beban_persen'              => $analisisPeriode->commonsize->beban_persen,
                         'laba_bersih_persen'        => $analisisPeriode->commonsize->laba_bersih_persen,
                         'aset_lancar_persen'        => $analisisPeriode->commonsize->aset_lancar_persen,
@@ -307,25 +308,25 @@ class Dokumen extends Model
             $labaRugi = $dokumenPeriode->labaRugi;
 
             return [
-                'urutan'                    => $index + 1,
-                'analisis'                  => [
+                'urutan'           => $index + 1,
+                'analisis'         => [
                     'id'           => $dokumenPeriode->analisis?->id,
                     'periode_type' => $dokumenPeriode->periode_type,
                     'tahun'        => $dokumenPeriode->tahun,
                     'quarter'      => $dokumenPeriode->quarter,
                     'bulan'        => $dokumenPeriode->bulan,
                 ],
-                'total_pendapatan'          => $labaRugi?->total_pendapatan,
-                'laba_bersih_sesudah_pajak' => $labaRugi?->laba_bersih_sesudah_pajak,
-                'total_asset'               => $neraca?->total_asset,
-                'total_kas_setara_kas'      => $neraca?->total_kas_setara_kas,
-                'total_equitas'             => $neraca?->total_equitas,
+                'total_asset'       => $neraca?->total_asset,
+                'total_liabilities' => $neraca?->total_liabilities,
+                'total_equitas'     => $neraca?->total_equitas,
+                'total_pendapatan'  => $labaRugi?->total_pendapatan,
+                'total_beban'       => $labaRugi?->total_beban,
             ];
         })->all();
 
         foreach ($periodeData as $i => &$data) {
             $prev = $i > 0 ? $periodeData[$i - 1] : null;
-            $keys = ['total_pendapatan', 'laba_bersih_sesudah_pajak', 'total_asset', 'total_kas_setara_kas', 'total_equitas'];
+            $keys = ['total_pendapatan', 'total_beban', 'total_asset', 'total_liabilities', 'total_equitas'];
 
             foreach ($keys as $key) {
                 $growthKey = 'growth_' . $key;
@@ -336,6 +337,7 @@ class Dokumen extends Model
                 }
             }
         }
+        unset($data);
 
         return [
             'narasi_trend_akun_utama_AI' => $this->analisis?->trend?->narasi_trend_akun_utama_AI,

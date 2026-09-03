@@ -8,15 +8,25 @@ const parseStandard = (val) => val != null ? Number(val) : 0;
 const formatLabel = (val) => val != null ? val.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;
 
 const RASIO_ROWS = [
+    //Likuiditas
     { label: 'Current Ratio', get: (a) => parseLikuiditas(a?.likuiditas?.current_ratio),      suffix: 'x' },
-    { label: 'Quick Ratio',   get: (a) => parseLikuiditas(a?.likuiditas?.quick_ratio),        suffix: 'x' },
     { label: 'Cash Ratio',    get: (a) => parseLikuiditas(a?.likuiditas?.cash_ratio),         suffix: 'x' },
-    { label: 'NPM',           get: (a) => parseStandard(a?.profitabilitas?.net_profit_margin), suffix: '%' },
-    { label: 'ROA',           get: (a) => parseStandard(a?.profitabilitas?.ROA),               suffix: '%' },
+
+    // Profitabilitas
     { label: 'ROE',           get: (a) => parseStandard(a?.profitabilitas?.ROE),               suffix: '%' },
+    { label: 'ROA',           get: (a) => parseStandard(a?.profitabilitas?.ROA),               suffix: '%' },
+    { label: 'NPM',           get: (a) => parseStandard(a?.profitabilitas?.net_profit_margin), suffix: '%' },
+
+    // Solvabilitas
     { label: 'DER',           get: (a) => parseStandard(a?.solvabilitas?.debt_to_equity),      suffix: '%' },
     { label: 'DAR',           get: (a) => parseStandard(a?.solvabilitas?.debt_to_asset),       suffix: '%' },
+    { label: 'leverage',      get: (a) => parseStandard(a?.solvabilitas?.leverage_multiplier), suffix: 'x' },
+
+    // Aktivitas
     { label: 'TATO',          get: (a) => parseStandard(a?.aktivitas?.total_asset_turnover),   suffix: 'x' },
+    { label: 'WCT',          get: (a) => parseStandard(a?.aktivitas?.working_capital_turnover),   suffix: 'x' },
+    { label: 'FAT',          get: (a) => parseStandard(a?.aktivitas?.fixed_asset_turnover),   suffix: 'x' },
+
 ].map((rasio) => ({
     label: rasio.label,
     render: (p) => {
@@ -32,7 +42,6 @@ const RASIO_ROWS = [
 
 const LIKUIDITAS_LINES = [
     { key: 'cr',  label: 'Current Ratio', color: '#0ea5e9', get: (a) => parseLikuiditas(a?.likuiditas?.current_ratio) },
-    { key: 'qr',  label: 'Quick Ratio',   color: '#6366f1', get: (a) => parseLikuiditas(a?.likuiditas?.quick_ratio) },
     { key: 'csr', label: 'Cash Ratio',    color: '#14b8a6', get: (a) => parseLikuiditas(a?.likuiditas?.cash_ratio) },
 ];
 
@@ -45,10 +54,13 @@ const PROFITABILITAS_LINES = [
 const SOLVABILITAS_LINES = [
     { key: 'der', label: 'DER', color: '#ef4444', get: (a) => parseStandard(a?.solvabilitas?.debt_to_equity) },
     { key: 'dar', label: 'DAR', color: '#7f1d1d', get: (a) => parseStandard(a?.solvabilitas?.debt_to_asset) },
+    { key: 'leverage', label: 'DAR', color: '#6f3d1e', get: (a) => parseStandard(a?.solvabilitas?.leverage_multiplier) },
 ];
 
 const AKTIVITAS_LINES = [
     { key: 'tato', label: 'TATO', color: '#2563eb', get: (a) => parseStandard(a?.aktivitas?.total_asset_turnover) },
+    { key: 'wct', label: 'WCT', color: '#2563eb', get: (a) => parseStandard(a?.aktivitas?.working_capital_turnover) },
+    { key: 'fat', label: 'FAT', color: '#2563eb', get: (a) => parseStandard(a?.aktivitas?.fixed_asset_turnover) },
 ];
 
 export const TrendRasioCard = forwardRef(function TrendRasioCard({ data, perusahaanId, analisisId }, ref) {

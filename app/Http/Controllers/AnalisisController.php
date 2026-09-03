@@ -4,63 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Models\Perusahaan;
 use App\Models\Analisis;
-use App\Models\Neraca;
-use App\Models\LabaRugi;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Services\AnalysisFinancialService;
+use App\Services\CalculateFinancialService;
 use Inertia\Inertia;
 
 class AnalisisController extends Controller
 {
     public function index(Perusahaan $perusahaan)
     {
-
-        $dokumenList = $perusahaan->dokumen()
-            ->select('id', 'periode_type', 'tahun', 'quarter', 'bulan', 'updated_at')
-            ->get();
-
-        $periodeGroups = $dokumenList->groupBy(function ($dokumen) {
-            return $dokumen->periode_type . '|' . $dokumen->tahun . '|' . $dokumen->quarter . '|' . $dokumen->bulan;
-        });
-
-        $analisisList = $periodeGroups->map(function ($group) use ($perusahaan) {
-            $referensi = $group->first();
-
-            $analisis = Analisis::firstOrCreate(
-                [
-                    'perusahaan_id' => $perusahaan->id,
-                    'periode_type'  => $referensi->periode_type,
-                    'tahun'         => $referensi->tahun,
-                    'quarter'       => $referensi->quarter,
-                    'bulan'         => $referensi->bulan,
-                ],
-                [
-                    'status' => 'belum dihitung',
-                ]
-            );
-
-            $dokumenTerbaru = $group->max('updated_at');
-
-            if ($analisis->status === 'sudah dihitung' && $dokumenTerbaru->gt($analisis->updated_at)) {
-                $analisis->status = 'Terjadi Perubahan Data!';
-                $analisis->save();
-            }
-
-            return [
-                'id'             => $analisis->id,
-                'periode_label'  => $analisis->periode,
-                'periode_type'   => $analisis->periode_type,
-                'tahun'          => $analisis->tahun,
-                'jumlah_dokumen' => $group->count(),
-                'status'         => $analisis->status,
-            ];
-        })
-        ->sortBy([
-            ['tahun', 'desc'],
-            ['id', 'desc'],
-        ])
-        ->values();
+        $analisisList = Analisis::query()
+            ->whereHas('dokumen', fn ($q) => $q->where('perusahaan_id', $perusahaan->id))
+            ->with('dokumen')
+            ->latest()
+            ->get()
+            ->map(fn (Analisis $analisis) => [
+                'id'            => $analisis->id,
+                'tahun'         => $analisis->dokumen->tahun,
+                'periode_label' => $this->buildPeriodeLabel($analisis->dokumen),
+                'nama_file'     => $analisis->dokumen->nama_file,
+                'sudah_diringkas' => filled($analisis->ringkasan_laporan),
+            ]);
 
         return Inertia::render('Perusahaan/Analisis/Index', [
             'perusahaan'   => $perusahaan,
@@ -68,88 +32,107 @@ class AnalisisController extends Controller
         ]);
     }
 
-    // ke page analisis detail
-    public function analisis(Perusahaan $perusahaan, Analisis $analisis)
+    private function buildPeriodeLabel($dokumen): string
     {
-        $analisis->load('dokumen');
-        abort_if($analisis->dokumen->perusahaan_id !== $perusahaan->id, 404);
+        return match ($dokumen->periode_type) {
+            'annual'    => "Tahunan {$dokumen->tahun}",
+            'quarterly' => "Q{$dokumen->quarter} {$dokumen->tahun}",
+            'monthly'   => now()->setDate($dokumen->tahun, $dokumen->bulan, 1)->translatedFormat('F Y'),
+            default     => (string) $dokumen->tahun,
+        };
+    }
 
+    // ke page analisis detail
+    public function detail(Perusahaan $perusahaan, Analisis $analisis)
+    {
         $analisis->load([
+            'dokumen.neraca',
+            'dokumen.labaRugi',
             'likuiditas',
             'profitabilitas',
             'solvabilitas',
             'aktivitas',
             'dupont',
             'commonsize',
+            'trend',
         ]);
 
-        $dokumenIni = $analisis->dokumen;
+        $dokumen = $analisis->dokumen;
 
-        $dokumenPeriode = $perusahaan->dokumen()
-            ->where('periode_type', $dokumenIni->periode_type)
-            ->where('tahun', $dokumenIni->tahun)
-            ->where('quarter', $dokumenIni->quarter)
-            ->where('bulan', $dokumenIni->bulan)
-            ->select('id', 'nama_file', 'periode_type', 'tahun', 'quarter', 'bulan', 'status', 'created_at')
-            ->latest()
-            ->get();
+        if ($dokumen->perusahaan_id !== $perusahaan->id) {
+            abort(404);
+        }
 
-        // Neraca & Laba Rugi diambil langsung dari dokumen milik analisis ini
-        $neraca = $dokumenIni->neraca()->get();
-        $labaRugi = $dokumenIni->labaRugi()->get();
+        // dd($analisis->getDupontTrend());
 
         return Inertia::render('Perusahaan/Analisis/Detail', [
             'perusahaan'      => $perusahaan,
             'analisis'        => [
-                'id'                 => $analisis->id,
-                'periode_label'      => $dokumenIni->periode,
-                'status'             => $analisis->status,
-                'ai_summary_insight' => $analisis->executive_summary,
+                'id'                => $analisis->id,
+                'periode_label'     => $this->buildPeriodeLabel($dokumen),
+                'ai_summary_insight' => $analisis->ringkasan_laporan,
             ],
-            'dokumenPeriode'  => $dokumenPeriode,
+            'dokumenPeriode'  => [
+                'nama_file'    => $dokumen->nama_file,
+                'periode_type' => $dokumen->periode_type,
+                'tahun'        => $dokumen->tahun,
+                'quarter'      => $dokumen->quarter,
+                'bulan'        => $dokumen->bulan,
+            ],
             'likuiditas'      => $analisis->likuiditas,
             'profitabilitas'  => $analisis->profitabilitas,
             'solvabilitas'    => $analisis->solvabilitas,
             'aktivitas'       => $analisis->aktivitas,
             'dupont'          => $analisis->dupont,
             'commonsize'      => $analisis->commonsize,
-            'trendAkunUtama'  => $analisis->getAkunUtamaTrend(),
             'trendRasio'      => $analisis->getRasioTrend(),
             'trendDupont'     => $analisis->getDupontTrend(),
             'trendCommonsize' => $analisis->getCommonsizeTrend(),
-            'neraca'          => $neraca,
-            'labaRugi'        => $labaRugi,
+            'trendAkunUtama'  => $analisis->getAkunUtamaTrend(),
+            'narasi_trend'     =>$analisis->trend,
+            'neraca'          => $dokumen->neraca,
+            'labaRugi'        => $dokumen->labaRugi,
         ]);
     }
 
-    public function hitungRasio(Request $request, Perusahaan $perusahaan, Analisis $analisis, AnalysisFinancialService $analysisFinancialService)
-    {
-        $neraca = Neraca::whereHas('dokumen', function ($query) use ($perusahaan, $analisis) {
-            $query->where('perusahaan_id', $perusahaan->id)
-                ->where('periode_type', $analisis->periode_type)
-                ->where('tahun', $analisis->tahun)
-                ->where('quarter', $analisis->quarter)
-                ->where('bulan', $analisis->bulan);
-        })->latest()->first();
+    public function generateSeluruhAnalisis(Perusahaan $perusahaan,Analisis $analisis) {
+        // Cek apakah analisis sudah pernah di-generate
+        if ($analisis->ringkasan_laporan !== null) {
+            return back()->withErrors([
+                'message' => 'Analisis sudah di-generate.'
+            ]);
+        }
 
-        $labaRugi = LabaRugi::whereHas('dokumen', function ($query) use ($perusahaan, $analisis) {
-            $query->where('perusahaan_id', $perusahaan->id)
-                ->where('periode_type', $analisis->periode_type)
-                ->where('tahun', $analisis->tahun)
-                ->where('quarter', $analisis->quarter)
-                ->where('bulan', $analisis->bulan);
-        })->latest()->first();
+        $sections = [
+            'likuiditas','profitabilitas',
+            'solvabilitas','aktivitas',
+            'dupont','commonsize',
+            'trend_akun_utama','trend_rasio',
+            'trend_dupont','trend_commonsize',
+            'summary',
+        ];
 
-        $analysisFinancialService->validasiKelengkapanData($neraca, $labaRugi);
+        foreach ($sections as $section) {
+            $sectionRequest = new Request([
+                'section' => $section,
+                'user_prompt' => null, // untuk awal gak butuh
+            ]);
 
-        DB::transaction(function () use ($analisis, $neraca, $labaRugi, $analysisFinancialService) {
-            $analysisFinancialService->hitungSemuaRasio($analisis, $neraca, $labaRugi);
-        });
+            $this->generateAnalisis(
+                $sectionRequest,
+                $perusahaan,
+                $analisis,
+                new AnalysisFinancialService(new CalculateFinancialService())
+            );
+        }
 
-        return back();
+        return back()->with([
+            'success' => 'Seluruh analisis berhasil di-generate.'
+        ]);
     }
 
-    public function regenerasi(Request $request, Perusahaan $perusahaan, Analisis $analisis, AnalysisFinancialService $analysisFinancialService)
+    // untuk generate analisis per section (di pakai untuk regenearasi juga)
+    public function generateAnalisis(Request $request, Perusahaan $perusahaan, Analisis $analisis, AnalysisFinancialService $analysisFinancialService)
     {
         $request->validate([
             'section'     => 'required|string|in:likuiditas,profitabilitas,solvabilitas,aktivitas,dupont,commonsize,trend_akun_utama,trend_rasio,trend_dupont,trend_commonsize,trend_arus_kas,summary',
@@ -163,8 +146,7 @@ class AnalisisController extends Controller
             return back()->withErrors(['message' => 'Silahkan Hitung Data Finansial terlebih dahulu.']);
         }
 
-        DB::transaction(function () use ($section, $analisis, $analysisFinancialService, $userPrompt) {
-            switch ($section) {
+        switch ($section) {
                 case 'likuiditas':
                     $analysisFinancialService->prosesLikuiditas($analisis, $userPrompt);
                     break;
@@ -195,9 +177,9 @@ class AnalisisController extends Controller
                 case 'trend_commonsize':
                     $analysisFinancialService->prosesTrendCommonsize($analisis, $userPrompt);
                     break;
-                case 'trend_arus_kas':
-                    $analysisFinancialService->prosesTrendArusKas($analisis, $userPrompt);
-                    break;
+                // case 'trend_arus_kas':
+                //     $analysisFinancialService->prosesTrendArusKas($analisis, $userPrompt);
+                //     break;
                 case 'summary':
                     // minimal sudah ada AI Narasi untuk 4 rasio utama
                     $analisis->load([
@@ -223,8 +205,7 @@ class AnalisisController extends Controller
                     break;
             }
 
-        });
-
         return back();
+
     }
 }
