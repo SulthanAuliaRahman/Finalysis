@@ -8,13 +8,11 @@ import { cn } from "@/lib/utils";
 
 const ROLE_BADGES = {
     super_admin: "bg-red-50 text-red-700 border-red-200 hover:bg-red-50",
-    manager: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-50",
     user: "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-50",
 };
 
 const ROLE_LABELS = {
     super_admin: "Super Admin",
-    manager: "Manager",
     user: "User",
 };
 
@@ -96,7 +94,6 @@ export default function Index({ users, filters }) {
                         >
                             <option value="">Semua Peran</option>
                             <option value="super_admin">Super Admin</option>
-                            <option value="manager">Manager</option>
                             <option value="user">User</option>
                         </select>
                     )}

@@ -15,7 +15,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::insert(
+        User::insert([
             [
                 'perusahaan_id' => 1,
                 'name' => 'Super Admin',
@@ -23,17 +23,6 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
                 'password' => Hash::make('password123'),
                 'role' => 'super_admin',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'perusahaan_id' => 1,
-                'name' => 'Manager',
-                'email' => 'manager@gmail.com',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password123'),
-                'role' => 'manager',
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -49,6 +38,6 @@ class UserSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ]
-        );
+        ]);
     }
 }

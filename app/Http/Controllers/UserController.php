@@ -13,22 +13,15 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $auth_user = $request->user();
         $filters = $request->only([
             'search',
             'role',
             'status',
         ]);
         
-        $query = User::query()->with('perusahaan:id,nama');
-
-        if ($auth_user->role === 'manager') {
-            $query->where('perusahaan_id', $auth_user->perusahaan_id)
-                  ->where('role', 'user');
-            $filters['role'] = 'user';
-        }
-
-        $users = $query->filter($filters)
+        $users = User::query()
+            ->with('perusahaan:id,nama')
+            ->filter($filters)
             ->orderBy('name')
             ->paginate(10)
             ->withQueryString();
@@ -39,19 +32,11 @@ class UserController extends Controller
         ]);
     }
 
-    public function create(Request $request)
+    public function create()
     {
-        $auth_user = $request->user();
-        
-        if ($auth_user->role === 'manager') {
-            $perusahaanList = Perusahaan::select('id', 'nama')
-                ->where('id', $auth_user->perusahaan_id)
-                ->get();
-        } else {
-            $perusahaanList = Perusahaan::select('id', 'nama')
-                ->orderBy('nama')
-                ->get();
-        }
+        $perusahaanList = Perusahaan::select('id', 'nama')
+            ->orderBy('nama')
+            ->get();
 
         return Inertia::render('Users/Create', [
             'perusahaanList' => $perusahaanList,
@@ -68,23 +53,11 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.');
     }
 
-    public function edit(Request $request, User $user)
+    public function edit(User $user)
     {
-        $auth_user = $request->user();
-
-        // Authorization check
-        if ($auth_user->role === 'manager') {
-            if ($user->role !== 'user' || $user->perusahaan_id !== $auth_user->perusahaan_id) {
-                abort(403);
-            }
-            $perusahaanList = Perusahaan::select('id', 'nama')
-                ->where('id', $auth_user->perusahaan_id)
-                ->get();
-        } else {
-            $perusahaanList = Perusahaan::select('id', 'nama')
-                ->orderBy('nama')
-                ->get();
-        }
+        $perusahaanList = Perusahaan::select('id', 'nama')
+            ->orderBy('nama')
+            ->get();
 
         return Inertia::render('Users/Edit', [
             'user' => $user,
@@ -113,13 +86,6 @@ class UserController extends Controller
 
         if ($user->id === $auth_user->id) {
             return redirect()->route('users.index')->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
-        }
-
-        // Authorization check
-        if ($auth_user->role === 'manager') {
-            if ($user->role !== 'user' || $user->perusahaan_id !== $auth_user->perusahaan_id) {
-                abort(403);
-            }
         }
 
         $user->delete();

@@ -34,7 +34,7 @@ class DashboardController extends Controller
                 'recentDokumen' => $recent_dokumen,
             ]);
         } else {
-            // Company Dashboard Data (Manager or User)
+            // Company Dashboard Data (User)
             $perusahaanId = $user->perusahaan_id;
             $perusahaan = Perusahaan::find($perusahaanId);
 
@@ -48,7 +48,7 @@ class DashboardController extends Controller
             $recent_analisis = Analisis::where('perusahaan_id', $perusahaanId)->latest()->take(5)->get();
 
             return Inertia::render('Dashboard', [
-                'role' => $user->role, // manager or user
+                'role' => $user->role, // user
                 'perusahaan' => $perusahaan,
                 'stats' => $stats,
                 'recentDokumen' => $recent_dokumen,

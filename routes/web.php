@@ -69,15 +69,10 @@ Route::middleware(['auth','role:super_admin'])->group(function(){
     // CRUD Perusahaan
     Route::get('/perusahaan', [PerusahaanController::class, 'index'])->name('perusahaan.index');
     Route::get('/perusahaan/create', [PerusahaanController::class, 'create'])->name('perusahaan.create');
-    Route::delete('/perusahaan/{perusahaan}', [PerusahaanController::class, 'destroy'])->name('perusahaan.destroy');
-});
-
-Route::middleware(['auth','role:super_admin,manager'])->group(function(){
-    //EDIT PERUSAHAAN
+    Route::post('/perusahaan', [PerusahaanController::class, 'store'])->name('perusahaan.store');
     Route::get('/perusahaan/{perusahaan}/edit', [PerusahaanController::class, 'edit'])->name('perusahaan.edit');
     Route::put('/perusahaan/{perusahaan}', [PerusahaanController::class, 'update'])->name('perusahaan.update');
-    Route::post('/perusahaan', [PerusahaanController::class, 'store'])->name('perusahaan.store');
-
+    Route::delete('/perusahaan/{perusahaan}', [PerusahaanController::class, 'destroy'])->name('perusahaan.destroy');
 
     // CRUD USER
     Route::get('/users', [UserController::class, 'index'])->name('users.index');

@@ -12,7 +12,7 @@ class StoreUserRequest extends FormRequest
     public function authorize(): bool
     {
         $auth_user = $this->user();
-        return $auth_user && ($auth_user->role === 'super_admin' || $auth_user->role === 'manager');
+        return $auth_user && $auth_user->role === 'super_admin';
     }
 
     /**
@@ -22,23 +22,13 @@ class StoreUserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $auth_user = $this->user();
-
-        $rules = [
+        return [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
+            'role' => 'required|string|in:super_admin,user',
+            'perusahaan_id' => 'required|exists:perusahaan,id',
             'is_active' => 'required|boolean',
         ];
-
-        if ($auth_user && $auth_user->role === 'manager') {
-            $rules['role'] = 'required|string|in:user';
-            $rules['perusahaan_id'] = 'required|integer|in:' . $auth_user->perusahaan_id;
-        } else {
-            $rules['role'] = 'required|string|in:super_admin,manager,user';
-            $rules['perusahaan_id'] = 'required|exists:perusahaan,id';
-        }
-
-        return $rules;
     }
 }
