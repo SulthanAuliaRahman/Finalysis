@@ -23,7 +23,7 @@ class SummaryAgent extends BaseAgent
                 "kemungkinan dapat meliput Likuiditas, Profitabilitas, Solvabilitas, Aktivitas (TATO), Common-Size, DuPont, dan Trend.",
                 "Jika kekurangan data analisis tidak perlu kamu membuat inferensi (misal hanya ada narasi profitabilitas ya sudah berarti dari profitabilitas saja)",
                 "Dari Setiap Analisis,identifikasi Seberapa penting analisis tersebut untuk Perusahaan terkait ",
-                "Apabila terdapat hasil analisis yang bertentangan atau data yang tidak wajar, verifikasi dokumen asli nya dan catat temuan tersebut",
+                "Apabila terdapat hasil analisis yang bertentangan antar section (misal satu narasi bilang kondisi membaik, narasi lain bilang memburuk untuk periode yang sama), catat pertentangan itu secara eksplisit sebagai temuan — kamu TIDAK punya akses ke laporan keuangan mentah untuk verifikasi ulang, jadi cukup laporkan pertentangannya apa adanya berdasarkan isi narasi yang tersedia, jangan menebak mana yang benar.",
                 "Identifikasi kekuatan utama perusahaan.",
                 "Identifikasi kelemahan atau risiko yang paling signifikan.",
                 "Identifikasi peluang yang dapat dimanfaatkan perusahaan.",
