@@ -7,6 +7,7 @@ use App\Models\Analisis;
 use Illuminate\Http\Request;
 use App\Services\AnalysisFinancialService;
 use App\Services\CalculateFinancialService;
+use App\Jobs\GenerateAnalisisJob;
 use Inertia\Inertia;
 
 class AnalisisController extends Controller
@@ -67,10 +68,16 @@ class AnalisisController extends Controller
 
         return Inertia::render('Perusahaan/Analisis/Detail', [
             'perusahaan'      => $perusahaan,
-            'analisis'        => [
-                'id'                => $analisis->id,
-                'periode_label'     => $this->buildPeriodeLabel($dokumen),
+            'analisis'   => [
+                'id'                 => $analisis->id,
+                'periode_label'      => $this->buildPeriodeLabel($dokumen),
                 'ai_summary_insight' => $analisis->ringkasan_laporan,
+                'status_generate'    => $analisis->status_generate,
+                'progress_current'   => $analisis->progress_current,
+                'progress_total'     => $analisis->progress_total,
+                'error_message'      => $analisis->error_message,
+                'section_status'     => $analisis->section_status,
+                'semua_selesai'      => $analisis->semuaSelesai(),
             ],
             'dokumenPeriode'  => [
                 'nama_file'    => $dokumen->nama_file,
@@ -95,117 +102,51 @@ class AnalisisController extends Controller
         ]);
     }
 
-    public function generateSeluruhAnalisis(Perusahaan $perusahaan,Analisis $analisis) {
-        // Cek apakah analisis sudah pernah di-generate
-        if ($analisis->ringkasan_laporan !== null) {
-            return back()->withErrors([
-                'message' => 'Analisis sudah di-generate.'
-            ]);
+    // dipanggil tombol "Generate analisis" di Detail.jsx -> dispatch job, TIDAK menunggu AI
+    public function generateSeluruhAnalisis(Perusahaan $perusahaan, Analisis $analisis)
+    {
+        if ($analisis->status_generate === 'processing') {
+            return back()->withErrors(['message' => 'Analisis sedang diproses, mohon tunggu.']);
         }
 
-        $sections = [
-            'likuiditas','profitabilitas',
-            'solvabilitas','aktivitas',
-            'dupont','commonsize',
-            'trend_akun_utama','trend_rasio',
-            'trend_dupont','trend_commonsize',
-            'summary',
-        ];
-
-        foreach ($sections as $section) {
-            $sectionRequest = new Request([
-                'section' => $section,
-                'user_prompt' => null, // untuk awal gak butuh
-            ]);
-
-            $this->generateAnalisis(
-                $sectionRequest,
-                $perusahaan,
-                $analisis,
-                new AnalysisFinancialService(new CalculateFinancialService())
-            );
+        if ($analisis->semuaSelesai()) {
+            return back()->withErrors(['message' => 'Analisis sudah lengkap di-generate.']);
         }
 
-        return back()->with([
-            'success' => 'Seluruh analisis berhasil di-generate.'
+        GenerateAnalisisJob::dispatch($analisis);
+
+        return back()->with(['success' => 'Proses generate analisis dimulai di background.']);
+    }
+
+    // dipanggil React tiap 2 detik selama status_generate == processing
+    public function statusGenerate(Perusahaan $perusahaan, Analisis $analisis)
+    {
+        return response()->json([
+            'status_generate'    => $analisis->status_generate,
+            'progress_current'   => $analisis->progress_current,
+            'progress_total'     => $analisis->progress_total,
+            'error_message'      => $analisis->error_message,
+            'ai_summary_insight' => $analisis->ringkasan_laporan,
+            'section_status'     => $analisis->section_status,
+            'semua_selesai'      => $analisis->semuaSelesai(),
         ]);
     }
 
-    // untuk generate analisis per section (di pakai untuk regenearasi juga)
-    public function generateAnalisis(Request $request, Perusahaan $perusahaan, Analisis $analisis, AnalysisFinancialService $analysisFinancialService)
+    // regenerasi 1 section, HANYA boleh kalau proses generate awal sudah tuntas
+    public function generateAnalisis(Request $request, Perusahaan $perusahaan, Analisis $analisis)
     {
         $request->validate([
-            'section'     => 'required|string|in:likuiditas,profitabilitas,solvabilitas,aktivitas,dupont,commonsize,trend_akun_utama,trend_rasio,trend_dupont,trend_commonsize,trend_arus_kas,summary',
+            'section'     => 'required|string|in:'.implode(',', Analisis::SECTIONS),
             'user_prompt' => 'nullable|string|max:1000',
         ]);
 
-        $section    = $request->input('section');
-        $userPrompt = $request->input('user_prompt');
 
-        if (!in_array($analisis->status, ['sudah dihitung'])) {
-            return back()->withErrors(['message' => 'Silahkan Hitung Data Finansial terlebih dahulu.']);
+        if (!$analisis->semuaSelesai()) {
+            return back()->withErrors(['message' => 'Selesaikan generate seluruh analisis terlebih dahulu sebelum regenerasi per section.']);
         }
 
-        switch ($section) {
-                case 'likuiditas':
-                    $analysisFinancialService->prosesLikuiditas($analisis, $userPrompt);
-                    break;
-                case 'profitabilitas':
-                    $analysisFinancialService->prosesProfitabilitas($analisis, $userPrompt);
-                    break;
-                case 'solvabilitas':
-                    $analysisFinancialService->prosesSolvabilitas($analisis, $userPrompt);
-                    break;
-                case 'aktivitas':
-                    $analysisFinancialService->prosesAktivitas($analisis, $userPrompt);
-                    break;
-                case 'dupont':
-                    $analysisFinancialService->prosesDupont($analisis, $userPrompt);
-                    break;
-                case 'commonsize':
-                    $analysisFinancialService->prosesCommonsize($analisis, $userPrompt);
-                    break;
-                case 'trend_akun_utama':
-                    $analysisFinancialService->prosesTrendAkunUtama($analisis, $userPrompt);
-                    break;
-                case 'trend_rasio':
-                    $analysisFinancialService->prosesTrendRasio($analisis, $userPrompt);
-                    break;
-                case 'trend_dupont':
-                    $analysisFinancialService->prosesTrendDupont($analisis, $userPrompt);
-                    break;
-                case 'trend_commonsize':
-                    $analysisFinancialService->prosesTrendCommonsize($analisis, $userPrompt);
-                    break;
-                // case 'trend_arus_kas':
-                //     $analysisFinancialService->prosesTrendArusKas($analisis, $userPrompt);
-                //     break;
-                case 'summary':
-                    // minimal sudah ada AI Narasi untuk 4 rasio utama
-                    $analisis->load([
-                        'likuiditas',
-                        'profitabilitas',
-                        'solvabilitas',
-                        'aktivitas',
-                    ]);
+        GenerateAnalisisJob::dispatch($analisis, $request->input('section'), $request->input('user_prompt'));
 
-                    $hasNarasi =
-                        filled($analisis->likuiditas?->narasi_likuiditas_AI) &&
-                        filled($analisis->profitabilitas?->narasi_profitabilitas_AI) &&
-                        filled($analisis->solvabilitas?->narasi_solvabilitas_AI) &&
-                        filled($analisis->aktivitas?->narasi_aktivitas_AI);
-
-                    if (!$hasNarasi) {
-                        return back()->withErrors([
-                            'message' => 'Minimal Komponen Rasio Di lakukan analisis AI Sebelum Mendapatkan summary !'
-                        ]);
-                    }
-
-                    $analysisFinancialService->prosesSummaryAnalisis($analisis, $userPrompt);
-                    break;
-            }
-
-        return back();
-
+        return back()->with(['success' => 'Regenerasi section dimulai.']);
     }
 }

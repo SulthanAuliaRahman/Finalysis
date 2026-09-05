@@ -1,33 +1,32 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
-import { Sparkles, RefreshCw, Loader2, X } from 'lucide-react';
+import { Sparkles, RefreshCw, Loader2, X, AlertCircle } from 'lucide-react';
 
-export function AIInsightCard({ narasi, perusahaanId, analisisId }) {
-    const [isLoading, setIsLoading] = useState(false);
+export function AIInsightCard({
+    narasi,
+    perusahaanId,
+    analisisId,
+    sectionStatus,
+    canRegenerasi,
+    onRegenerasiStart,
+}) {
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
     const [userPrompt, setUserPrompt] = useState('');
 
+    const status = sectionStatus?.status ?? 'idle';
+    const isLoading = status === 'processing';
     const sudahDianalisis = Boolean(narasi);
 
-    function handleTrigger() {
-        if (belumDianalisis) {
-            submitAnalisis();
-        } else {
-            setIsPromptModalOpen(true);
-        }
-    }
-
     function submitAnalisis(customPrompt = '') {
-        setIsLoading(true);
         router.post(
             `/perusahaan/${perusahaanId}/analisis/${analisisId}/regenerasi`,
             { section: 'summary', user_prompt: customPrompt },
             {
                 preserveScroll: true,
-                onFinish: () => {
-                    setIsLoading(false);
+                onSuccess: () => {
                     setIsPromptModalOpen(false);
                     setUserPrompt('');
+                    onRegenerasiStart?.();
                 },
             }
         );
@@ -42,7 +41,7 @@ export function AIInsightCard({ narasi, perusahaanId, analisisId }) {
                     </div>
                     <h3 className="font-semibold text-slate-900">Summary & Insight</h3>
                 </div>
-                {sudahDianalisis && (
+                {sudahDianalisis && canRegenerasi && (
                     <button
                         onClick={() => setIsPromptModalOpen(true)}
                         disabled={isLoading}
@@ -54,15 +53,31 @@ export function AIInsightCard({ narasi, perusahaanId, analisisId }) {
                 )}
             </div>
 
-            {sudahDianalisis ? (
+            {isLoading ? (
+                <div className="bg-white/70 border border-blue-100 rounded-lg p-5 flex items-center gap-2 text-blue-600">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">Sedang membuat ringkasan AI...</span>
+                </div>
+            ) : status === 'gagal' ? (
+                <div className="bg-red-50/70 border border-red-200 rounded-lg p-5 text-red-700 flex gap-2 items-start">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <div>
+                        <p className="text-sm font-medium mb-0.5">Gagal membuat ringkasan</p>
+                        {sectionStatus?.error_message && (
+                            <p className="text-xs text-red-600">{sectionStatus.error_message}</p>
+                        )}
+                    </div>
+                </div>
+            ) : sudahDianalisis ? (
                 <div className="bg-white/70 border border-blue-100 rounded-lg p-5">
                     <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{narasi}</p>
                 </div>
-
             ) : (
                 <div className="bg-white/60 border border-dashed border-blue-200 rounded-lg p-5 text-center">
                     <p className="text-sm text-slate-400 italic">
-                        Ringkasan akan tersedia setelah terdapat analisis.
+                        {canRegenerasi
+                            ? 'Ringkasan belum tersedia untuk periode ini.'
+                            : 'Ringkasan akan tersedia setelah seluruh section (selain tren) selesai di-generate.'}
                     </p>
                 </div>
             )}

@@ -2,14 +2,11 @@ import { BarChart2 } from 'lucide-react';
 import { TrendCardBase } from './TrendCardBase';
 import { formatNum, GrowthBadge, TabelPeriode } from './trendHelpers';
 
-// Helper baru untuk membulatkan desimal persentase
 const formatPercentStr = (val) => {
     if (val === null || val === undefined) return null;
-    // Ubah string/angka menjadi number, batasi 2 desimal
     return Number(val).toFixed(2);
 };
 
-// Row definitions
 const AKUN_UTAMA = [
     { key: 'total_asset',       growthKey: 'growth_total_asset',        label: 'Total Aset' },
     { key: 'total_liabilities', growthKey: 'growth_total_liabilities',  label: 'Total Liabilitas' },
@@ -28,10 +25,13 @@ const ROWS = AKUN_UTAMA.map((akun) => ({
     ),
 }));
 
-export function TrendAkunUtamaCard({ data, perusahaanId, analisisId }) {
+export function TrendAkunUtamaCard({
+    data, perusahaanId, analisisId,
+    sectionStatus, canRegenerasi, onRegenerasiStart, // BARU
+}) {
     const periodeData = data?.periode_data ?? [];
     const dataKurang = periodeData.length < 2;
-    const hasGap      = data?.has_gap ?? false;
+    const hasGap = data?.has_gap ?? false;
 
     return (
         <TrendCardBase
@@ -46,12 +46,11 @@ export function TrendAkunUtamaCard({ data, perusahaanId, analisisId }) {
             dataKurang={dataKurang}
             perusahaanId={perusahaanId}
             analisisId={analisisId}
+            sectionStatus={sectionStatus}
+            canRegenerasi={canRegenerasi}
+            onRegenerasiStart={onRegenerasiStart}
         >
-            <TabelPeriode
-                title="Perbandingan Akun Utama"
-                rows={ROWS}
-                periodeData={periodeData}
-            />
+            <TabelPeriode title="Perbandingan Akun Utama" rows={ROWS} periodeData={periodeData} />
         </TrendCardBase>
     );
 }

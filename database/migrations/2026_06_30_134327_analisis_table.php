@@ -15,6 +15,13 @@ return new class extends Migration
         Schema::create('analisis', function (Blueprint $table) {
             $table->id();
             $table->foreignUuid('dokumen_id')->unique()->constrained('dokumen')->cascadeOnDelete();
+
+            $table->enum('status_generate', ['idle', 'processing', 'selesai', 'gagal'])->default('idle')->after('status');// untuk asycronus generate analisis
+            $table->unsignedTinyInteger('progress_current')->default(0)->after('status_generate');
+            $table->unsignedTinyInteger('progress_total')->default(0)->after('progress_current');
+            $table->text('error_message')->nullable();
+            $table->json('section_status')->nullable();
+
             $table->text('ringkasan_laporan')->nullable();
             $table->timestamps();
         });

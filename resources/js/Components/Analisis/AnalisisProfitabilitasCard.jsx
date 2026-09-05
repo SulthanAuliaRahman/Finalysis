@@ -13,7 +13,7 @@ const getRawDecimal = (val) => {
     return Number(val / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 };
 
-export const AnalisisProfitabilitasCard = forwardRef(function AnalisisProfitabilitasCard({ data, neraca, labaRugi, perusahaanId, analisisId, sektor }, ref) {
+export const AnalisisProfitabilitasCard = forwardRef(function AnalisisProfitabilitasCard({ data, neraca, labaRugi,  perusahaanId, analisisId, sectionStatus, canRegenerasi, onRegenerasiStart }, ref) {
 
     const chartData = [
         { name: 'NPM', value: parseVal(data?.net_profit_margin)},
@@ -60,6 +60,9 @@ export const AnalisisProfitabilitasCard = forwardRef(function AnalisisProfitabil
             section="profitabilitas"
             perusahaanId={perusahaanId}
             analisisId={analisisId}
+            sectionStatus={sectionStatus}
+            canRegenerasi={canRegenerasi}
+            onRegenerasiStart={onRegenerasiStart}
         />
     );
 });

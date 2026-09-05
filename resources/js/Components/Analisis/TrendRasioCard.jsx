@@ -63,7 +63,7 @@ const AKTIVITAS_LINES = [
     { key: 'fat', label: 'FAT', color: '#2563eb', get: (a) => parseStandard(a?.aktivitas?.fixed_asset_turnover) },
 ];
 
-export const TrendRasioCard = forwardRef(function TrendRasioCard({ data, perusahaanId, analisisId }, ref) {
+export const TrendRasioCard = forwardRef(function TrendRasioCard({ data, perusahaanId, analisisId,sectionStatus, canRegenerasi, onRegenerasiStart, }, ref) {
     const periodeData = data?.periode_data ?? [];
     const dataKurang  = periodeData.length < 2;
     const hasGap      = data?.has_gap ?? false;
@@ -81,6 +81,9 @@ export const TrendRasioCard = forwardRef(function TrendRasioCard({ data, perusah
             dataKurang={dataKurang}
             perusahaanId={perusahaanId}
             analisisId={analisisId}
+            sectionStatus={sectionStatus}
+            canRegenerasi={canRegenerasi}
+            onRegenerasiStart={onRegenerasiStart}
         >
             <TabelPeriode
                 title="Ringkasan Rasio"
