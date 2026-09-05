@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateAiConfigurationRequest extends FormRequest
+class StoreAiConfigurationRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,12 +23,12 @@ class UpdateAiConfigurationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'         => ['sometimes', 'nullable', 'string', 'max:100'],
+            'name'         => ['required', 'string', 'max:100'],
             'llm_provider' => ['required', 'string', 'in:openai,gemini,anthropic,ollama'],
             'llm_model'    => ['required', 'string', 'max:100'],
             'base_url'     => ['nullable', 'required_if:llm_provider,ollama', 'string', 'max:255'],
             'llm_api_key'  => ['nullable', 'string'],
-            'priority'     => ['sometimes', 'nullable', 'integer', 'min:1', 'max:99'],
+            'priority'     => ['required', 'integer', 'min:1', 'max:99'],
         ];
     }
 }
