@@ -30,8 +30,12 @@ Route::middleware(['auth'])->group(function(){
     // Rute Pengelolaan Analisis Perusahaan
     Route::get('/perusahaan/{perusahaan}/analisis', [AnalisisController::class, 'index'])->name('perusahaan.analisis.index');
     Route::get('/perusahaan/{perusahaan}/analisis/{analisis}', [AnalisisController::class, 'detail'])->name('perusahaan.analisis.detail');
-    Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/generate', [AnalisisController::class, 'generateSeluruhAnalisis'])->name('perusahaan.analisis.generateSeluruhAnalisis');
+
+    Route::get('/perusahaan/{perusahaan}/analisis/{analisis}/status', [AnalisisController::class, 'statusGenerate'])->name('analisis.status');
+
     Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/regenerasi', [AnalisisController::class, 'generateAnalisis'])->name('perusahaan.analisis.regenerasi');
+    Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/generate', [AnalisisController::class, 'generateSeluruhAnalisis'])->name('analisis.generate');
+    Route::get('/perusahaan/{perusahaan}/analisis/{analisis}/status', [AnalisisController::class, 'statusGenerate'])->name('analisis.status');
 
     //Settings
     Route::prefix('settings')->name('settings.')->group(function () {

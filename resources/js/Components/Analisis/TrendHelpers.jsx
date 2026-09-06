@@ -12,8 +12,6 @@ import {
 
 // Formatters
 export const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
-
-// decimal(12,6) Laravel dikembalikan sebagai string selalu konversi ke Number
 export const toNum = (val) => val === null || val === undefined ? null : Number(val);
 
 // Label periode
@@ -33,7 +31,6 @@ export function GrowthBadge({ value }) {
 
     if (!hasValue) return <span className="text-slate-300 text-[11px]">—</span>;
 
-    // FIX: Membatasi persentase menjadi 2 angka di belakang koma dengan format id-ID
     const formattedValue = Number(Math.abs(value)).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     return (
