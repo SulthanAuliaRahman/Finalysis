@@ -303,7 +303,7 @@ class AnalysisFinancialService
         $Prompt  = $this->konteksDasarPrompt($dokumen);
         $Prompt .= "=== DATA RASIO SOLVABILITAS ===\n";
         $Prompt .= "Debt to Equity Ratio (DER): " . $data->debt_to_equity . "x\n";
-        $Prompt .= "Debt to Asset Ratio (DAR): " . $data->debt_to_asset . "x\n";
+        $Prompt .= "Debt to Asset Ratio (DAR): " . $data->debt_to_asset . "%\n";   // <- ganti x jadi %
         $Prompt .= "Financial Leverage: " . $data->leverage_multiplier . "x\n";
 
         $Prompt .= $this->blokDetailAkun($dokumen, ['liabilitas_jangka_pendek'], 'RINCIAN AKUN LIABILITAS JANGKA PENDEK');
@@ -388,7 +388,7 @@ class AnalysisFinancialService
         if ($der !== null || $dar !== null) {
             $Prompt .= "=== DATA RASIO SOLVABILITAS (konteks pendukung) ===\n";
             $Prompt .= "Debt to Equity Ratio (DER): " . $der . "x\n";
-            $Prompt .= "Debt to Asset Ratio (DAR): " . $dar . "x\n";
+            $Prompt .= "Debt to Asset Ratio (DAR): " . $dar . "%\n";   // <- ganti x jadi %
         }
 
         $Prompt .= "\nBerikan narasi analisis DuPont berdasarkan data di atas.\n";
@@ -433,7 +433,7 @@ class AnalysisFinancialService
 
         if ($solvabilitas) {
             $Prompt .= "=== DATA RASIO SOLVABILITAS (konteks pendukung) ===\n";
-            $Prompt .= "Debt to Asset Ratio (DAR): " . $solvabilitas->debt_to_asset . "x\n";
+            $Prompt .= "Debt to Asset Ratio (DAR): " . $solvabilitas->debt_to_asset . "%\n";   // <- ganti x jadi %
         }
 
         $Prompt .= "\nBerikan narasi analisis common-size berdasarkan data di atas.\n";
@@ -464,7 +464,7 @@ class AnalysisFinancialService
 
         $Prompt  = $this->blokInfoPerusahaan($analisis->dokumen->perusahaan);
         $Prompt .= "=== TREN AKUN UTAMA ===\n";
-        $Prompt .= "Berikan narasi analisis tren akun utama (Pendapatan, Laba Bersih, Total Aset, Kas Setara Kas, Total Ekuitas) lintas periode berikut: \n";
+        $Prompt .= "Berikan narasi analisis tren akun utama (Total Aset, Total Liabilitas, Total Ekuitas, Total Pendapatan, Total Beban) lintas periode berikut: \n";
         $Prompt .= "STATUS DATA: " . count($periodeData) . " periode tersedia dalam scope";
         $Prompt .= $trendData['has_gap']
             ? ", namun ada periode dengan data tidak lengkap — fokuskan narasi hanya pada periode yang datanya tersedia.\n"
@@ -473,11 +473,11 @@ class AnalysisFinancialService
         foreach ($periodeData as $titik) {
             $label = $this->labelPeriodeArray($titik['analisis']);
             $Prompt .= "--- {$label} ---\n";
-            $Prompt .= "Pendapatan: " . number_format($titik['total_pendapatan'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_total_pendapatan'] !== null ? round($titik['growth_total_pendapatan'], 2) . '%' : '-') . ")\n";
-            $Prompt .= "Laba Bersih: " . number_format($titik['laba_bersih_sesudah_pajak'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_laba_bersih_sesudah_pajak'] !== null ? round($titik['growth_laba_bersih_sesudah_pajak'], 2) . '%' : '-') . ")\n";
             $Prompt .= "Total Aset: " . number_format($titik['total_asset'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_total_asset'] !== null ? round($titik['growth_total_asset'], 2) . '%' : '-') . ")\n";
-            $Prompt .= "Kas Setara Kas: " . number_format($titik['total_kas_setara_kas'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_total_kas_setara_kas'] !== null ? round($titik['growth_total_kas_setara_kas'], 2) . '%' : '-') . ")\n";
+            $Prompt .= "Total Liabilitas: " . number_format($titik['total_liabilities'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_total_liabilities'] !== null ? round($titik['growth_total_liabilities'], 2) . '%' : '-') . ")\n";
             $Prompt .= "Total Ekuitas: " . number_format($titik['total_equitas'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_total_equitas'] !== null ? round($titik['growth_total_equitas'], 2) . '%' : '-') . ")\n";
+            $Prompt .= "Total Pendapatan: " . number_format($titik['total_pendapatan'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_total_pendapatan'] !== null ? round($titik['growth_total_pendapatan'], 2) . '%' : '-') . ")\n";
+            $Prompt .= "Total Beban: " . number_format($titik['total_beban'] ?? 0, 0, ',', '.') . " (Δ " . ($titik['growth_total_beban'] !== null ? round($titik['growth_total_beban'], 2) . '%' : '-') . ")\n";
         }
 
         $this->tambahkanKonteksNarasiSebelumnya($Prompt, $trendData['narasi_trend_akun_utama_AI']);
@@ -515,7 +515,7 @@ class AnalysisFinancialService
             $Prompt .= "--- {$label} ---\n";
             $Prompt .= "CR: " . ($a['likuiditas']['current_ratio'] ?? '-') . "%, CSR: " . ($a['likuiditas']['cash_ratio'] ?? '-') . "%\n";
             $Prompt .= "NPM: " . ($a['profitabilitas']['net_profit_margin'] ?? '-') . "%, ROA: " . ($a['profitabilitas']['ROA'] ?? '-') . "%, ROE: " . ($a['profitabilitas']['ROE'] ?? '-') . "%\n";
-            $Prompt .= "DER: " . ($a['solvabilitas']['debt_to_equity'] ?? '-') . "%, DAR: " . ($a['solvabilitas']['debt_to_asset'] ?? '-') . "%, Financial Leverage: " . ($a['solvabilitas']['leverage_multiplier'] ?? '-') . "x\n";
+            $Prompt .= "DER: " . ($a['solvabilitas']['debt_to_equity'] ?? '-') . "x, DAR: " . ($a['solvabilitas']['debt_to_asset'] ?? '-') . "%, Financial Leverage: " . ($a['solvabilitas']['leverage_multiplier'] ?? '-') . "x\n";
             $Prompt .= "TATO: " . ($a['aktivitas']['total_asset_turnover'] ?? '-') . "x, WCT: " . ($a['aktivitas']['working_capital_turnover'] ?? '-') . "x, FAT: " . ($a['aktivitas']['fixed_asset_turnover'] ?? '-') . "x\n";
         }
 

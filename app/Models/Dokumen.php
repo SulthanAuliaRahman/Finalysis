@@ -135,10 +135,10 @@ class Dokumen extends Model
         $hasGap = $dokumenList->contains(function ($dokumenPeriode) {
             $analisisPeriode = $dokumenPeriode->analisis;
             return $analisisPeriode === null
-                || ($analisisPeriode->likuiditas === null
-                    && $analisisPeriode->profitabilitas === null
-                    && $analisisPeriode->solvabilitas === null
-                    && $analisisPeriode->aktivitas === null);
+                || $analisisPeriode->likuiditas === null
+                || $analisisPeriode->profitabilitas === null
+                || $analisisPeriode->solvabilitas === null
+                || $analisisPeriode->aktivitas === null;
         });
 
         $periodeData = $dokumenList->map(function ($dokumenPeriode, $index) {

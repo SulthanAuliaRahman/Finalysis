@@ -194,7 +194,7 @@ class CalculateFinancialService
             ['analisis_id' => $analisis->id],
             [
                 'debt_to_equity'      => round($dte, 2),
-                'debt_to_asset'       => round($dta, 2),
+                'debt_to_asset'       => round($dta * 100 , 2),
                 'leverage_multiplier' => round($leverage, 2),
             ]
         );
