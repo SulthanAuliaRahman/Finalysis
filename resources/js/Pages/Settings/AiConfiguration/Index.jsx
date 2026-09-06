@@ -1,68 +1,50 @@
+import { useState } from "react";
 import { Link, router } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
 import {
 	ArrowLeft,
 	BrainCircuit,
-	Plus,
-	Edit3,
-	Trash2,
-	Power,
-	RotateCcw,
-	AlertTriangle,
 	CheckCircle2,
-	Clock,
-	Server,
-	KeyRound,
-	ArrowUpDown,
+	Edit3,
+	Plus,
+	Power,
+	Trash2,
+	Info,
 } from "lucide-react";
-import { useState } from "react";
 
-function StatusBadge({ config }) {
-	if (config.is_active && !config.is_currently_limited) {
+function StatusBadge({ isActive }) {
+	if (isActive) {
 		return (
-			<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold uppercase tracking-wide">
-				<CheckCircle2 className="w-3 h-3" /> Aktif
-			</span>
-		);
-	}
-
-	if (config.is_currently_limited) {
-		return (
-			<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 text-[11px] font-semibold uppercase tracking-wide">
-				<AlertTriangle className="w-3 h-3" /> Rate Limited
+			<span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+				<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+				Aktif
 			</span>
 		);
 	}
 
 	return (
-		<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-500 text-[11px] font-semibold uppercase tracking-wide">
-			<Clock className="w-3 h-3" /> Standby
+		<span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+			Standby
 		</span>
 	);
 }
 
 function ProviderBadge({ provider }) {
-	const colorMap = {
-		gemini: "bg-blue-50 text-blue-700 border-blue-200",
-		openai: "bg-emerald-50 text-emerald-700 border-emerald-200",
-		anthropic: "bg-amber-50 text-amber-700 border-amber-200",
-		ollama: "bg-purple-50 text-purple-700 border-purple-200",
+	const badges = {
+		gemini: { label: "Google Gemini", className: "bg-blue-50 text-blue-700 border-blue-200" },
+		openai: { label: "OpenAI", className: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+		anthropic: { label: "Anthropic", className: "bg-amber-50 text-amber-700 border-amber-200" },
+		ollama: { label: "Ollama (Lokal)", className: "bg-purple-50 text-purple-700 border-purple-200" },
 	};
 
-	const labelMap = {
-		gemini: "Gemini",
-		openai: "OpenAI",
-		anthropic: "Anthropic",
-		ollama: "Ollama",
+	const { label, className } = badges[provider] || {
+		label: provider,
+		className: "bg-slate-50 text-slate-700 border-slate-200",
 	};
-
-	const color = colorMap[provider] ?? "bg-slate-50 text-slate-600 border-slate-200";
-	const label = labelMap[provider] ?? provider;
 
 	return (
-		<span className={`inline-flex items-center px-2 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wide ${color}`}>
+		<span className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md border ${className}`}>
 			{label}
 		</span>
 	);
@@ -77,12 +59,6 @@ function ConfigCard({ config, isOnly }) {
 		});
 	}
 
-	function handleResetLimit() {
-		router.post(`/settings/ai/${config.id}/reset-limit`, {}, {
-			preserveScroll: true,
-		});
-	}
-
 	function handleDelete() {
 		if (!confirmDelete) {
 			setConfirmDelete(true);
@@ -93,38 +69,30 @@ function ConfigCard({ config, isOnly }) {
 		});
 	}
 
-	const cardBorder = config.is_active && !config.is_currently_limited
-		? "border-emerald-200 ring-1 ring-emerald-100"
-		: config.is_currently_limited
-			? "border-red-200 ring-1 ring-red-100"
-			: "border-slate-200";
+	const cardBorder = config.is_active
+		? "border-emerald-300 ring-1 ring-emerald-200 shadow-sm"
+		: "border-slate-200 hover:border-slate-300";
 
 	return (
-		<div className={`bg-white border rounded-xl shadow-xs overflow-hidden transition-all ${cardBorder}`}>
+		<div className={`bg-white border rounded-xl overflow-hidden transition-all ${cardBorder}`}>
 			{/* Header */}
-			<div className="flex items-start gap-3 p-5 border-b border-slate-100 bg-slate-50/70">
+			<div className={`flex items-start gap-3 p-5 border-b ${config.is_active ? "bg-emerald-50/40 border-emerald-100" : "bg-slate-50/70 border-slate-100"}`}>
 				<div className={`p-2 rounded-lg border ${
-					config.is_active && !config.is_currently_limited
-						? "bg-emerald-50 border-emerald-100 text-emerald-700"
-						: config.is_currently_limited
-							? "bg-red-50 border-red-100 text-red-700"
-							: "bg-blue-50 border-blue-100 text-blue-700"
+					config.is_active
+						? "bg-emerald-100/80 border-emerald-200 text-emerald-700"
+						: "bg-white border-slate-200 text-slate-500"
 				}`}>
 					<BrainCircuit className="w-4 h-4" />
 				</div>
 				<div className="min-w-0 flex-1">
 					<div className="flex items-center gap-2 flex-wrap">
 						<h3 className="text-sm font-bold text-slate-900">{config.name}</h3>
-						<StatusBadge config={config} />
+						<StatusBadge isActive={config.is_active} />
 					</div>
 					<div className="flex items-center gap-2 mt-1.5">
 						<ProviderBadge provider={config.llm_provider} />
 						<span className="text-xs text-slate-500 font-mono">{config.llm_model}</span>
 					</div>
-				</div>
-				<div className="shrink-0 flex items-center gap-1 text-xs text-slate-500 font-semibold bg-slate-100 rounded-md px-2.5 py-1">
-					<ArrowUpDown className="w-3 h-3" />
-					<span>Prioritas #{config.priority}</span>
 				</div>
 			</div>
 
@@ -133,70 +101,41 @@ function ConfigCard({ config, isOnly }) {
 				<div className="grid grid-cols-2 gap-3 text-xs">
 					<div>
 						<span className="font-semibold text-slate-500 uppercase tracking-wide block mb-0.5">Provider</span>
-						<span className="text-slate-900">{config.llm_provider}</span>
+						<span className="text-slate-900 font-medium capitalize">{config.llm_provider}</span>
 					</div>
 					<div>
 						<span className="font-semibold text-slate-500 uppercase tracking-wide block mb-0.5">Model</span>
 						<span className="text-slate-900 font-mono text-[13px]">{config.llm_model}</span>
 					</div>
-					<div>
+					<div className="col-span-2">
 						<span className="font-semibold text-slate-500 uppercase tracking-wide block mb-0.5">
 							{config.llm_provider === "ollama" ? "Base URL" : "API Key"}
 						</span>
-						<span className="text-slate-900">
+						<span className="text-slate-700 font-mono text-xs">
 							{config.llm_provider === "ollama"
-								? (config.base_url || <span className="text-slate-400">Belum diatur</span>)
-								: (config.llm_api_key ? "••••••••" : <span className="text-slate-400">Tidak ada</span>)
+								? (config.base_url || <span className="text-slate-400">Default (http://localhost:11434)</span>)
+								: (config.llm_api_key ? "••••••••••••••••" : <span className="text-slate-400">Tidak diset</span>)
 							}
 						</span>
 					</div>
-					<div>
-						<span className="font-semibold text-slate-500 uppercase tracking-wide block mb-0.5">Request</span>
-						<span className="text-slate-900">{config.request_count ?? 0} request</span>
-					</div>
 				</div>
-
-				{/* Rate Limit Info */}
-				{config.is_currently_limited && config.limited_until && (
-					<div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-						<AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-						<span>
-							Rate limited sampai{" "}
-							<strong>
-								{new Date(config.limited_until).toLocaleString("id-ID", {
-									hour: "2-digit",
-									minute: "2-digit",
-									day: "2-digit",
-									month: "short",
-								})}
-							</strong>
-						</span>
-					</div>
-				)}
 			</div>
 
 			{/* Actions */}
 			<div className="flex items-center gap-2 px-5 py-3 border-t border-slate-100 bg-slate-50/50">
-				{!config.is_active && (
+				{!config.is_active ? (
 					<Button
 						variant="outline"
 						size="sm"
 						onClick={handleActivate}
-						className="text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+						className="text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800"
 					>
 						<Power className="w-3.5 h-3.5 mr-1" /> Aktifkan
 					</Button>
-				)}
-
-				{config.is_currently_limited && (
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={handleResetLimit}
-						className="text-amber-700 border-amber-200 hover:bg-amber-50"
-					>
-						<RotateCcw className="w-3.5 h-3.5 mr-1" /> Reset Limit
-					</Button>
+				) : (
+					<span className="inline-flex items-center text-xs font-medium text-emerald-700 gap-1 px-1">
+						<CheckCircle2 className="w-3.5 h-3.5" /> Konfigurasi Aktif
+					</span>
 				)}
 
 				<Link href={`/settings/ai/${config.id}/edit`}>
@@ -239,8 +178,7 @@ export default function Index({ configurations = [] }) {
 					<div className="space-y-1">
 						<h2 className="text-lg font-bold text-slate-900">Konfigurasi AI</h2>
 						<p className="text-xs text-slate-500 max-w-2xl">
-							Kelola beberapa provider dan API key. Hanya satu konfigurasi yang aktif pada satu waktu.
-							Saat API kena rate limit, sistem otomatis berpindah ke konfigurasi cadangan berdasarkan urutan prioritas.
+							Kelola daftar provider dan API key LLM. Anda dapat menambahkan beberapa konfigurasi dan berpindah konfigurasi secara manual kapan saja.
 						</p>
 					</div>
 					<Link href="/settings/ai/create">
@@ -269,7 +207,7 @@ export default function Index({ configurations = [] }) {
 					</div>
 					<h3 className="text-sm font-bold text-slate-900 mb-1">Belum ada konfigurasi AI</h3>
 					<p className="text-xs text-slate-500 mb-4">
-						Tambahkan konfigurasi AI pertama untuk mulai menggunakan fitur analisis.
+						Tambahkan konfigurasi AI pertama untuk mulai menggunakan fitur analisis laporan keuangan.
 					</p>
 					<Link href="/settings/ai/create">
 						<Button>
@@ -284,14 +222,12 @@ export default function Index({ configurations = [] }) {
 				<div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
 					<div className="flex items-start gap-3">
 						<div className="p-1.5 rounded-md bg-blue-100 text-blue-700 shrink-0 mt-0.5">
-							<ArrowUpDown className="w-3.5 h-3.5" />
+							<Info className="w-3.5 h-3.5" />
 						</div>
 						<div className="text-xs text-blue-800 space-y-1">
-							<p className="font-semibold">Cara kerja Auto-Switch</p>
+							<p className="font-semibold">Switch Konfigurasi API Secara Manual</p>
 							<p className="text-blue-700">
-								Jika API yang aktif kena rate limit (HTTP 429), sistem otomatis berpindah ke konfigurasi cadangan
-								berdasarkan nomor prioritas (kecil = lebih tinggi). Konfigurasi yang terkena limit akan
-								otomatis pulih setelah 60 menit, atau bisa direset manual.
+								Hanya ada satu konfigurasi yang berstatus <strong>Aktif</strong> pada satu waktu. Tekan tombol <strong>Aktifkan</strong> pada konfigurasi yang diinginkan untuk beralih. Seluruh proses analisis AI akan langsung menggunakan provider dan key konfigurasi aktif tersebut.
 							</p>
 						</div>
 					</div>

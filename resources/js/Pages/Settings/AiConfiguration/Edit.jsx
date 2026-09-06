@@ -5,8 +5,8 @@ import {
 	ArrowLeft,
 	BrainCircuit,
 	Loader2,
-	Save,
 	Plus,
+	Save,
 } from "lucide-react";
 
 function SectionCard({ icon: Icon, title, description, children }) {
@@ -40,17 +40,8 @@ function Field({ label, htmlFor, children, hint, required = false, error }) {
 	);
 }
 
-export default function Edit({ configuration, nextPriority, availablePriorities = [], mode }) {
-	const isEdit = mode === "edit";
-
-	const baseOptions = availablePriorities && availablePriorities.length > 0
-		? availablePriorities
-		: [1];
-	const priorityOptions = configuration?.priority && !baseOptions.includes(configuration.priority)
-		? [...baseOptions, configuration.priority].sort((a, b) => a - b)
-		: baseOptions;
-
-	const defaultPriority = configuration?.priority ?? nextPriority ?? priorityOptions[priorityOptions.length - 1];
+export default function Edit({ configuration, mode }) {
+	const isEdit = mode === "edit" || !!configuration?.id;
 
 	const { data, setData, put, post, processing, errors } = useForm({
 		name: configuration?.name ?? "",
@@ -58,7 +49,6 @@ export default function Edit({ configuration, nextPriority, availablePriorities 
 		base_url: configuration?.base_url ?? "",
 		llm_model: configuration?.llm_model ?? "",
 		llm_api_key: "",
-		priority: defaultPriority,
 	});
 
 	function handleSubmit(e) {
@@ -75,48 +65,32 @@ export default function Edit({ configuration, nextPriority, availablePriorities 
 	return (
 		<div className="max-w-5xl mx-auto space-y-4">
 			<Link href="/settings/ai" className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-slate-800 gap-1 transition-colors">
-				<ArrowLeft className="w-3.5 h-3.5" /> Kembali
+				<ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Daftar Konfigurasi
 			</Link>
 
 			<form onSubmit={handleSubmit} className="space-y-5">
-				{/* Section: Identitas */}
 				<SectionCard
 					icon={BrainCircuit}
-					title={isEdit ? "Edit Konfigurasi" : "Tambah Konfigurasi Baru"}
+					title={isEdit ? "Edit Konfigurasi AI" : "Tambah Konfigurasi AI Baru"}
 					description={isEdit
-						? "Ubah pengaturan provider, model, dan API key untuk konfigurasi ini."
-						: "Buat konfigurasi AI baru. Konfigurasi pertama akan otomatis aktif."
+						? "Perbarui pengaturan provider, model, dan API key untuk konfigurasi ini."
+						: "Tambahkan konfigurasi provider AI baru ke dalam daftar."
 					}
 				>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<Field label="Nama Konfigurasi" htmlFor="name" required hint="Label untuk identifikasi (misal: Gemini Utama, OpenAI Backup)." error={errors.name}>
-							<input
-								id="name"
-								type="text"
-								value={data.name}
-								onChange={e => setData("name", e.target.value)}
-								placeholder="misal: Gemini Utama"
-								className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-								disabled={processing}
-								autoComplete="off"
-							/>
-						</Field>
-
-						<Field label="Prioritas" htmlFor="priority" required hint="Urutan failover (1 = prioritas paling utama)." error={errors.priority}>
-							<select
-								id="priority"
-								value={data.priority}
-								onChange={e => setData("priority", parseInt(e.target.value) || 1)}
-								className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
-								disabled={processing}
-							>
-								{priorityOptions.map(p => (
-									<option key={p} value={p}>
-										Prioritas #{p} {p === 1 ? "(Utama)" : `(Cadangan ${p - 1})`}
-									</option>
-								))}
-							</select>
-						</Field>
+						<div className="col-span-1 md:col-span-2">
+							<Field label="Nama Konfigurasi" htmlFor="name" required hint="Beri nama untuk membedakan konfigurasi (misal: Gemini Flash Utama, OpenAI GPT-4o Cadangan)." error={errors.name}>
+								<input
+									id="name"
+									type="text"
+									value={data.name}
+									onChange={e => setData("name", e.target.value)}
+									placeholder="misal: Gemini Flash Utama"
+									className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+									disabled={processing}
+								/>
+							</Field>
+						</div>
 
 						<Field label="Provider" htmlFor="llm_provider" required hint="Pilih provider LLM yang ingin digunakan." error={errors.llm_provider}>
 							<select
@@ -147,38 +121,42 @@ export default function Edit({ configuration, nextPriority, availablePriorities 
 						</Field>
 
 						{isOllama ? (
-							<Field label="Base URL" htmlFor="base_url" required hint="Endpoint local server Ollama." error={errors.base_url}>
-								<input
-									id="base_url"
-									type="text"
-									value={data.base_url}
-									onChange={e => setData("base_url", e.target.value)}
-									placeholder="http://localhost:11434"
-									className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-									disabled={processing}
-								/>
-							</Field>
-
+							<div className="col-span-1 md:col-span-2">
+								<Field label="Base URL" htmlFor="base_url" required hint="Endpoint local server Ollama (default: http://localhost:11434)." error={errors.base_url}>
+									<input
+										id="base_url"
+										type="text"
+										value={data.base_url}
+										onChange={e => setData("base_url", e.target.value)}
+										placeholder="http://localhost:11434"
+										className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+										disabled={processing}
+									/>
+								</Field>
+							</div>
 						) : (
-							<Field
-								label="API Key"
-								htmlFor="llm_api_key"
-								hint={isEdit && configuration?.has_api_key
-									? "API Key tersimpan. Biarkan kosong jika tidak ingin mengubah."
-									: "Masukkan API key provider."
-								}
-								error={errors.llm_api_key}
-							>
-								<input
-									id="llm_api_key"
-									type="password"
-									value={data.llm_api_key}
-									onChange={e => setData("llm_api_key", e.target.value)}
-									placeholder={isEdit && configuration?.has_api_key ? "••••••••••••••••" : "Masukkan API Key"}
-									className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-									disabled={processing}
-								/>
-							</Field>
+							<div className="col-span-1 md:col-span-2">
+								<Field
+									label="API Key"
+									htmlFor="llm_api_key"
+									required={!isEdit}
+									hint={isEdit && configuration?.has_api_key
+										? "API Key tersimpan. Biarkan kosong jika tidak ingin mengubah."
+										: "Masukkan API key provider yang valid."
+									}
+									error={errors.llm_api_key}
+								>
+									<input
+										id="llm_api_key"
+										type="password"
+										value={data.llm_api_key}
+										onChange={e => setData("llm_api_key", e.target.value)}
+										placeholder={isEdit && configuration?.has_api_key ? "••••••••••••••••" : "Masukkan API Key"}
+										className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
+										disabled={processing}
+									/>
+								</Field>
+							</div>
 						)}
 					</div>
 				</SectionCard>

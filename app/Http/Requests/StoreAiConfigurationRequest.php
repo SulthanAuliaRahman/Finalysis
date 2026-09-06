@@ -27,8 +27,7 @@ class StoreAiConfigurationRequest extends FormRequest
             'llm_provider' => ['required', 'string', 'in:openai,gemini,anthropic,ollama'],
             'llm_model'    => ['required', 'string', 'max:100'],
             'base_url'     => ['nullable', 'required_if:llm_provider,ollama', 'string', 'max:255'],
-            'llm_api_key'  => ['nullable', 'string'],
-            'priority'     => ['required', 'integer', 'min:1', 'max:99'],
+            'llm_api_key'  => ['nullable', 'required_unless:llm_provider,ollama', 'string'],
         ];
     }
 }
