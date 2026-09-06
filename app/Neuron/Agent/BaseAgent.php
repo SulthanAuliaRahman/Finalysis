@@ -14,7 +14,7 @@ abstract class BaseAgent extends Agent
 {
     protected function provider(): AIProviderInterface
     {
-        $setting = AiConfiguration::first();
+        $setting = AiConfiguration::active();
 
         if (!$setting) {
             return new Gemini(key: '', model: 'gemini-1.5-pro');
@@ -24,8 +24,14 @@ abstract class BaseAgent extends Agent
         $apiKey  = $setting->llm_api_key ?? '';
         $model   = $setting->llm_model ?? '';
         $baseUrl = $setting->base_url ?? 'http://localhost:11434';
-        dd($apiKey);
-        
+
+        if ($driver === 'ollama') {
+            $baseUrl = rtrim($baseUrl, '/');
+            if (!str_ends_with($baseUrl, '/api')) {
+                $baseUrl .= '/api';
+            }
+        }
+
         return match ($driver) {
             'openai' => new OpenAI(
                 key: $apiKey,

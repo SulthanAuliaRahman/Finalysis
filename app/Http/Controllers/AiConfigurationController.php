@@ -2,50 +2,87 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAiConfigurationRequest;
 use App\Http\Requests\UpdateAiConfigurationRequest;
 use App\Models\AiConfiguration;
-use App\Services\AiConfigurationService;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class AiConfigurationController extends Controller
 {
+    /**
+     * Tampilkan daftar semua konfigurasi AI.
+     */
     public function index()
     {
-        $configuration = AiConfiguration::firstOrCreate([
-            'llm_provider' => 'gemini',
-            'llm_model'    => 'gemini-1.5-pro',
-        ]);
+        $configurations = AiConfiguration::orderBy('is_active', 'desc')
+            ->orderBy('id', 'asc')
+            ->get();
 
         return Inertia::render(
             'Settings/AiConfiguration/Index',
-            compact('configuration')
+            ['configurations' => $configurations]
         );
     }
 
-    public function edit()
+    /**
+     * Form untuk membuat konfigurasi baru.
+     */
+    public function create()
     {
-        $configuration = AiConfiguration::firstOrCreate([
-            'llm_provider' => 'gemini',
-            'llm_model'    => 'gemini-1.5-pro',
-        ]);
+        return Inertia::render(
+            'Settings/AiConfiguration/Edit',
+            [
+                'configuration' => null,
+                'mode'          => 'create',
+            ]
+        );
+    }
 
-        $configData = $configuration->toArray();
-        $configData['has_api_key'] = !empty($configuration->llm_api_key);
-        $configData['llm_api_key'] = ''; // Mask for security on frontend
+    /**
+     * Simpan konfigurasi baru.
+     */
+    public function store(StoreAiConfigurationRequest $request)
+    {
+        $data = $request->validated();
+
+        if ($data['llm_provider'] === 'ollama') {
+            $data['llm_api_key'] = null;
+        } else {
+            $data['base_url'] = null;
+        }
+
+        // Jika belum ada config lain, set otomatis sebagai aktif
+        $data['is_active'] = AiConfiguration::count() === 0;
+
+        AiConfiguration::create($data);
+
+        return redirect()->route('settings.ai.view')->with('success', 'Konfigurasi AI berhasil ditambahkan.');
+    }
+
+    /**
+     * Form untuk edit konfigurasi.
+     */
+    public function edit(AiConfiguration $aiConfiguration)
+    {
+        $configData = $aiConfiguration->toArray();
+        $configData['has_api_key'] = !empty($aiConfiguration->llm_api_key);
+        $configData['llm_api_key'] = ''; // Masking untuk keamanan frontend
 
         return Inertia::render(
             'Settings/AiConfiguration/Edit',
             [
                 'configuration' => $configData,
+                'mode'          => 'edit',
             ]
         );
     }
 
-    public function update(UpdateAiConfigurationRequest $request, AiConfigurationService $service)
+    /**
+     * Update konfigurasi yang sudah ada.
+     */
+    public function update(UpdateAiConfigurationRequest $request, AiConfiguration $aiConfiguration)
     {
-        $configuration = AiConfiguration::firstOrCreate([]);
-
         $data = $request->validated();
 
         if ($data['llm_provider'] === 'ollama') {
@@ -58,12 +95,35 @@ class AiConfigurationController extends Controller
             }
         }
 
-        $configuration->update($data);
+        $aiConfiguration->update($data);
 
-        $service->clearCache();
-
-        return redirect()->route('settings.ai.view')->with('success', 'Configuration Updated');
+        return redirect()->route('settings.ai.view')->with('success', 'Konfigurasi AI berhasil diperbarui.');
     }
 
+    /**
+     * Hapus konfigurasi. Tidak bisa hapus konfigurasi yang sedang aktif.
+     */
+    public function destroy(AiConfiguration $aiConfiguration)
+    {
+        if ($aiConfiguration->is_active) {
+            return back()->with('error', 'Tidak bisa menghapus konfigurasi yang sedang aktif. Aktifkan konfigurasi lain terlebih dahulu.');
+        }
 
+        $aiConfiguration->delete();
+
+        return redirect()->route('settings.ai.view')->with('success', 'Konfigurasi AI berhasil dihapus.');
+    }
+
+    /**
+     * Manual switch: Aktifkan konfigurasi tertentu (deaktivasi konfigurasi lain).
+     */
+    public function activate(AiConfiguration $aiConfiguration)
+    {
+        DB::transaction(function () use ($aiConfiguration) {
+            AiConfiguration::query()->update(['is_active' => false]);
+            $aiConfiguration->update(['is_active' => true]);
+        });
+
+        return back()->with('success', "Konfigurasi \"{$aiConfiguration->name}\" berhasil diaktifkan.");
+    }
 }
