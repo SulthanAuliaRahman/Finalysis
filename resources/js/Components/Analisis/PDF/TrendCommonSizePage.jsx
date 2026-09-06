@@ -7,8 +7,20 @@ export function TrendCommonsizePage({ perusahaan, analisis, trendCommonsize, cha
     const periodeData = trendCommonsize?.periode_data ?? [];
 
     const rows = [
-        { label: 'Laba Kotor (%)',  get: (periode) => periode.analisis?.commonsize?.laba_kotor_persen },
+
+        // Laba Rugi
+        { label: 'Pendapatan (%)',  get: (periode) => periode.analisis?.commonsize?.pendapatan_persen },
+        { label: 'Beban (%)',  get: (periode) => periode.analisis?.commonsize?.beban_persen },
         { label: 'Laba Bersih (%)', get: (periode) => periode.analisis?.commonsize?.laba_bersih_persen },
+
+
+        // ASET
+        { label: 'Aset Lancar (%)',     get: (periode) => periode.analisis?.commonsize?.aset_lancar_persen },
+        { label: 'Aset Tetap (%)',     get: (periode) => periode.analisis?.commonsize?.aset_tetap_persen },
+
+        // Liabilitas + Ekuitas
+        { label: 'Liabilitas JK. Pendek (%)',     get: (periode) => periode.analisis?.commonsize?.liabilitas_pendek_persen },
+        { label: 'Liabilitas Jk. Panjang (%)',     get: (periode) => periode.analisis?.commonsize?.liabilitas_panjang_persen },
         { label: 'Ekuitas (%)',     get: (periode) => periode.analisis?.commonsize?.ekuitas_persen },
     ];
 

@@ -11,9 +11,14 @@ export function RasioSolvabilitasPage({ perusahaan, analisis, solvabilitas, char
             formula: 'Total Liabilitas / Total Ekuitas',
         },
         {
-            label:   'Debt to Asset Ratio (DAR) x',
+            label:   'Debt to Asset Ratio (DAR) %',
             value:   solvabilitas?.debt_to_asset,
             formula: 'Total Liabilitas / Total Aset',
+        },
+        {
+            label:   'Leverage Multiplier x',
+            value:   solvabilitas?.leverage_multiplier,
+            formula: 'rata rata Total aset/rata rata Total equitas',
         },
     ];
 

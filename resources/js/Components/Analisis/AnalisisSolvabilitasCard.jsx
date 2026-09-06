@@ -34,7 +34,7 @@ export const AnalisisSolvabilitasCard = forwardRef(function AnalisisSolvabilitas
                 {
                     label: 'Debt to Asset (DAR)',
                     value: data?.debt_to_asset != null ? parseVal(data.debt_to_asset) : null,
-                    suffix: 'x',
+                    suffix: '%',
                     formula: 'Total Kewajiban / Total Aset',
                     breakdown: neraca ? `${formatNum(neraca.total_liabilities)} / ${formatNum(neraca.total_asset)}` : null,
                     rawResult: data?.debt_to_asset != null ? parseVal(data.debt_to_asset) : null,

@@ -6,28 +6,31 @@ import { formatPersentase, formatRasio } from './shared/pdfHelpers';
 export function AnalisisDupontPage({
     perusahaan,
     analisis,
+    profitabilitas,
+    aktivitas,
+    solvabilitas,
     dupont,
     chartImageBase64
 }) {
     const rows = [
         {
             label:   'Net Profit Margin (%)',
-            value:   dupont?.net_profit_margin,
+            value:   profitabilitas?.net_profit_margin,
             formula: 'Laba Bersih / Pendapatan',
         },
         {
             label:   'Total Asset Turnover (x)',
-            value:   dupont?.total_asset_turnover,
+            value:   aktivitas?.total_asset_turnover,
             formula: 'Pendapatan / Total Aset',
         },
         {
             label:   'Leverage Multiplier (x)',
-            value:   dupont?.leverage_multiplier,
+            value:   solvabilitas?.leverage_multiplier,
             formula: 'Total Aset / Total Ekuitas',
         },
         {
             label:   'Return on Equity / ROE (DuPont) (%)',
-            value:   dupont?.roe,
+            value:   dupont?.roe_dupont,
             formula: 'NPM × TATO × Leverage',
         },
     ];

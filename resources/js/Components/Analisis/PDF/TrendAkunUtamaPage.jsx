@@ -7,10 +7,11 @@ export function TrendAkunUtamaPage({ perusahaan, analisis, trendAkunUtama, chart
     const periodeData = trendAkunUtama?.periode_data ?? [];
 
     const rows = [
-        { label: 'Total Aset',    get: (periode) => formatAngka(periode.total_assets) },
-        { label: 'Total Ekuitas', get: (periode) => formatAngka(periode.total_equity) },
-        { label: 'Pendapatan',    get: (periode) => formatAngka(periode.pendapatan) },
-        { label: 'Laba Bersih',   get: (periode) => formatAngka(periode.laba_bersih) },
+        { label: 'Trend Aset',    get: (periode) => formatAngka(periode.total_asset) },
+        { label: 'Trend liabilites',    get: (periode) => formatAngka(periode.total_liabilities) },
+        { label: 'Trend Ekuitas', get: (periode) => formatAngka(periode.total_equitas) },
+        { label: 'Trend Pendapatan',    get: (periode) => formatAngka(periode.total_pendapatan) },
+        { label: 'Trend Beban',   get: (periode) => formatAngka(periode.total_beban) },
     ];
 
     return (

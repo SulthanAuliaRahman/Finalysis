@@ -7,13 +7,24 @@ export function TrendRasioPage({ perusahaan, analisis, trendRasio, chartImageBas
     const periodeData = trendRasio?.periode_data ?? [];
 
     const rows = [
+        // Liquiditas
         { label: 'Current Ratio (x)', get: (periode) => periode.analisis?.likuiditas?.current_ratio },
-        { label: 'Quick Ratio (x)',   get: (periode) => periode.analisis?.likuiditas?.quick_ratio },
+        { label: 'Cash Ratio (x)',   get: (periode) => periode.analisis?.likuiditas?.cash_ratio },
+
+        // Profitabilitas
         { label: 'NPM (%)',           get: (periode) => periode.analisis?.profitabilitas?.net_profit_margin },
         { label: 'ROA (%)',           get: (periode) => periode.analisis?.profitabilitas?.ROA },
         { label: 'ROE (%)',           get: (periode) => periode.analisis?.profitabilitas?.ROE },
+
+        // Solvabilitas
         { label: 'DER (x)',           get: (periode) => periode.analisis?.solvabilitas?.debt_to_equity },
+        { label: 'DAR (%)',           get: (periode) => periode.analisis?.solvabilitas?.debt_to_asset },
+        { label: 'Leverage (X)',      get: (periode) => periode.analisis?.solvabilitas?.leverage_multiplier },
+
+        //Aktivitas
         { label: 'TATO (x)',          get: (periode) => periode.analisis?.aktivitas?.total_asset_turnover },
+        { label: 'WCT (x)',          get: (periode) => periode.analisis?.aktivitas?.working_capital_turnover },
+        { label: 'FAT (x)',          get: (periode) => periode.analisis?.aktivitas?.fixed_asset_turnover },
     ];
 
     return (

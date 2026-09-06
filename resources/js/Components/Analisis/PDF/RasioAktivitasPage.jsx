@@ -10,6 +10,16 @@ export function RasioAktivitasPage({ perusahaan, analisis, aktivitas, chartImage
             value:   aktivitas?.total_asset_turnover,
             formula: 'Pendapatan / Total Aset',
         },
+        {
+            label:   'Working Capital Turnover (WCT) x',
+            value:   aktivitas?.working_capital_turnover,
+            formula: 'Pendapatan / rata rata modal kerja',
+        },
+        {
+            label:   'fixed_asset_turnover  x',
+            value:   aktivitas?.fixed_asset_turnover,
+            formula: 'Pendapatan / rata rata Aset tetap',
+        },
     ];
 
     return (

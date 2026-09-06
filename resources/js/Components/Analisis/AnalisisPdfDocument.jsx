@@ -107,6 +107,9 @@ export function AnalisisPdfDocument({
                 <AnalisisDupontPage
                     perusahaan={perusahaan}
                     analisis={analisis}
+                    profitabilitas={profitabilitas}
+                    solvabilitas={solvabilitas}
+                    aktivitas={aktivitas}
                     dupont={dupont}
                     chartImageBase64={chartImages.dupont}
                 />
@@ -161,15 +164,6 @@ export function AnalisisPdfDocument({
                 />
             )}
 
-            {/* 14. Tren Arus Kas */}
-            {trendArusKas && (
-                <TrendArusKasPage
-                    perusahaan={perusahaan}
-                    analisis={analisis}
-                    trendArusKas={trendArusKas}
-                    chartImageBase64={chartImages.trendArusKas}
-                />
-            )}
         </Document>
     );
 }

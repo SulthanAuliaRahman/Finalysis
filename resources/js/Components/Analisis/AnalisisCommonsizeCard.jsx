@@ -128,7 +128,7 @@ export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard
 
     // Data Liabilitas & Ekuitas untuk Donut Chart
     const liabilitasEkuitasData = [
-        { label: 'Liabilitas Pendek', value: toNum(data?.liabilitas_pendek_persen), color: '#eab308' },
+        { label: 'Liabilitas JK. Pendek', value: toNum(data?.liabilitas_pendek_persen), color: '#eab308' },
         { label: 'Liabilitas Jk. Panjang', value: toNum(data?.liabilitas_panjang_persen), color: '#f97316' },
         { label: 'Ekuitas', value: toNum(data?.ekuitas_persen), color: '#a855f7' },
     ];

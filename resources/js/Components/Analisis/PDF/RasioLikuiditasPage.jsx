@@ -11,11 +11,6 @@ export function RasioLikuiditasPage({ perusahaan, analisis, likuiditas, chartIma
             formula: 'Aset Lancar / Liabilitas Lancar',
         },
         {
-            label:   'Quick Ratio (x)',
-            value:   likuiditas?.quick_ratio,
-            formula: '(Aset Lancar - Persediaan) / Liabilitas Lancar',
-        },
-        {
             label:   'Cash Ratio (x)',
             value:   likuiditas?.cash_ratio,
             formula: 'Kas / Liabilitas Lancar',

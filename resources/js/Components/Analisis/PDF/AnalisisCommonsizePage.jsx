@@ -9,15 +9,18 @@ export function AnalisisCommonsizePage({
     chartImageBase64
 }) {
     const rows = [
-        { label: 'HPP (%)',                   value: commonsize?.hpp_persen },
-        { label: 'Laba Kotor (%)',            value: commonsize?.laba_kotor_persen },
-        { label: 'Beban Lain & Pajak (%)',    value: commonsize?.beban_lain_pajak_persen },
-        { label: 'Laba Bersih (%)',           value: commonsize?.laba_bersih_persen },
+        // Posisi Keuangan
         { label: 'Aset Lancar (%)',           value: commonsize?.aset_lancar_persen },
         { label: 'Aset Tetap (%)',            value: commonsize?.aset_tetap_persen },
-        { label: 'Liabilitas Lancar (%)',     value: commonsize?.liabilitas_lancar_persen },
+        { label: 'Liabilitas Lancar (%)',     value: commonsize?.liabilitas_pendek_persen },
         { label: 'Liabilitas Jangka Panjang (%)', value: commonsize?.liabilitas_panjang_persen },
         { label: 'Ekuitas (%)',               value: commonsize?.ekuitas_persen },
+
+        // Laba Rugi
+        { label: 'Pendapatan (%)',            value: commonsize?.pendapatan_persen },
+        { label: 'Beban (%)',                 value: commonsize?.beban_persen },
+        { label: 'Laba Bersih (%)',           value: commonsize?.laba_bersih_persen },
+
     ];
 
     return (

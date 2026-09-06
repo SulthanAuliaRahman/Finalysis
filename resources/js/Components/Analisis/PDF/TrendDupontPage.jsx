@@ -7,10 +7,10 @@ export function TrendDupontPage({ perusahaan, analisis, trendDupont, chartImageB
     const periodeData = trendDupont?.periode_data ?? [];
 
     const rows = [
-        { label: 'NPM (%)',               get: (periode) => periode.analisis?.dupont?.net_profit_margin },
-        { label: 'TATO (x)',              get: (periode) => periode.analisis?.dupont?.total_asset_turnover, },
-        { label: 'Leverage (x)',          get: (periode) => periode.analisis?.dupont?.leverage_multiplier, },
-        { label: 'ROE (DuPont) %',      get: (periode) => periode.analisis?.dupont?.roe },
+        { label: 'NPM (%)',               get: (periode) => periode.analisis?.profitabilitas?.net_profit_margin },
+        { label: 'TATO (x)',              get: (periode) => periode.analisis?.aktivitas?.total_asset_turnover, },
+        { label: 'Leverage (x)',          get: (periode) => periode.analisis?.solvabilitas?.leverage_multiplier, },
+        { label: 'ROE (DuPont) %',      get: (periode) => periode.analisis?.dupont?.roe_dupont },
     ];
 
     return (

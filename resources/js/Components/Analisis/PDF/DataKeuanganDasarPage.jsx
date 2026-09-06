@@ -5,19 +5,22 @@ import { formatAngka } from './shared/pdfHelpers';
 
 export function DataKeuanganDasarPage({ perusahaan, analisis, neraca, labaRugi }) {
     const neracaRows = [
-        { label: 'Kas & Setara Kas',   value: formatAngka(neraca?.cash_equivalent) },
-        { label: 'Persediaan',         value: formatAngka(neraca?.inventory) },
-        { label: 'Aset Lancar',        value: formatAngka(neraca?.current_assets) },
-        { label: 'Total Aset',         value: formatAngka(neraca?.total_assets) },
-        { label: 'Liabilitas Lancar',  value: formatAngka(neraca?.current_liabilities) },
+        { label: 'Kas & Setara Kas',   value: formatAngka(neraca?.total_kas_setara_kas) },
+        { label: 'Aset Lancar',        value: formatAngka(neraca?.total_asset_lancar) },
+        { label: 'Aset Tetap',         value: formatAngka(neraca?.total_asset_tetap) },
+        { label: 'Total Aset',         value: formatAngka(neraca?.total_asset) },
+        { label: 'Liabilitas Lancar',  value: formatAngka(neraca?.total_liabilities_pendek) },
+        { label: 'Liabilitas Panjang',  value: formatAngka(neraca?.total_liabilities_panjang) },
         { label: 'Total Liabilitas',   value: formatAngka(neraca?.total_liabilities) },
-        { label: 'Total Ekuitas',      value: formatAngka(neraca?.total_equity) },
+        { label: 'Total Ekuitas',      value: formatAngka(neraca?.total_equitas) },
     ];
 
     const labaRugiRows = [
-        { label: 'Pendapatan',  value: formatAngka(labaRugi?.pendapatan) },
-        { label: 'Laba Kotor',  value: formatAngka(labaRugi?.laba_kotor) },
-        { label: 'Laba Bersih', value: formatAngka(labaRugi?.laba_bersih) },
+        { label: 'Total Pendapatan',  value: formatAngka(labaRugi?.total_pendapatan) },
+        { label: 'Total Beban', value: formatAngka(labaRugi?.total_beban) },
+        { label: 'Biaya Pajak',  value: formatAngka(labaRugi?.total_biaya_pajak) },
+        { label: 'Laba Bersih', value: formatAngka(labaRugi?.laba_bersih_sesudah_pajak) },
+
     ];
 
     return (
