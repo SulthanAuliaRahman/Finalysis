@@ -1,4 +1,4 @@
-import { PieChart, RefreshCw, Loader2, Sparkles } from 'lucide-react';
+import { PieChart, RefreshCw, Loader2, Sparkles, X, AlertCircle } from 'lucide-react';
 import { useState, forwardRef } from 'react';
 import { router } from '@inertiajs/react';
 import {
@@ -85,16 +85,29 @@ function DonutChart({ title, data, height = 200 }) {
     );
 }
 
-export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard({ data, perusahaanId, analisisId }, ref) {
-    const [isLoading, setIsLoading] = useState(false);
-    const sudahDianalisis = data?.narasi_commonsize_AI;
+export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard({
+    data, perusahaanId, analisisId,
+    sectionStatus, canRegenerasi, onRegenerasiStart,
+}, ref) {
+    const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
+    const [userPrompt, setUserPrompt] = useState('');
 
-    function handleTrigger() {
-        setIsLoading(true);
+    const status = sectionStatus?.status ?? 'idle';
+    const isLoading = status === 'processing';
+    const sudahDianalisis = Boolean(data?.narasi_commonsize_AI);
+
+    function handleTrigger(customPrompt = '') {
         router.post(
             `/perusahaan/${perusahaanId}/analisis/${analisisId}/regenerasi`,
-            { section: 'commonsize' },
-            { preserveScroll: true, onFinish: () => setIsLoading(false) }
+            { section: 'commonsize', user_prompt: customPrompt },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsPromptModalOpen(false);
+                    setUserPrompt('');
+                    onRegenerasiStart?.();
+                },
+            }
         );
     }
 
@@ -121,27 +134,26 @@ export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard
     ];
 
     return (
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-lg bg-teal-100">
-                        <PieChart className="w-5 h-5 text-teal-600" />
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs relative">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2.5">
+                        <div className="p-2 rounded-lg bg-teal-100">
+                            <PieChart className="w-5 h-5 text-teal-600" />
+                        </div>
+                        <h3 className="font-semibold text-slate-900">Common-Size Analysis</h3>
                     </div>
-                    <h3 className="font-semibold text-slate-900">Common-Size Analysis</h3>
-                </div>
 
-                {sudahDianalisis && (
-                    <button
-                        onClick={() => setIsPromptModalOpen(true)}
-                        disabled={isLoading}
-                        className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                        Regenerasi
-                    </button>
-                )}
-            </div>
+                    {sudahDianalisis && canRegenerasi && (
+                        <button
+                            onClick={() => setIsPromptModalOpen(true)}
+                            disabled={isLoading}
+                            className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                            Regenerasi
+                        </button>
+                    )}
+                </div>
 
             {/* Area yang di-capture PDF */}
             <div ref={ref} className="w-full bg-white pb-2">
@@ -209,7 +221,17 @@ export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard
             </div>
 
             {/* Narasi AI */}
-            {sudahDianalisis ? (
+            {isLoading ? (
+                <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 mt-4 flex items-center gap-2 text-blue-600">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span className="text-xs">Sedang diproses AI...</span>
+                </div>
+            ) : status === 'gagal' ? (
+                <div className="bg-red-50/70 border border-red-200 rounded-lg p-3 mt-4 text-red-700">
+                    <p className="text-xs font-medium mb-0.5">Gagal di-generate</p>
+                    {sectionStatus?.error_message && <p className="text-[11px] text-red-600">{sectionStatus.error_message}</p>}
+                </div>
+            ) : sudahDianalisis ? (
                 <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 mt-4">
                     <div className="flex items-center gap-1.5 mb-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-blue-500" />
@@ -218,10 +240,35 @@ export const AnalisisCommonsizeCard = forwardRef(function AnalisisCommonsizeCard
                     <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{data.narasi_commonsize_AI}</p>
                 </div>
             ) : (
-
-
                 <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-lg p-4 text-center mt-4">
                     <p className="text-xs text-slate-400">Belum Ada narasi Commonsize.</p>
+                </div>
+            )}
+
+            {isPromptModalOpen && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl p-4">
+                    <div className="bg-white border border-slate-200 shadow-xl rounded-xl p-5 w-full">
+                        <div className="flex justify-between items-center mb-3">
+                            <h4 className="text-sm font-semibold text-slate-900">Regenerasi Common-Size Analysis</h4>
+                            <button onClick={() => setIsPromptModalOpen(false)} className="text-slate-400 hover:text-slate-700">
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-3">Berikan instruksi tambahan ke AI (opsional)</p>
+                        <textarea
+                            className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500 mb-4 resize-none h-24"
+                            placeholder="Instruksi Opsional..."
+                            value={userPrompt}
+                            onChange={(e) => setUserPrompt(e.target.value)}
+                            disabled={isLoading}
+                        ></textarea>
+                        <div className="flex justify-end gap-2">
+                            <button onClick={() => setIsPromptModalOpen(false)} className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg" disabled={isLoading}>Batal</button>
+                            <button onClick={() => handleTrigger(userPrompt)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 rounded-lg disabled:opacity-50" disabled={isLoading}>
+                                {isLoading && <Loader2 className="w-3 h-3 animate-spin" />} Generate AI
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

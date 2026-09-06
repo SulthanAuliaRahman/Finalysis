@@ -1,39 +1,34 @@
 import { useState, forwardRef } from 'react';
 import { router } from '@inertiajs/react';
-import { RefreshCw, Sparkles, Loader2, X, AlertCircle } from 'lucide-react';
+import { RefreshCw, Sparkles, Loader2, X, AlertCircle, Info } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export const RatioCardBase = forwardRef(function RatioCardBase({
-    title,
-    icon,
-    iconBgColor,
-    iconColor,
-    ratios,
-    chartData,
-    chartColor,
-    narasi,
-    section,
-    perusahaanId,
-    analisisId,
+    title, icon, iconBgColor, iconColor, ratios, chartData, chartColor, narasi, section,
+    perusahaanId, analisisId,
+    sectionStatus,       // { status: 'idle'|'processing'|'selesai'|'gagal'|'tidak_berlaku', error_message } | undefined
+    canRegenerasi,       // boolean — dari analisis.semua_selesai
+    onRegenerasiStart,   // callback -> mulai polling di Detail.jsx
 }, chartRef) {
-    const [isLoading, setIsLoading] = useState(false);
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
     const [userPrompt, setUserPrompt] = useState('');
 
+    const status = sectionStatus?.status ?? 'idle';
+    const isLoading = status === 'processing';
+    const isTidakBerlaku = status === 'tidak_berlaku';
     const sudahDianalisis = Boolean(narasi);
     const rasioBelumDihitung = ratios.every(r => r.value === null || r.value === undefined);
 
     function submitAnalisis(customPrompt = '') {
-        setIsLoading(true);
         router.post(
             `/perusahaan/${perusahaanId}/analisis/${analisisId}/regenerasi`,
             { section, user_prompt: customPrompt },
             {
                 preserveScroll: true,
-                onFinish: () => {
-                    setIsLoading(false);
+                onSuccess: () => {
                     setIsPromptModalOpen(false);
                     setUserPrompt('');
+                    onRegenerasiStart?.(); // mulai polling, karena job berjalan async
                 },
             }
         );
@@ -49,10 +44,11 @@ export const RatioCardBase = forwardRef(function RatioCardBase({
                     <h3 className="font-semibold text-slate-900">{title}</h3>
                 </div>
 
-                {sudahDianalisis && (
+                {sudahDianalisis && canRegenerasi && (
                     <button
                         onClick={() => setIsPromptModalOpen(true)}
                         disabled={isLoading}
+                        title={!canRegenerasi ? 'Selesaikan generate seluruh analisis dulu' : undefined}
                         className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
@@ -71,8 +67,6 @@ export const RatioCardBase = forwardRef(function RatioCardBase({
                                     {ratio.value !== null && ratio.value !== undefined ? `${ratio.value}${ratio.suffix || ''}` : '—'}
                                 </span>
                             </div>
-
-                            {/* AREA BREAKDOWN */}
                             {ratio.breakdown && ratio.value !== null && ratio.value !== undefined && (
                                 <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[11px] font-mono text-slate-500 space-y-1.5">
                                     <div className="flex gap-2">
@@ -83,14 +77,10 @@ export const RatioCardBase = forwardRef(function RatioCardBase({
                                         <span className="text-slate-400 font-sans w-14 shrink-0">Angka:</span>
                                         <span className="text-slate-700">{ratio.breakdown}</span>
                                     </div>
-
-                                    {/* Menambahkan Row Hasil Raw jika ada */}
                                     {ratio.rawResult && (
                                         <div className="flex gap-2 mt-1 pt-1.5 border-t border-slate-200 border-dashed">
                                             <span className="text-slate-500 font-sans font-medium w-14 shrink-0">Hasil:</span>
-                                            <span className="text-slate-800 font-bold bg-white px-1.5 rounded border border-slate-200">
-                                                {ratio.rawResult}
-                                            </span>
+                                            <span className="text-slate-800 font-bold bg-white px-1.5 rounded border border-slate-200">{ratio.rawResult}</span>
                                         </div>
                                     )}
                                 </div>
@@ -100,7 +90,6 @@ export const RatioCardBase = forwardRef(function RatioCardBase({
                 </div>
             </div>
 
-            {/* Diagram Render Area */}
             {!rasioBelumDihitung && chartData && chartData.length > 0 && (
                 <div ref={chartRef} className="h-56 mb-4 w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -108,10 +97,7 @@ export const RatioCardBase = forwardRef(function RatioCardBase({
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                            <Tooltip
-                                cursor={{ fill: '#f8fafc' }}
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
-                            />
+                            <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }} />
                             <Bar dataKey="value" name="Nilai Aktual" fill={chartColor || '#3b82f6'} radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
@@ -122,9 +108,22 @@ export const RatioCardBase = forwardRef(function RatioCardBase({
                 {rasioBelumDihitung ? (
                     <div className="bg-amber-50/70 border border-amber-200 rounded-lg p-3 flex gap-2 items-start text-amber-700">
                         <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                        <p className="text-xs">
-                            Data rasio belum tersedia untuk periode ini.
-                        </p>
+                        <p className="text-xs">Data rasio belum tersedia untuk periode ini.</p>
+                    </div>
+                ) : isTidakBerlaku ? (
+                    <div className="bg-slate-50/70 border border-slate-200 rounded-lg p-3 flex gap-2 items-start text-slate-500">
+                        <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                        <p className="text-xs">Tidak berlaku untuk periode pertama (belum ada data pembanding).</p>
+                    </div>
+                ) : isLoading ? (
+                    <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 flex items-center gap-2 text-blue-600">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span className="text-xs">Sedang diproses AI...</span>
+                    </div>
+                ) : status === 'gagal' ? (
+                    <div className="bg-red-50/70 border border-red-200 rounded-lg p-3 text-red-700">
+                        <p className="text-xs font-medium mb-0.5">Gagal di-generate</p>
+                        {sectionStatus?.error_message && <p className="text-[11px] text-red-600">{sectionStatus.error_message}</p>}
                     </div>
                 ) : !sudahDianalisis ? (
                     <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-lg p-4 text-center">

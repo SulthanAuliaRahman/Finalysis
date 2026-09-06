@@ -144,7 +144,7 @@ function LineChartBlock({ title, periodeData, lines, dualAxis = false, leftUnit 
 const AKUN_UTAMA = [
     { key: 'pendapatan', growthKey: 'growth_pendapatan', label: 'Pendapatan' },
     { key: 'laba_kotor', growthKey: 'growth_laba_kotor', label: 'Laba Kotor' },
-    { key: 'laba_bersih', growthKey: 'growth_laba_bersih', label: 'Laba Bersih' },
+    { key: 'laba_bersih', growthKey: '', label: 'Laba Bersih' },
     { key: 'total_assets', growthKey: 'growth_total_assets', label: 'Total Aset' },
     { key: 'kas_setara_kas', growthKey: 'growth_kas_setara_kas', label: 'Kas & Setara Kas' },
     { key: 'total_equity', growthKey: 'growth_total_equity', label: 'Total Ekuitas' },

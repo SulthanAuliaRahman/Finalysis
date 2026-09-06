@@ -1,4 +1,4 @@
-import { Layers, RefreshCw, Loader2, Sparkles } from 'lucide-react';
+import { Layers, RefreshCw, Loader2, Sparkles, X, AlertCircle } from 'lucide-react';
 import { useState, forwardRef } from 'react';
 import { router } from '@inertiajs/react';
 import { BarChart, Bar, XAxis, ResponsiveContainer, LabelList, Cell } from 'recharts';
@@ -27,44 +27,48 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
     neraca,
     labaRugi,
     perusahaanId,
-    analisisId
+    analisisId,
+    sectionStatus,       // { status: 'idle'|'processing'|'selesai'|'gagal', error_message } | undefined
+    canRegenerasi,       // boolean — dari analisis.semua_selesai
+    onRegenerasiStart,   // callback -> mulai polling di Detail.jsx
 }, ref) {
-    const [isLoading, setIsLoading] = useState(false);
-    const sudahDianalisis = data?.narasi_dupont_AI;
+    const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
+    const [userPrompt, setUserPrompt] = useState('');
 
-    function handleTrigger() {
-        setIsLoading(true);
+    const status = sectionStatus?.status ?? 'idle';
+    const isLoading = status === 'processing';
+    const sudahDianalisis = Boolean(data?.narasi_dupont_AI);
+
+    function handleTrigger(customPrompt = '') {
         router.post(
             `/perusahaan/${perusahaanId}/analisis/${analisisId}/regenerasi`,
-            { section: 'dupont' },
-            { preserveScroll: true, onFinish: () => setIsLoading(false) }
+            { section: 'dupont', user_prompt: customPrompt },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsPromptModalOpen(false);
+                    setUserPrompt('');
+                    onRegenerasiStart?.();
+                },
+            }
         );
     }
 
     const chartData = [
         {
-            key: 'npm',
-            label: 'Net Profit Margin',
-            value: profitabilitas?.net_profit_margin ?? null,
-            unit: '%',
-            skala: normalisasi(profitabilitas?.net_profit_margin, NPM_SKALA_MAX),
-            color: '#0d9488',
+            key: 'npm', label: 'Net Profit Margin',
+            value: profitabilitas?.net_profit_margin ?? null, unit: '%',
+            skala: normalisasi(profitabilitas?.net_profit_margin, NPM_SKALA_MAX), color: '#0d9488',
         },
         {
-            key: 'tato',
-            label: 'Asset Turnover',
-            value: aktivitas?.total_asset_turnover ?? null,
-            unit: 'x',
-            skala: normalisasi(aktivitas?.total_asset_turnover, TATO_SKALA_MAX),
-            color: '#2563eb',
+            key: 'tato', label: 'Asset Turnover',
+            value: aktivitas?.total_asset_turnover ?? null, unit: 'x',
+            skala: normalisasi(aktivitas?.total_asset_turnover, TATO_SKALA_MAX), color: '#2563eb',
         },
         {
-            key: 'leverage',
-            label: 'Leverage Factor',
-            value: solvabilitas?.leverage_multiplier ?? null,
-            unit: 'x',
-            skala: normalisasi(solvabilitas?.leverage_multiplier, LEVERAGE_SKALA_MAX),
-            color: '#ea580c',
+            key: 'leverage', label: 'Leverage Factor',
+            value: solvabilitas?.leverage_multiplier ?? null, unit: 'x',
+            skala: normalisasi(solvabilitas?.leverage_multiplier, LEVERAGE_SKALA_MAX), color: '#ea580c',
         },
     ];
 
@@ -106,8 +110,7 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
     ];
 
     return (
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-            {/* Header */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs relative">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2.5">
                     <div className="p-2 rounded-lg bg-indigo-100">
@@ -116,7 +119,7 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
                     <h3 className="font-semibold text-slate-900">DuPont Analysis</h3>
                 </div>
 
-                {sudahDianalisis && (
+                {sudahDianalisis && canRegenerasi && (
                     <button
                         onClick={() => setIsPromptModalOpen(true)}
                         disabled={isLoading}
@@ -128,7 +131,6 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
                 )}
             </div>
 
-            {/* Detail Rumus & Angka Mentah */}
             <div className="space-y-2.5 mb-4">
                 {ratios.map((ratio, idx) => (
                     <div key={idx} className="flex flex-col mb-4 last:mb-0 border-b border-slate-100 last:border-0 pb-3 last:pb-0">
@@ -150,7 +152,6 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
                                     <span className="text-slate-700">{ratio.breakdown}</span>
                                 </div>
 
-                                {/* Row Hasil Raw yang sudah mendukung TATO & Leverage */}
                                 {ratio.rawResult !== null && ratio.rawResult !== undefined && (
                                     <div className="flex gap-2 mt-1 pt-1.5 border-t border-slate-200 border-dashed items-center">
                                         <span className="text-slate-500 font-sans font-medium w-14 shrink-0">Hasil:</span>
@@ -158,11 +159,8 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
                                             <span className="text-slate-800 font-bold bg-white px-1.5 py-0.5 rounded border border-slate-200 leading-none">
                                                 {ratio.rawResult}
                                             </span>
-                                            {/* Note hanya dirender jika ada nilainya */}
                                             {ratio.rawNote && (
-                                                <span className="text-slate-400 font-sans italic text-[10px]">
-                                                    {ratio.rawNote}
-                                                </span>
+                                                <span className="text-slate-400 font-sans italic text-[10px]">{ratio.rawNote}</span>
                                             )}
                                         </div>
                                     </div>
@@ -173,7 +171,6 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
                 ))}
             </div>
 
-            {/* Chart: Dekomposisi DuPont */}
             {adaData ? (
                 <div className="mb-4">
                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
@@ -215,8 +212,17 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
                 </div>
             )}
 
-            {/* Narasi AI */}
-            {sudahDianalisis ? (
+            {isLoading ? (
+                <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 flex items-center gap-2 text-blue-600">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span className="text-xs">Sedang diproses AI...</span>
+                </div>
+            ) : status === 'gagal' ? (
+                <div className="bg-red-50/70 border border-red-200 rounded-lg p-3 text-red-700">
+                    <p className="text-xs font-medium mb-0.5">Gagal di-generate</p>
+                    {sectionStatus?.error_message && <p className="text-[11px] text-red-600">{sectionStatus.error_message}</p>}
+                </div>
+            ) : sudahDianalisis ? (
                 <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3">
                     <div className="flex items-center gap-1.5 mb-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-blue-500" />
@@ -225,9 +231,35 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
                     <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{data.narasi_dupont_AI}</p>
                 </div>
             ) : (
-
                 <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-lg p-4 text-center">
                     <p className="text-xs text-slate-400">Analisis DuPont belum pernah dijalankan pada periode ini.</p>
+                </div>
+            )}
+
+            {isPromptModalOpen && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl p-4">
+                    <div className="bg-white border border-slate-200 shadow-xl rounded-xl p-5 w-full">
+                        <div className="flex justify-between items-center mb-3">
+                            <h4 className="text-sm font-semibold text-slate-900">Regenerasi DuPont Analysis</h4>
+                            <button onClick={() => setIsPromptModalOpen(false)} className="text-slate-400 hover:text-slate-700">
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-3">Berikan instruksi tambahan ke AI (opsional)</p>
+                        <textarea
+                            className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500 mb-4 resize-none h-24"
+                            placeholder="Instruksi Opsional..."
+                            value={userPrompt}
+                            onChange={(e) => setUserPrompt(e.target.value)}
+                            disabled={isLoading}
+                        ></textarea>
+                        <div className="flex justify-end gap-2">
+                            <button onClick={() => setIsPromptModalOpen(false)} className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg" disabled={isLoading}>Batal</button>
+                            <button onClick={() => handleTrigger(userPrompt)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 rounded-lg disabled:opacity-50" disabled={isLoading}>
+                                {isLoading && <Loader2 className="w-3 h-3 animate-spin" />} Generate AI
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

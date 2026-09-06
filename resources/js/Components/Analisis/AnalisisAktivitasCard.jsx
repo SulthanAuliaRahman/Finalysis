@@ -5,7 +5,7 @@ import { RatioCardBase } from './RatioCardBase';
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
 const parseVal = (val) => val ? parseFloat(val) : 0;
 
-export const AnalisisAktivitasCard = forwardRef(function AnalisisAktivitasCard({ data, neraca, labaRugi, perusahaanId, analisisId }, ref) {
+export const AnalisisAktivitasCard = forwardRef(function AnalisisAktivitasCard({ data, neraca,labaRugi, perusahaanId, analisisId, sectionStatus, canRegenerasi, onRegenerasiStart}, ref) {
 
     const chartData = [
         { name: 'TATO', value: parseVal(data?.total_asset_turnover) },
@@ -55,6 +55,9 @@ export const AnalisisAktivitasCard = forwardRef(function AnalisisAktivitasCard({
             section="aktivitas"
             perusahaanId={perusahaanId}
             analisisId={analisisId}
+            sectionStatus={sectionStatus}
+            canRegenerasi={canRegenerasi}
+            onRegenerasiStart={onRegenerasiStart}
         />
     );
 });
