@@ -2,30 +2,38 @@
 
 namespace Database\Factories;
 
+use App\Models\Analisis;
+use App\Models\Dokumen;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Perusahaan;
 
 class AnalisisFactory extends Factory
 {
+    protected $model = Analisis::class;
+
     public function definition(): array
     {
         return [
-            'perusahaan_id' => Perusahaan::factory(),
-            'periode_type'  => 'annual',
-            'tahun'         => $this->faker->numberBetween(2018, 2024),
-            'quarter'       => null,
-            'bulan'         => null,
-            'status'        => 'belum dihitung',
+            'dokumen_id'        => Dokumen::factory(),
+            'ringkasan_laporan' => null,
+            'status_generate'   => 'idle',
+            'progress_current'  => 0,
+            'progress_total'    => count(Analisis::SECTIONS),
+            'error_message'     => null,
+            'section_status'    => null,
         ];
     }
 
-    public function quarterly(int $tahun, int $quarter): static
+    public function selesai(): static
     {
-        return $this->state([
-            'periode_type' => 'quarterly',
-            'tahun'        => $tahun,
-            'quarter'      => $quarter,
-            'bulan'        => null,
+        $completedStatus = [];
+        foreach (Analisis::SECTIONS as $section) {
+            $completedStatus[$section] = ['status' => 'selesai', 'error_message' => null];
+        }
+
+        return $this->state(fn (array $attributes) => [
+            'status_generate'  => 'selesai',
+            'progress_current' => count(Analisis::SECTIONS),
+            'section_status'   => $completedStatus,
         ]);
     }
 }
