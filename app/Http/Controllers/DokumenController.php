@@ -69,7 +69,8 @@ class DokumenController extends Controller
             $this->hitungDataAnalissisLaporan($analisis, new CalculateFinancialService());
 
             // start generating
-            GenerateAnalisisJob::dispatch($analisis);
+            // GenerateAnalisisJob::dispatch($analisis);
+            // sesuai kan dengan desain saja.. + nambah bug ternyata
 
         } catch (Exception $e) {
             // Ditangkap onError di Create.jsx via errs.file
