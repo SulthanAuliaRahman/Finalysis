@@ -44,10 +44,10 @@ Route::middleware(['auth'])->group(function(){
         Route::get('/ai', [AiConfigurationController::class, 'index'])->name('ai.view');
         Route::get('/ai/create', [AiConfigurationController::class, 'create'])->name('ai.create');
         Route::post('/ai', [AiConfigurationController::class, 'store'])->name('ai.store');
-        Route::get('/ai/{aiConfiguration}/edit', [AiConfigurationController::class, 'edit'])->name('ai.edit')->whereNumber('aiConfiguration');
-        Route::put('/ai/{aiConfiguration}', [AiConfigurationController::class, 'update'])->name('ai.update')->whereNumber('aiConfiguration');
-        Route::delete('/ai/{aiConfiguration}', [AiConfigurationController::class, 'destroy'])->name('ai.destroy')->whereNumber('aiConfiguration');
-        Route::post('/ai/{aiConfiguration}/activate', [AiConfigurationController::class, 'activate'])->name('ai.activate')->whereNumber('aiConfiguration');
+        Route::get('/ai/{aiConfiguration}/edit', [AiConfigurationController::class, 'edit'])->name('ai.edit');
+        Route::put('/ai/{aiConfiguration}', [AiConfigurationController::class, 'update'])->name('ai.update');
+        Route::delete('/ai/{aiConfiguration}', [AiConfigurationController::class, 'destroy'])->name('ai.destroy');
+        Route::post('/ai/{aiConfiguration}/activate', [AiConfigurationController::class, 'activate'])->name('ai.activate');
 
     });
 

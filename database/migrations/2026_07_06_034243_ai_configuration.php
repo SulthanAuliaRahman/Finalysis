@@ -14,21 +14,14 @@ return new class extends Migration
     {
         Schema::create('ai_configuration', function (Blueprint $table) {
             $table->uuid('id')->primary();
-
-            // Nama konfigurasi
             $table->string('name')->default('Konfigurasi AI');
-
-            // Status konfigurasi
             $table->boolean('is_active')->default(false);
-
-            // LLM
             $table->enum('llm_provider', [
                 'openai',
                 'gemini',
                 'anthropic',
                 'ollama'
             ]);
-
             $table->string('base_url')->nullable();
             $table->string('llm_model');
             $table->text('llm_api_key')->nullable();
