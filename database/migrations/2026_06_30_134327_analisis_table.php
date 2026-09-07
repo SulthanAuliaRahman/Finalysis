@@ -13,7 +13,7 @@ return new class extends Migration
     {
         // Data Analisis ini tergantung dengan dokumen jika ada analisis periode Q3 2023 baru bisa ada Analisis Q3 2023
         Schema::create('analisis', function (Blueprint $table) {
-            $table->uuid();
+            $table->uuid('id')->primary();
             $table->foreignUuid('dokumen_id')->unique()->constrained('dokumen')->cascadeOnDelete();
 
             $table->enum('status_generate', ['idle', 'processing', 'selesai', 'gagal'])->default('idle')->after('status');// untuk asycronus generate analisis
@@ -27,8 +27,8 @@ return new class extends Migration
         });
 
         Schema::create('analisis_likuiditas', function (Blueprint $table) {
-            $table->uuid();
-            $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('analisis_id')->constrained('analisis')->cascadeOnDelete();
             $table->decimal('current_ratio', 15, 2)->nullable();    // data = 2.53     (FE  2.53x)
             $table->decimal('cash_ratio',15, 2)->nullable();       // data    = 0.65     (FE  0.65x)
             $table->text('narasi_likuiditas_AI')->nullable();
@@ -37,8 +37,8 @@ return new class extends Migration
         });
 
         Schema::create('analisis_profitabilitas', function (Blueprint $table) {
-            $table->uuid();
-            $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('analisis_id')->constrained('analisis')->cascadeOnDelete();
             $table->decimal('ROE', 15, 2)->nullable(); // data = 0.15     (FE  15.43%)
             $table->decimal('ROA', 15, 2)->nullable(); // data = 0.08     (FE  8.77%)
             $table->decimal('net_profit_margin',15, 2)->nullable(); // data = 0.05     (FE  5.43%)
@@ -48,8 +48,8 @@ return new class extends Migration
         });
 
         Schema::create('analisis_solvabilitas', function (Blueprint $table) {
-            $table->uuid();
-            $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('analisis_id')->constrained('analisis')->cascadeOnDelete();
             $table->decimal('debt_to_equity',15, 2)->nullable();   // data = 0.65     (FE  65.43%)
             $table->decimal('debt_to_asset',15, 2)->nullable();    // data = 0.43     (FE  43.21%)
             $table->decimal('leverage_multiplier',15, 2)->nullable();    // data = 0.43     (FE  8.21x)
@@ -59,8 +59,8 @@ return new class extends Migration
         });
 
         Schema::create('analisis_aktivitas', function (Blueprint $table) {
-            $table->uuid();
-            $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('analisis_id')->constrained('analisis')->cascadeOnDelete();
             $table->decimal('total_asset_turnover', 15, 2)->nullable(); // data = 1.23  (FE  1.23x)
             $table->decimal('working_capital_turnover', 15, 2)->nullable(); // data = 1.23  (FE  1.23x)
             $table->decimal('fixed_asset_turnover', 15, 2)->nullable(); // data = 1.23  (FE  1.23x)
@@ -70,8 +70,8 @@ return new class extends Migration
         });
 
         Schema::create('analisis_dupont', function (Blueprint $table) {
-            $table->uuid();
-            $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('analisis_id')->constrained('analisis')->cascadeOnDelete();
             $table->decimal('roe_dupont', 15, 2)->nullable();                  // data = 0.15  (FE 15.43%)
             $table->text('narasi_dupont_AI')->nullable();
 
@@ -79,8 +79,8 @@ return new class extends Migration
         });
 
         Schema::create('analisis_commonsize', function (Blueprint $table) {
-            $table->uuid();
-            $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('analisis_id')->constrained('analisis')->cascadeOnDelete();
 
             // Common-size posisi keuangan
             //sisi aset
@@ -103,8 +103,8 @@ return new class extends Migration
         });
 
         Schema::create('analisis_trend', function (Blueprint $table) {
-            $table->uuid();
-            $table->foreignId('analisis_id')->constrained('analisis')->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('analisis_id')->constrained('analisis')->cascadeOnDelete();
             $table->text('narasi_trend_akun_utama_AI')->nullable();
             $table->text('narasi_trend_rasio_AI')->nullable();
             $table->text('narasi_trend_dupont_AI')->nullable();

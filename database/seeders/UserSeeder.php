@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Perusahaan;
 use App\Models\User;
 use Carbon\Traits\Timestamp;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -15,9 +16,11 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::insert([
-            [
-                'perusahaan_id' => 1,
+        $perusahaan = Perusahaan::first();
+
+        User::create([
+            
+                'perusahaan_id' => $perusahaan->id,
                 'name' => 'Super Admin',
                 'email' => 'superadmin@gmail.com',
                 'email_verified_at' => now(),
@@ -26,9 +29,12 @@ class UserSeeder extends Seeder
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],
-            [
-                'perusahaan_id' => 1,
+            
+        ]);
+
+        User::create([
+            
+                'perusahaan_id' => $perusahaan->id,
                 'name' => 'User',
                 'email' => 'user@gmail.com',
                 'email_verified_at' => now(),
@@ -37,7 +43,7 @@ class UserSeeder extends Seeder
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            
         ]);
     }
 }

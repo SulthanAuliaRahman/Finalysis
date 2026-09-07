@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ai_configuration', function (Blueprint $table) {
-            $table->uuid();
+            $table->uuid('id')->primary();
 
             // Nama konfigurasi
             $table->string('name')->default('Konfigurasi AI');

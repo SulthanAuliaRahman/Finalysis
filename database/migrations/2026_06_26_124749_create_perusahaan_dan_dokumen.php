@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('perusahaan', function (Blueprint $table) {
-            $table->uuid();
+            $table->uuid('id')->primary();
             $table->string('nama');
             $table->string('sektor')->nullable();
             $table->text('deskripsi')->nullable();
@@ -21,7 +21,7 @@ return new class extends Migration
 
         Schema::create('dokumen', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignId('perusahaan_id')->constrained('perusahaan')->cascadeOnDelete();
+            $table->foreignUuid('perusahaan_id')->constrained('perusahaan')->cascadeOnDelete();
             $table->string('nama_file');
             $table->string('storage_path');
             $table->enum('periode_type', [

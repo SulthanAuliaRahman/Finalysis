@@ -12,8 +12,9 @@ class PerusahaanSeeder extends Seeder
      */
     public function run(): void
     {
-        Perusahaan::insert([
+        $perusahaan = ([
             [
+
                 'nama' => 'PT Pilar Wahana Artha',
                 'sektor' => 'Jasa',
                 'deskripsi' => 'Perusahaan yang menyediakan layanan konsultasi dan solusi bisnis untuk mendukung kebutuhan di bidang IT.',
@@ -21,6 +22,7 @@ class PerusahaanSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+
                 'nama' => 'PT Cakrawala Jasa Mandiri',
                 'sektor' => 'Jasa',
                 'deskripsi' => 'Perusahaan yang bergerak dalam penyediaan layanan profesional dan solusi pendukung bagi berbagai kebutuhan bisnis.',
@@ -70,5 +72,9 @@ class PerusahaanSeeder extends Seeder
                 'updated_at' => now(),
             ],
         ]);
+
+        foreach ($perusahaan as $data){
+            Perusahaan::create($data);
+        }
     }
 }
