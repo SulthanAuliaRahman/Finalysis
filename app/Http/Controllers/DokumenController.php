@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GenerateAnalisisJob;
 use App\Models\Perusahaan;
 use App\Models\Dokumen;
 use App\Models\Analisis;
@@ -46,6 +47,9 @@ class DokumenController extends Controller
 
             $analisis = Analisis::create(['dokumen_id' => $dokumen->id]);
             $this->hitungDataAnalissisLaporan($analisis, new CalculateFinancialService());
+
+            // start generating
+            GenerateAnalisisJob::dispatch($analisis);
 
         } catch (Exception $e) {
             // Ditangkap onError di Create.jsx via errs.file
