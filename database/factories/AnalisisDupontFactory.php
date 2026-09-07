@@ -2,19 +2,20 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\AnalisisDupont;
 use App\Models\Analisis;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AnalisisDupontFactory extends Factory
 {
+    protected $model = AnalisisDupont::class;
+
     public function definition(): array
     {
         return [
-            'analisis_id'          => Analisis::factory(),
-            'net_profit_margin'    => 10.00,
-            'total_asset_turnover' => 0.80,
-            'leverage_multiplier'  => 2.50,
-            'roe'                  => 20.00,
+            'analisis_id'      => Analisis::factory(),
+            'roe_dupont'       => $this->faker->randomFloat(2, 5, 30),
+            'narasi_dupont_AI' => $this->faker->paragraph(),
         ];
     }
 }

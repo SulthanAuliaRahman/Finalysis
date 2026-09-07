@@ -2,24 +2,42 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Dokumen;
 use App\Models\Perusahaan;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DokumenFactory extends Factory
 {
+    protected $model = Dokumen::class;
+
     public function definition(): array
     {
         return [
-            'perusahaan_id'   => Perusahaan::factory(),
-            'nama_file'       => $this->faker->word() . '.pdf',
-            'storage_path'    => 'dokumen/test/' . $this->faker->uuid() . '.pdf',
-            'periode_type'    => 'annual',
-            'tahun'           => $this->faker->numberBetween(2018, 2024),
-            'quarter'         => null,
-            'bulan'           => null,
-            'statement_types' => ['balance_sheet', 'income_statement', 'cash_flow'],
-            'ukuran_file'     => 1000000,
-            'status'          => 'selesai',
+            'perusahaan_id' => Perusahaan::factory(),
+            'nama_file'     => $this->faker->word() . '.xlsx',
+            'storage_path'  => 'dokumen-import/' . $this->faker->uuid() . '.xlsx',
+            'periode_type'  => 'annual',
+            'tahun'         => 2023,
+            'quarter'       => null,
+            'bulan'         => null,
         ];
+    }
+
+    public function quarterly(int $quarter = 1): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'periode_type' => 'quarterly',
+            'quarter'      => $quarter,
+            'bulan'        => null,
+        ]);
+    }
+
+    public function monthly(int $bulan = 1): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'periode_type' => 'monthly',
+            'quarter'      => null,
+            'bulan'        => $bulan,
+        ]);
     }
 }

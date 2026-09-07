@@ -2,18 +2,22 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\AnalisisProfitabilitas;
 use App\Models\Analisis;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AnalisisProfitabilitasFactory extends Factory
 {
+    protected $model = AnalisisProfitabilitas::class;
+
     public function definition(): array
     {
         return [
-            'analisis_id'       => Analisis::factory(),
-            'ROE'               => 15.00,
-            'ROA'               => 8.00,
-            'net_profit_margin' => 10.00,
+            'analisis_id'               => Analisis::factory(),
+            'net_profit_margin'         => $this->faker->randomFloat(2, 5, 25),
+            'ROA'                       => $this->faker->randomFloat(2, 2, 15),
+            'ROE'                       => $this->faker->randomFloat(2, 5, 30),
+            'narasi_profitabilitas_AI' => $this->faker->paragraph(),
         ];
     }
 }
