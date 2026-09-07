@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Perusahaan;
 use App\Models\Analisis;
 use Illuminate\Http\Request;
-use App\Services\AnalysisFinancialService;
-use App\Services\CalculateFinancialService;
 use App\Jobs\GenerateAnalisisJob;
 use Inertia\Inertia;
 

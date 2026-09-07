@@ -10,7 +10,7 @@ export const AnalisisAktivitasCard = forwardRef(function AnalisisAktivitasCard({
     const chartData = [
         { name: 'TATO', value: parseVal(data?.total_asset_turnover) },
         { name: 'WCT', value: parseVal(data?.working_capital_turnover) },
-        // { name: 'fixedAsset', value: parseVal(data?.fixed_asset_turnover) },
+        { name: 'fixedAsset', value: parseVal(data?.fixed_asset_turnover) },
     ];
 
     const modalKerja = neraca ? neraca.total_asset_lancar - neraca.total_liabilities_pendek : null;
@@ -42,14 +42,15 @@ export const AnalisisAktivitasCard = forwardRef(function AnalisisAktivitasCard({
                     rawResult: data?.working_capital_turnover != null ? parseVal(data.working_capital_turnover) : null,
                 },
                 // di comment dulu soalnya harus traversal ke belakang agar mendapatkan fixed aset sebelumnya
-                // {
-                //     label: 'Fixed Asset Turnover (FAT)',
-                //     value: data?.fixed_asset_turnover != null ? parseVal(data.fixed_asset_turnover) : null,
-                //     suffix: 'x',
-                //     formula: 'Pendapatan / (aset total(sebelumnya) + aset total(sekarang)/ 2 )  ',
-                //     breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.total_pendapatan)} / ${formatNum(neraca.total
-                // },_asset_tetap)}` : null,
-                //     rawResult: data?.fixed_asset_turnover != null ? parseVal(data.fixed_asset_turnover) : null,
+                {
+                 label: 'Fixed Asset Turnover (FAT)',
+                 value: data?.fixed_asset_turnover != null ? parseVal(data.fixed_asset_turnover) : null,
+                 suffix: 'x',
+                 formula: 'Pendapatan / (aset total(sebelumnya) + aset total(sekarang)/ 2 )  ',
+                 breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.total_pendapatan)} / ${formatNum(neraca.total_asset_tetap)}` : null,
+                 rawResult: data?.fixed_asset_turnover != null ? parseVal(data.fixed_asset_turnover) : null,
+                },
+
             ]}
             narasi={data?.narasi_aktivitas_AI}
             section="aktivitas"
