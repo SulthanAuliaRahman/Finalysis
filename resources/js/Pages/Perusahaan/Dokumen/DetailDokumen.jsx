@@ -115,13 +115,14 @@ export default function DetailDokumen({ perusahaan, dokumen }) {
                     <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Berkas Dokumen
                 </Link>
 
-                <a
+                {/* tak butuh sekarang mah UC yang mana memang? */}
+                {/* <a
                     href={`/storage/${dokumen.storage_path}`}
                     download
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                     <Download className="w-3.5 h-3.5" /> Unduh Berkas Asli
-                </a>
+                </a> */}
             </div>
 
             {/* Header dokumen */}
