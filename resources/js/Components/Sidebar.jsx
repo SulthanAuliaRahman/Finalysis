@@ -53,7 +53,6 @@ export default function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobile
                             <span className="text-sm text-white truncate font-semibold tracking-tight">
                                 Finalisis
                             </span>
-                            <span className="text-xs text-slate-500">RAG Keuangan</span>
                         </div>
                     )}
                 </div>

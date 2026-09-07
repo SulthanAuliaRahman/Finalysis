@@ -40,9 +40,6 @@ export default function AppLayout({ children, title }) {
                         <h1 className="text-slate-900 truncate font-semibold text-base">
                             {title || "Finalisis"}
                         </h1>
-                        <p className="text-xs text-slate-500 hidden sm:block">
-                            Analisis Laporan Keuangan Berbasis LLM + RAG
-                        </p>
                     </div>
 
                     {/* Dropdown Profile & Logout */}

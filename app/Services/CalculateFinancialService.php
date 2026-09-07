@@ -303,7 +303,7 @@ class CalculateFinancialService
             ['analisis_id' => $analisis->id],
             [
                 'pendapatan_persen'         => round($pendapatanPersen, 2),
-                'beban_persen'              => round($bebanPersen, 2),
+                'beban_persen'              => abs(round($bebanPersen, 2)),
                 'laba_bersih_persen'        => round($labaBersihPersen, 2),
                 'aset_lancar_persen'        => round($asetLancarPersen, 2),
                 'aset_tetap_persen'         => round($asetTetapPersen, 2),

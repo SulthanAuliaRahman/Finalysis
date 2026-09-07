@@ -177,9 +177,6 @@ export default function Index({ configurations = [] }) {
 				<div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
 					<div className="space-y-1">
 						<h2 className="text-lg font-bold text-slate-900">Konfigurasi AI</h2>
-						<p className="text-xs text-slate-500 max-w-2xl">
-							Kelola daftar provider dan API key LLM. Anda dapat menambahkan beberapa konfigurasi dan berpindah konfigurasi secara manual kapan saja.
-						</p>
 					</div>
 					<Link href="/settings/ai/create">
 						<Button className="w-full sm:w-auto">
@@ -210,27 +207,8 @@ export default function Index({ configurations = [] }) {
 						Tambahkan konfigurasi AI pertama untuk mulai menggunakan fitur analisis laporan keuangan.
 					</p>
 					<Link href="/settings/ai/create">
-						<Button>
-							<Plus className="w-4 h-4 mr-1.5" /> Tambah Konfigurasi
-						</Button>
+						
 					</Link>
-				</div>
-			)}
-
-			{/* Info Box */}
-			{hasConfigs && (
-				<div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-					<div className="flex items-start gap-3">
-						<div className="p-1.5 rounded-md bg-blue-100 text-blue-700 shrink-0 mt-0.5">
-							<Info className="w-3.5 h-3.5" />
-						</div>
-						<div className="text-xs text-blue-800 space-y-1">
-							<p className="font-semibold">Switch Konfigurasi API Secara Manual</p>
-							<p className="text-blue-700">
-								Hanya ada satu konfigurasi yang berstatus <strong>Aktif</strong> pada satu waktu. Tekan tombol <strong>Aktifkan</strong> pada konfigurasi yang diinginkan untuk beralih. Seluruh proses analisis AI akan langsung menggunakan provider dan key konfigurasi aktif tersebut.
-							</p>
-						</div>
-					</div>
 				</div>
 			)}
 		</div>
