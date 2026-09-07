@@ -42,6 +42,26 @@ class DokumenController extends Controller
             'bulan'        => ['required_if:periode_type,monthly', 'nullable', 'integer', 'between:1,12'],
         ]);
 
+
+        $periodeSudahAda = Dokumen::where('perusahaan_id', $perusahaan->id)
+            ->where('periode_type', $validated['periode_type'])
+            ->where('tahun', $validated['tahun'])
+            ->when(
+                $validated['periode_type'] == 'quarterly',
+                fn ($query) => $query->where('quarter', $validated['quarter'])
+            )
+            ->when(
+                $validated['periode_type'] == 'monthly',
+                fn ($query) => $query->where('bulan', $validated['bulan'])
+            )
+            ->exists();
+
+        if ($periodeSudahAda) {
+            return back()->withErrors([
+                'periode_type' => 'Data perusahaan sudah ada di periode yang sama.'
+            ]);
+        }
+
         try {
             $dokumen = $this->dokumenService->importExcel($perusahaan, $validated);
 
@@ -127,16 +147,16 @@ class DokumenController extends Controller
                     });
 
                 }
-                // elseif ($dokumen->periode_type === 'monthly') {
+                elseif ($dokumen->periode_type === 'monthly') {
 
-                //     $query->where(function ($q) use ($dokumen) {
-                //         $q->where('tahun', '<', $dokumen->tahun)
-                //             ->orWhere(function ($q2) use ($dokumen) {
-                //                 $q2->where('tahun', $dokumen->tahun)
-                //                     ->where('bulan', '<', $dokumen->bulan);
-                //             });
-                //     });
-                // }
+                    $query->where(function ($q) use ($dokumen) {
+                        $q->where('tahun', '<', $dokumen->tahun)
+                            ->orWhere(function ($q2) use ($dokumen) {
+                                $q2->where('tahun', $dokumen->tahun)
+                                    ->where('bulan', '<', $dokumen->bulan);
+                            });
+                    });
+                }
             })
             ->with('neraca');
 
@@ -155,15 +175,15 @@ class DokumenController extends Controller
                 ->first();
 
         }
-        // else
-        // {
-        // //monthly
+        else
+        {
+        //monthly
 
-        //     $dokumenSebelumnya = $query
-        //         ->orderByDesc('tahun')
-        //         ->orderByDesc('bulan')
-        //         ->first();
-        // }
+            $dokumenSebelumnya = $query
+                ->orderByDesc('tahun')
+                ->orderByDesc('bulan')
+                ->first();
+        }
 
         $neracaSebelumnya = $dokumenSebelumnya?->neraca;
 
