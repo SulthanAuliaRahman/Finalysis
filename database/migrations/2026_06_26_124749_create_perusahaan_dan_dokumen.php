@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('perusahaan', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama');
-            $table->string('sektor')->nullable();
             $table->text('deskripsi')->nullable();
             $table->timestamps();
         });

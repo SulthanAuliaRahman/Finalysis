@@ -14,7 +14,6 @@ class Perusahaan extends Model
 
     protected $fillable = [
         'nama',
-        'sektor',
         'deskripsi',
     ];
 
