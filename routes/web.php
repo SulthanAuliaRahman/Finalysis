@@ -1,13 +1,10 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\DocumentController;
-use App\Http\Controllers\PythonTesterController;
 use App\Http\Controllers\AiConfigurationController;
-use App\Http\Controllers\HomeController;
+
 use App\Http\Controllers\DashboardController;
 
 // Real Not Test
