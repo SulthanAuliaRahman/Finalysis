@@ -46,21 +46,6 @@ export default function Create() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-semibold text-slate-700" htmlFor="sektor">Sektor Industri <span className="text-red-500">*</span></label>
-                        <select
-                            id="sektor"
-                            value={data.sektor}
-                            onChange={e => setData("sektor", e.target.value)}
-                            className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
-                            disabled={processing}
-                        >
-                            <option value="">Pilih sektor industri...</option>
-                            {SEKTORS.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                        {errors.sektor && <p className="text-xs text-red-500">{errors.sektor}</p>}
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold text-slate-700" htmlFor="deskripsi">Deskripsi Profil</label>
                         <textarea
                             id="deskripsi"

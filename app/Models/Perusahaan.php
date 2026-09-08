@@ -14,7 +14,6 @@ class Perusahaan extends Model
 
     protected $fillable = [
         'nama',
-        'sektor',
         'deskripsi',
     ];
 
@@ -28,8 +27,5 @@ class Perusahaan extends Model
         return $this->hasMany(Dokumen::class);
     }
 
-    public function analisis()
-    {
-        return $this->hasMany(Analisis::class);
-    }
+    
 }

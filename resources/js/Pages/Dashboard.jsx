@@ -1,347 +1,61 @@
 import { Link, usePage } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
-import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
-import {
-    Building2,
-    Users,
-    FileText,
-    BarChart3,
-    Plus,
-    ArrowRight,
-    Settings,
-    FileUp,
-    Compass,
-    Activity,
-    FolderOpen
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Building2, Users, FileText, BarChart3, ArrowRight } from "lucide-react";
+import { CompanyHeader } from "@/Components/Dashboard/CompanyHeader";
+import { FinancialHealthOverview } from "@/Components/Dashboard/FinancialHealthOverview";
+import { FinancialRatioOverview } from "@/Components/Dashboard/FinancialRatioOverview";
+import { FinancialTrendChart } from "@/Components/Dashboard/FinancialTrendChart";
+import { FinancialRatioTrendChart } from "@/Components/Dashboard/FinancialRatioTrendChart";
+import { ReportSummary } from "@/Components/Dashboard/ReportSummary";
 
-// Mapping Sektor untuk Company Card
-const SEKTOR_COLOR = {
-    Manufaktur: "bg-amber-50 text-amber-700 border-amber-200",
-    Jasa: "bg-blue-50 text-blue-700 border-blue-200",
-    Perdagangan: "bg-pink-50 text-pink-700 border-pink-200",
-    Lainnya: "bg-slate-50 text-slate-700 border-slate-200",
-};
-
-// Badges untuk Status Dokumen
-const STATUS_BADGES = {
-    draft: "bg-slate-100 text-slate-700 border-slate-200",
-    chunked: "bg-indigo-50 text-indigo-700 border-indigo-200",
-    embedded: "bg-emerald-50 text-emerald-700 border-emerald-200",
-};
-
-export default function Dashboard({ role, stats, ...props }) {
-    const { auth } = usePage().props;
-    const currentUser = auth?.user;
-
-    if (role === "super_admin") {
-        return (
-            <SuperAdminDashboard
-                user={currentUser}
-                stats={stats}
-                recentPerusahaan={props.recentPerusahaan}
-                recentDokumen={props.recentDokumen}
-            />
-        );
-    }
-
-    return (
-        <CompanyDashboard
-            user={currentUser}
-            role={role}
-            perusahaan={props.perusahaan}
-            stats={stats}
-            recentDokumen={props.recentDokumen}
-            recentAnalisis={props.recentAnalisis}
-        />
-    );
+export default function Dashboard({ role, stats, recentPerusahaan = [], recentDokumen = [], dashboard }) {
+    if (role === "super_admin") return <SuperAdminDashboard stats={stats} recentPerusahaan={recentPerusahaan} recentDokumen={recentDokumen} />;
+    return <CompanyDashboard dashboard={dashboard} />;
 }
 
-// -------------------------------------------------------------
-// 1. DASHBOARD SUPER ADMIN
-// -------------------------------------------------------------
-function SuperAdminDashboard({ user, stats, recentPerusahaan, recentDokumen }) {
+function CompanyDashboard({ dashboard }) {
+    const hasData = Boolean(dashboard?.selectedPeriod);
     return (
-        <div className="space-y-8">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                {/* Total Perusahaan */}
-                <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between shadow-xs">
-                    <div className="space-y-1">
-                        <p className="text-xs text-slate-400 font-medium">Total Perusahaan</p>
-                        <h3 className="text-2xl font-bold text-slate-900">{stats.total_perusahaan}</h3>
-                    </div>
-                    <div className="w-12 h-12 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center text-blue-600">
-                        <Building2 className="w-6 h-6" />
-                    </div>
-                </div>
-
-                {/* Total Users */}
-                <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between shadow-xs">
-                    <div className="space-y-1">
-                        <p className="text-xs text-slate-400 font-medium">Total Akun</p>
-                        <h3 className="text-2xl font-bold text-slate-900">{stats.total_users}</h3>
-                    </div>
-                    <div className="w-12 h-12 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
-                        <Users className="w-6 h-6" />
-                    </div>
-                </div>
-
-                {/* Total Dokumen */}
-                <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between shadow-xs">
-                    <div className="space-y-1">
-                        <p className="text-xs text-slate-400 font-medium">Dokumen Terunggah</p>
-                        <h3 className="text-2xl font-bold text-slate-900">{stats.total_dokumen}</h3>
-                    </div>
-                    <div className="w-12 h-12 bg-amber-50 border border-amber-100 rounded-xl flex items-center justify-center text-amber-600">
-                        <FileText className="w-6 h-6" />
-                    </div>
-                </div>
-
-                {/* Total Analisis */}
-                <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between shadow-xs">
-                    <div className="space-y-1">
-                        <p className="text-xs text-slate-400 font-medium">Laporan Analisis AI</p>
-                        <h3 className="text-2xl font-bold text-slate-900">{stats.total_analisis}</h3>
-                    </div>
-                    <div className="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-indigo-600">
-                        <BarChart3 className="w-6 h-6" />
-                    </div>
-                </div>
-            </div>
-
-            {/* Split Panels */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Area: Perusahaan & Dokumen */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Perusahaan Terbaru */}
-                    <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-                            <h3 className="text-sm font-bold text-slate-900">Perusahaan Baru Terdaftar</h3>
-                            <Link href="/perusahaan" className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1">
-                                Lihat Semua <ArrowRight className="w-3.5 h-3.5" />
-                            </Link>
-                        </div>
-                        <div className="divide-y divide-slate-100">
-                            {recentPerusahaan.length === 0 ? (
-                                <div className="p-6 text-center text-xs text-slate-400">Belum ada perusahaan.</div>
-                            ) : (
-                                recentPerusahaan.map((p) => (
-                                    <div key={p.id} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
-                                                <Building2 className="w-4 h-4" />
-                                            </div>
-                                            <div>
-                                                <h4 className="text-xs font-bold text-slate-800">{p.nama}</h4>
-                                                <span className="text-[10px] text-slate-400">{p.dokumen_count || 0} berkas dokumen</span>
-                                            </div>
-                                        </div>
-                                        <Badge variant="outline" className={cn("text-[9px] py-0", SEKTOR_COLOR[p.sektor] || SEKTOR_COLOR.Lainnya)}>
-                                            {p.sektor}
-                                        </Badge>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Dokumen Terbaru */}
-                    <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-                            <h3 className="text-sm font-bold text-slate-900">Dokumen Terunggah Terakhir</h3>
-                            <span className="text-[10px] text-slate-400">Seluruh Platform</span>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-slate-100">
-                                <thead className="bg-slate-50/80">
-                                    <tr>
-                                        <th className="px-5 py-2.5 text-left text-[10px] font-semibold text-slate-500">Nama Dokumen</th>
-                                        <th className="px-5 py-2.5 text-left text-[10px] font-semibold text-slate-500">Perusahaan</th>
-                                        <th className="px-5 py-2.5 text-left text-[10px] font-semibold text-slate-500">Tahun</th>
-                                        <th className="px-5 py-2.5 text-right text-[10px] font-semibold text-slate-500">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {recentDokumen.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={4} className="p-6 text-center text-xs text-slate-400">Belum ada dokumen yang diunggah.</td>
-                                        </tr>
-                                    ) : (
-                                        recentDokumen.map((d) => (
-                                            <tr key={d.id} className="hover:bg-slate-50/50 transition-colors">
-                                                <td className="px-5 py-3 whitespace-nowrap text-xs font-medium text-slate-800 truncate max-w-[200px]">
-                                                    {d.nama_file}
-                                                </td>
-                                                <td className="px-5 py-3 whitespace-nowrap text-xs text-slate-600">
-                                                    {d.perusahaan?.nama || "—"}
-                                                </td>
-                                                <td className="px-5 py-3 whitespace-nowrap text-xs text-slate-500">
-                                                    {d.tahun}
-                                                </td>
-                                                <td className="px-5 py-3 whitespace-nowrap text-right">
-                                                    <Badge variant="outline" className={cn("text-[9px] font-semibold py-0 border capitalize", STATUS_BADGES[d.status] || STATUS_BADGES.draft)}>
-                                                        {d.status}
-                                                    </Badge>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div className="mx-auto max-w-7xl space-y-8 pb-8">
+            <CompanyHeader company={dashboard?.company} selectedPeriod={dashboard?.selectedPeriod} periodOptions={dashboard?.periodOptions ?? []} />
+            {!hasData ? <EmptyState company={dashboard?.company} /> : <>
+                <FinancialHealthOverview metrics={dashboard.financialOverview} />
+                <FinancialRatioOverview ratios={dashboard.ratios} />
+                <FinancialTrendChart data={dashboard.trendSeries} />
+                <FinancialRatioTrendChart data={dashboard.trendSeries} />
+                <ReportSummary summary={dashboard.selectedPeriod?.reportSummary} periodLabel={dashboard.selectedPeriod?.label} />
+            </>}
         </div>
     );
 }
 
-// -------------------------------------------------------------
-// 2. DASHBOARD PERUSAHAAN (KORPORAT)
-// -------------------------------------------------------------
-function CompanyDashboard({ user, role, perusahaan, stats, recentDokumen, recentAnalisis }) {
-    return (
-        <div className="space-y-8">
-            {/* Welcoming Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">{perusahaan?.nama || "Perusahaan"} 🏢</h1>
-                    <p className="text-xs text-slate-500 mt-1 flex items-center gap-2">
-                        <span>Portal Analisis Laporan Keuangan Korporasi</span>
-                        <span>•</span>
-                        <Badge variant="outline" className={cn("text-[9px] py-0 border", SEKTOR_COLOR[perusahaan?.sektor] || SEKTOR_COLOR.Lainnya)}>
-                            {perusahaan?.sektor || "Sektor Umum"}
-                        </Badge>
-                    </p>
-                </div>
-
-                <div className="flex gap-2">
-                    <Link href={`/perusahaan/${perusahaan?.id}/dokumen/create`}>
-                        <Button className="shadow-xs gap-1.5 text-xs h-9">
-                            <FileUp className="w-3.5 h-3.5" /> Unggah Laporan
-                        </Button>
-                    </Link>
-                </div>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                {/* Dokumen Perusahaan */}
-                <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between shadow-xs">
-                    <div className="space-y-1">
-                        <p className="text-xs text-slate-400 font-medium">Berkas Keuangan</p>
-                        <h3 className="text-2xl font-bold text-slate-900">{stats.total_dokumen} PDF</h3>
-                    </div>
-                    <div className="w-12 h-12 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center text-blue-600">
-                        <FileText className="w-6 h-6" />
-                    </div>
-                </div>
-
-                {/* Analisis Terbuat */}
-                <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between shadow-xs">
-                    <div className="space-y-1">
-                        <p className="text-xs text-slate-400 font-medium">Laporan Analisis AI</p>
-                        <h3 className="text-2xl font-bold text-slate-900">{stats.total_analisis} Terbuat</h3>
-                    </div>
-                    <div className="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-indigo-600">
-                        <BarChart3 className="w-6 h-6" />
-                    </div>
-                </div>
-
-                {/* Pengguna / Anggota Tim */}
-                <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between shadow-xs">
-                    <div className="space-y-1">
-                        <p className="text-xs text-slate-400 font-medium">Anggota Tim Analis</p>
-                        <h3 className="text-2xl font-bold text-slate-900">{stats.total_users} Anggota</h3>
-                    </div>
-                    <div className="w-12 h-12 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
-                        <Users className="w-6 h-6" />
-                    </div>
-                </div>
-            </div>
-
-            {/* Split panels */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Panel: Dokumen Baru di Perusahaan */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-                            <h3 className="text-sm font-bold text-slate-900">Arsip Laporan Keuangan Terakhir</h3>
-                            <Link href={`/perusahaan/${perusahaan?.id}/dokumen`} className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1">
-                                Buka Dokumen <ArrowRight className="w-3.5 h-3.5" />
-                            </Link>
-                        </div>
-                        <div className="divide-y divide-slate-100">
-                            {recentDokumen.length === 0 ? (
-                                <div className="p-8 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
-                                    <FolderOpen className="w-8 h-8 text-slate-300" />
-                                    <span>Belum ada dokumen yang diunggah untuk korporasi ini.</span>
-                                </div>
-                            ) : (
-                                recentDokumen.map((d) => (
-                                    <div key={d.id} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded bg-red-50 border border-red-100 flex items-center justify-center text-red-500 font-mono text-[9px] font-bold">
-                                                PDF
-                                            </div>
-                                            <div>
-                                                <h4 className="text-xs font-bold text-slate-800 truncate max-w-[250px]">{d.nama_file}</h4>
-                                                <span className="text-[10px] text-slate-400">Periode: {d.periode || d.tahun}</span>
-                                            </div>
-                                        </div>
-                                        <Badge variant="outline" className={cn("text-[9px] py-0 border capitalize", STATUS_BADGES[d.status] || STATUS_BADGES.draft)}>
-                                            {d.status}
-                                        </Badge>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Panel: Analisis & Tim */}
-                <div className="space-y-6">
-                    {/* Analisis AI Terakhir */}
-                    <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-                            <h3 className="text-sm font-bold text-slate-900">Analisis AI Terakhir</h3>
-                            <Link href={`/perusahaan/${perusahaan?.id}/analisis`} className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1">
-                                Seluruh Analisis <ArrowRight className="w-3.5 h-3.5" />
-                            </Link>
-                        </div>
-                        <div className="divide-y divide-slate-100">
-                            {recentAnalisis.length === 0 ? (
-                                <div className="p-8 text-center text-xs text-slate-400">
-                                    Belum ada hasil analisis.
-                                </div>
-                            ) : (
-                                recentAnalisis.map((a) => (
-                                    <div key={a.id} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
-                                        <div>
-                                            <h4 className="text-xs font-bold text-slate-800">Analisis Keuangan</h4>
-                                            <span className="text-[10px] text-slate-400">Periode: {a.periode || a.tahun}</span>
-                                        </div>
-                                        <Link href={`/perusahaan/${perusahaan?.id}/analisis/${a.id}`}>
-                                            <Button variant="ghost" size="sm" className="h-7 text-[10px] text-blue-600 border border-blue-200 hover:bg-blue-50 px-2.5">
-                                                Buka Laporan
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+function EmptyState({ company }) {
+    const uploadUrl = company?.id ? `/perusahaan/${company.id}/dokumen/create` : "/";
+    return <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center shadow-sm">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><FileText className="h-6 w-6" /></div>
+        <h2 className="mt-4 text-lg font-semibold text-slate-900">Data keuangan belum siap ditampilkan</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">Unggah dan lengkapi Neraca serta Laba Rugi untuk melihat ringkasan kondisi keuangan perusahaan.</p>
+        {company && <Link href={uploadUrl} className="mt-6 inline-flex items-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">Unggah Laporan</Link>}
+    </div>;
 }
 
-Dashboard.layout = (page) => (
-    <AppLayout title="Dashboard Utama">
-        {page}
-    </AppLayout>
-);
+function SuperAdminDashboard({ stats = {}, recentPerusahaan, recentDokumen }) {
+    const cards = [
+        ["Total Perusahaan", stats.total_perusahaan, Building2, "bg-blue-50 text-blue-600"],
+        ["Total Akun", stats.total_users, Users, "bg-emerald-50 text-emerald-600"],
+        ["Dokumen Terunggah", stats.total_dokumen, FileText, "bg-amber-50 text-amber-600"],
+        ["Laporan Analisis", stats.total_analisis, BarChart3, "bg-indigo-50 text-indigo-600"],
+    ];
+    return <div className="mx-auto max-w-7xl space-y-6">
+        <div><h1 className="text-2xl font-bold text-slate-900">Dashboard Platform</h1><p className="mt-1 text-sm text-slate-500">Ringkasan operasional Finalysis.</p></div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">{cards.map(([label, value, Icon, color]) => <div key={label} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><div><p className="text-sm text-slate-500">{label}</p><p className="mt-1 text-2xl font-bold text-slate-900">{value ?? 0}</p></div><div className={`rounded-xl p-3 ${color}`}><Icon className="h-5 w-5" /></div></div>)}</div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <ListCard title="Perusahaan Terbaru" items={recentPerusahaan} primary="nama" secondary={(item) => `${item.dokumen_count ?? 0} dokumen`} />
+            <ListCard title="Dokumen Terbaru" items={recentDokumen} primary="nama_file" secondary={(item) => item.perusahaan?.nama ?? "—"} />
+        </div>
+    </div>;
+}
+
+function ListCard({ title, items, primary, secondary }) { return <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"><div className="border-b border-slate-100 px-5 py-4"><h2 className="font-semibold text-slate-900">{title}</h2></div>{items.length ? <div className="divide-y divide-slate-100">{items.map((item) => <div key={item.id} className="flex items-center justify-between px-5 py-4"><div><p className="text-sm font-medium text-slate-800">{item[primary]}</p><p className="mt-0.5 text-xs text-slate-500">{secondary(item)}</p></div><ArrowRight className="h-4 w-4 text-slate-300" /></div>)}</div> : <p className="p-6 text-sm text-slate-500">Belum ada data.</p>}</section>; }
+
+Dashboard.layout = (page) => <AppLayout title="Dashboard">{page}</AppLayout>;
