@@ -15,7 +15,7 @@ export default function CompanyCard({ perusahaan }) {
     const formattedDate = perusahaan.created_at ? perusahaan.created_at.slice(0, 10) : "—";
 
     function handleDelete() {
-        if (confirm(`Apakah Anda yakin ingin menghapus ${perusahaan.nama}? Seluruh dokumen RAG terkait akan ikut terhapus.`)) {
+        if (confirm(`Apakah Anda yakin ingin menghapus ${perusahaan.nama}?`)) {
             router.delete(`/perusahaan/${perusahaan.id}`);
         }
     }

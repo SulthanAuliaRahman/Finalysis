@@ -37,7 +37,6 @@ export default function Edit({ perusahaan }) {
             <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-6">
                 <div>
                     <h2 className="text-lg font-bold text-slate-900">Perbarui Profil Perusahaan</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Ubah informasi metadata entitas untuk pencarian RAG yang akurat.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -54,7 +53,7 @@ export default function Edit({ perusahaan }) {
                         {errors.nama && <p className="text-xs text-red-500">{errors.nama}</p>}
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
+                    {/* <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold text-slate-700" htmlFor="sektor">Sektor Industri <span className="text-red-500">*</span></label>
                         <select
                             id="sektor"
@@ -66,7 +65,7 @@ export default function Edit({ perusahaan }) {
                             {SEKTORS.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                         {errors.sektor && <p className="text-xs text-red-500">{errors.sektor}</p>}
-                    </div>
+                    </div> */}
 
                     <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold text-slate-700" htmlFor="deskripsi">Deskripsi Profil</label>
@@ -74,7 +73,7 @@ export default function Edit({ perusahaan }) {
                             id="deskripsi"
                             value={data.deskripsi}
                             onChange={e => setData("deskripsi", e.target.value)}
-                            rows={4}
+                            rows={8}
                             className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
                             disabled={processing}
                         />
