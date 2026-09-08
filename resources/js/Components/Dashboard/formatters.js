@@ -1,0 +1,4 @@
+export const formatCurrency = (value, fractionDigits = 0) => value === null || value === undefined ? "—" : new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: fractionDigits, minimumFractionDigits: fractionDigits, notation: "compact", compactDisplay: "short" }).format(value).replace("IDR", "Rp");
+export const formatCurrencyFull = (value) => value === null || value === undefined ? "—" : new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value);
+export const formatPercent = (value, digits = 1) => value === null || value === undefined ? "—" : `${Number(value).toLocaleString("id-ID", { maximumFractionDigits: digits, minimumFractionDigits: digits })}%`;
+export const formatRatio = (value) => value === null || value === undefined ? "—" : `${Number(value).toLocaleString("id-ID", { maximumFractionDigits: 2 })}x`;

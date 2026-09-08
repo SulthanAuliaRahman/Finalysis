@@ -48,4 +48,4 @@ class AiConfigurationSeeder extends Seeder
             'llm_api_key' => null,
         ]);
     }
-}
+}   

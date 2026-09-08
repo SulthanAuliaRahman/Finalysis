@@ -144,7 +144,7 @@ export default function Detail({
                 </div>
             </div>
 
-            <div className="mb-8">
+            <div id="tren" className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Analisis Tren</h3>
                 <div className="grid grid-cols-1 gap-6">
                     <TrendAkunUtamaCard data={trendAkunUtama} perusahaanId={perusahaan.id} analisisId={analisis.id} {...cardProps('trend_akun_utama')} />

@@ -1,0 +1,7 @@
+import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
+import { formatCurrency, formatPercent } from "./formatters";
+
+export function FinancialHealthOverview({ metrics = {} }) {
+    return <section><div className="mb-4"><h2 className="text-base font-semibold text-slate-900">Total Akun</h2><p className="mt-1 text-sm text-slate-500">Ringkasan akun utama pada periode yang dipilih.</p></div><div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">{Object.values(metrics).map((metric) => <article key={metric.label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-sm font-medium text-slate-500">{metric.label}</p><p className="mt-2 text-2xl font-bold tracking-tight text-slate-900">{formatCurrency(metric.value, 2)}</p><Trend comparison={metric.comparison} trend={metric.trend} /></article>)}</div></section>;
+}
+function Trend({ comparison, trend }) { if (comparison === null || comparison === undefined) return <p className="mt-2 text-xs text-slate-400">Belum ada pembanding</p>; const Icon = trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : Minus; const color = trend === "down" ? "text-rose-600" : trend === "up" ? "text-emerald-600" : "text-slate-500"; return <p className={`mt-2 flex items-center gap-1 text-xs font-medium ${color}`}><Icon className="h-3.5 w-3.5" />{formatPercent(Math.abs(comparison))} dibanding periode sebelumnya</p>; }
