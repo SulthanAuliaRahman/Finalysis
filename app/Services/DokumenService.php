@@ -11,14 +11,37 @@ use App\Models\Perusahaan;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 use Exception;
 
 class DokumenService
 {
-    private const SHEET_NERACA = 'Laporan Posisi Keuangan';
-    private const SHEET_LABA_RUGI = 'Laporan Laba Rugi';
+    // Kata kunci judul laporan yang dicari di dalam cell (bukan nama sheet)
+    private const KEYWORDS_NERACA = [
+        'Laporan Neraca',
+        'Laporan Posisi Keuangan',
+    ];
+
+    private const KEYWORDS_LABA_RUGI = [
+        'Laporan Laba Rugi',
+        'Laporan Laba/Rugi',
+    ];
+
+    // Label generik dipakai sebagai fallback kalau sub-kelompok detail tidak ditemukan
+    private const LABEL_ASET_GENERIK = ['ASET', 'Aset'];
+    private const LABEL_LIABILITAS_GENERIK = ['LIABILITAS', 'Liabilitas', 'Kewajiban'];
+
+    // Dipakai sebagai "rambu berhenti" saat fallback generik membaca ke bawah,
+    // supaya tidak ikut membaca section lain yang sudah ditemukan lewat pencarian spesifik.
+    private const SEMUA_LABEL_HEADER = [
+        'Aset Lancar', 'Aset Tetap', 'ASET', 'Aset',
+        'Liabilitas Jangka Pendek', 'Liabilitas Lancar',
+        'Liabilitas Jangka Panjang', 'Liabilitas Tidak Lancar',
+        'LIABILITAS', 'Liabilitas', 'Kewajiban',
+        'Ekuitas', 'Pendapatan', 'Beban',
+    ];
 
     public function importExcel(Perusahaan $perusahaan, array $data): Dokumen
     {
@@ -26,29 +49,29 @@ class DokumenService
         $file = $data['file'];
 
         $spreadsheet = IOFactory::load($file->getRealPath());
-        $sheetNeraca = $spreadsheet->getSheetByName(self::SHEET_NERACA);
-        $sheetLabaRugi = $spreadsheet->getSheetByName(self::SHEET_LABA_RUGI);
 
-        if (! $sheetNeraca || ! $sheetLabaRugi) {
-            throw new Exception('Sheet "' . self::SHEET_NERACA . '" atau "' . self::SHEET_LABA_RUGI . '" tidak ditemukan.');
-        }
+        [$sheetNeraca, $sheetLabaRugi] = $this->resolveSheets($spreadsheet);
 
-        // Ekstraksi (Tree Traversal)
+        // Ekstraksi Aset (Aset Lancar & Aset Tetap dicek independen, masing-masing punya fallback sendiri)
+        $asetGrouped = $this->extractAsetDenganFallback($sheetNeraca);
+
+        // Ekstraksi Liabilitas (Jk. Pendek & Jk. Panjang dicek independen)
+        $liabilitasGrouped = $this->extractLiabilitasDenganFallback($sheetNeraca);
+
         $neracaGrouped = array_merge(
-            $this->extract($sheetNeraca, ['Aset Lancar'], 'aset', 'aset_lancar'),
-            $this->extract($sheetNeraca, ['Aset Tetap'], 'aset', 'aset_tetap'),
-            $this->extract($sheetNeraca, ['Liabilitas Jangka Pendek', 'Liabilitas Lancar'], 'liabilitas', 'liabilitas_jangka_pendek'),
-            $this->extract($sheetNeraca, ['Liabilitas Jangka Panjang', 'Liabilitas Tidak Lancar'], 'liabilitas', 'liabilitas_jangka_panjang'),
+            $asetGrouped,
+            $liabilitasGrouped,
             $this->extract($sheetNeraca, ['Ekuitas'], 'ekuitas', 'ekuitas')
         );
 
-        // dd($neracaGrouped);
-
         $labaRugiGrouped = array_merge(
             $this->extract($sheetLabaRugi, ['Pendapatan'], 'pendapatan', 'pendapatan'),
-            $this->extract($sheetLabaRugi, ['Beban' ], 'beban', 'beban'),
+            $this->extract($sheetLabaRugi, ['Beban'], 'beban', 'beban'),
             $this->extractSingleRow($sheetLabaRugi, ['Beban pajak penghasilan', 'Beban pajak', 'Pajak Penghasilan'], 'beban', 'beban_pajak')
         );
+
+        // Validasi kelengkapan: Aset, Liabilitas, Ekuitas, Pendapatan, Beban wajib ada isinya
+        $this->validateKelengkapanData($neracaGrouped, $labaRugiGrouped);
 
         $totalNeraca = $this->hitungTotalKelompokNeraca($neracaGrouped);
         $totalLabaRugi = $this->hitungTotalKelompokLabaRugi($labaRugiGrouped);
@@ -84,8 +107,143 @@ class DokumenService
     }
 
 
-    private function extract(Worksheet $sheet, array $labelKelompokDicari, string $kelompok, string $subKelompok): array
+    // Cari sheet Neraca & Laba Rugi berdasarkan isi cell (judul laporan),
+
+
+    private function resolveSheets(Spreadsheet $spreadsheet): array
     {
+        $sheetNeraca = $this->findSheetByKeywords($spreadsheet, self::KEYWORDS_NERACA);
+        $sheetLabaRugi = $this->findSheetByKeywords($spreadsheet, self::KEYWORDS_LABA_RUGI);
+
+        if (!$sheetNeraca || !$sheetLabaRugi) {
+            $missing = [];
+            if (!$sheetNeraca) $missing[] = 'Laporan Posisi Keuangan / Neraca';
+            if (!$sheetLabaRugi) $missing[] = 'Laporan Laba Rugi';
+
+            throw new Exception(
+                'Sheet ' . implode(' dan ', $missing) . ' tidak ditemukan. '
+                . 'Pastikan file berisi judul laporan yang sesuai (mis. "Laporan Posisi Keuangan" atau "Laporan Laba Rugi") di dalam salah satu sheet.'
+            );
+        }
+
+        return [$sheetNeraca, $sheetLabaRugi];
+    }
+
+    private function findSheetByKeywords(Spreadsheet $spreadsheet, array $keywords): ?Worksheet
+    {
+        $normalizedKeywords = array_map(fn ($k) => $this->normalizeLabel($k), $keywords);
+
+        foreach ($spreadsheet->getAllSheets() as $sheet) {
+            $maxRow = min($sheet->getHighestDataRow(), 10); // judul laporan biasanya ada di baris-baris awal jadi cuman 10 baris pertama saja yang dicek
+            $maxCol = Coordinate::columnIndexFromString($sheet->getHighestDataColumn());
+
+            for ($baris = 1; $baris <= $maxRow; $baris++) {
+                for ($kolom = 1; $kolom <= $maxCol; $kolom++) {
+                    $nilaiSel = $sheet->getCellByColumnAndRow($kolom, $baris)->getValue();
+
+                    if (!is_string($nilaiSel)) {
+                        continue;
+                    }
+
+                    $normalizedCell = $this->normalizeLabel($nilaiSel);
+
+                    foreach ($normalizedKeywords as $keyword) {
+                        if ($keyword !== '' && str_contains($normalizedCell, $keyword)) {
+                            return $sheet;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // Ekstrak Aset: Aset Lancar & Aset Tetap dicek INDEPENDEN.
+    // Kalau salah satu (biasanya Aset Lancar) tidak ketemu lewat label spesifiknya,
+    // baru fallback ke header generik "ASET" -> dianggap aset_lancar.
+
+    private function extractAsetDenganFallback(Worksheet $sheetNeraca): array
+    {
+        $asetLancar = $this->extract($sheetNeraca, ['Aset Lancar'], 'aset', 'aset_lancar');
+        $asetTetap  = $this->extract($sheetNeraca, ['Aset Tetap'], 'aset', 'aset_tetap');
+
+        if (empty($asetLancar)) {
+            $asetLancar = $this->extract(
+                $sheetNeraca,
+                self::LABEL_ASET_GENERIK,
+                'aset',
+                'aset_lancar',
+                self::SEMUA_LABEL_HEADER
+            );
+        }
+
+        // Catatan: kalau Aset Tetap tidak ketemu, TIDAK di-fallback ke generik, tidak semua perusahaan punya aset tetap, jadi kosong di sini valid (bukan error).
+
+        return array_merge($asetLancar, $asetTetap);
+    }
+
+
+    // Ekstrak Liabilitas: Jk. Pendek & Jk. Panjang dicek INDEPENDEN.
+    // Kalau Jk. Pendek tidak ketemu, fallback ke header generik "LIABILITAS" -> dianggap liabilitas_jangka_pendek.
+
+    private function extractLiabilitasDenganFallback(Worksheet $sheetNeraca): array
+    {
+        $liabPendek  = $this->extract($sheetNeraca, ['Liabilitas Jangka Pendek', 'Liabilitas Lancar'], 'liabilitas', 'liabilitas_jangka_pendek');
+        $liabPanjang = $this->extract($sheetNeraca, ['Liabilitas Jangka Panjang', 'Liabilitas Tidak Lancar'], 'liabilitas', 'liabilitas_jangka_panjang');
+
+        if (empty($liabPendek)) {
+            $liabPendek = $this->extract(
+                $sheetNeraca,
+                self::LABEL_LIABILITAS_GENERIK,
+                'liabilitas',
+                'liabilitas_jangka_pendek',
+                self::SEMUA_LABEL_HEADER
+            );
+        }
+
+        return array_merge($liabPendek, $liabPanjang);
+    }
+
+    // Pastikan kelima kelompok akun (Aset, Liabilitas, Ekuitas, Pendapatan, Beban) masing-masing punya minimal 1 baris ter-ekstrak. Kalau ada yang kosong, dianggap
+    // data tidak lengkap dan proses import dibatalkan.
+
+    private function validateKelengkapanData(array $neracaGrouped, array $labaRugiGrouped): void
+    {
+        $adaKelompok = function (array $daftarAkun, string $kelompok): bool {
+            foreach ($daftarAkun as $akun) {
+                if ($akun['kelompok_akun'] === $kelompok) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        $kelompokWajib = [
+            'Aset'       => $adaKelompok($neracaGrouped, 'aset'),
+            // 'Liabilitas' => $adaKelompok($neracaGrouped, 'liabilitas'),  // suatu perusahaan bisa aja tidak punya liabilitas, jadi tidak wajib
+            'Ekuitas'    => $adaKelompok($neracaGrouped, 'ekuitas'),  // kalem kalau usaha misal seluruhnya di danai dari utang(liabilitas) bisa tidak? Penghoetank handal misal nya
+            'Pendapatan' => $adaKelompok($labaRugiGrouped, 'pendapatan'),
+            'Beban'      => $adaKelompok($labaRugiGrouped, 'beban'),
+        ];
+
+        $kelompokKosong = array_keys(array_filter($kelompokWajib, fn ($ada) => !$ada));
+
+        if (!empty($kelompokKosong)) {
+            throw new Exception(
+                'Data laporan keuangan tidak lengkap. Kelompok akun berikut tidak berhasil diekstrak: '
+                . implode(', ', $kelompokKosong) . '. Periksa kembali format file yang diunggah.'
+            );
+        }
+    }
+
+    private function extract(
+        Worksheet $sheet,
+        array $labelKelompokDicari,
+        string $kelompok,
+        string $subKelompok,
+        array $stopLabels = []
+    ): array {
         $results = [];
         $maxRow = $sheet->getHighestDataRow();
         $maxCol = Coordinate::columnIndexFromString($sheet->getHighestDataColumn());
@@ -108,12 +266,17 @@ class DokumenService
         $baris = $startCell['row'] + 1;
         $kolomLabel = $startCell['col'] + 1;
 
-        // 3. Loop ke bawah sampai menunjuk cell kosong
+        // 3. Loop ke bawah sampai menunjuk cell kosong (atau menabrak header section lain)
         while ($baris <= $maxRow) {
             $namaAkunExcel = $sheet->getCellByColumnAndRow($kolomLabel, $baris)->getValue();
 
             if (empty(trim((string) $namaAkunExcel))) {
                 // nama akun kosong keluar dari loop
+                break;
+            }
+
+            // Ketemu header section lain (mis. "Aset Tetap") saat fallback generik -> berhenti
+            if ($this->isHeaderLabel((string) $namaAkunExcel, $stopLabels)) {
                 break;
             }
 
@@ -197,20 +360,26 @@ class DokumenService
 
     private function findCellByText(Worksheet $sheet, string $searchText, int $maxRow, int $maxCol): ?array
     {
+        $normalizedSearch = $this->normalizeLabel($searchText);
+
+        if ($normalizedSearch == '') {
+            return null;
+        }
+
         for ($baris = 1; $baris <= $maxRow; $baris++) {
             // dari baris paling atas ke bawah sampai batas maksimum baris data
 
             for ($kolom = 1; $kolom <= $maxCol; $kolom++) {
-                // dari kolom paling kiri  ke kanan
+                // dari kolom paling kiri ke kanan
 
-                // Ambil nilai (value) dari cell pada koordinat kolom dan baris saat ini
                 $nilaiSel = $sheet->getCellByColumnAndRow($kolom, $baris)->getValue();
 
-                // Pengecekan kondisi:
-                // 1. value cell adalah string (bukan angka/formula error)
-                // 2. Gunakan stripos() untuk mengecek apakah $searchText ada di dalam $nilaiSel (case-insensitive / mengabaikan huruf besar-kecil)
-                if (is_string($nilaiSel) && stripos(trim($nilaiSel), trim($searchText)) !== false) {
+                if (!is_string($nilaiSel)) {
+                    continue;
+                }
 
+                // Pencocokan case-insensitive & tidak sensitif spasi/tanda baca (lihat normalizeLabel)
+                if (str_contains($this->normalizeLabel($nilaiSel), $normalizedSearch)) {
                     // teks cocok/ditemukan, return posisi baris & kolomnya
                     return ['row' => $baris, 'col' => $kolom];
                 }
@@ -219,6 +388,31 @@ class DokumenService
 
         // Teks Tidak ditemukan, return null
         return null;
+    }
+
+    private function isHeaderLabel(string $text, array $stopLabels): bool
+    {
+        if (empty($stopLabels)) {
+            return false;
+        }
+
+        $normalizedText = $this->normalizeLabel($text);
+
+        foreach ($stopLabels as $label) {
+            if ($normalizedText === $this->normalizeLabel($label)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function normalizeLabel(string $text): string
+    {
+        $text = strtolower(trim($text));
+        $text = preg_replace('/\s+/', ' ', $text);   // rapikan spasi ganda/tab/newline
+        $text = trim($text, " \t\n\r\0\x0B:.-");      // buang tanda baca umum di ujung
+        return $text;
     }
 
     // AGREGASI
@@ -273,30 +467,13 @@ class DokumenService
         ];
     }
 
-    function normalizeAccountName(string $name): string
-    {
-        $name = strtolower(trim($name));
-        // normalisasi "&" menjadi "dan"
-        $name = str_replace('&', ' dan ', $name);
-
-        // hilangkan karakter selain huruf/angka
-        $name = preg_replace('/[^a-z0-9\s]/', ' ', $name);
-
-        // rapikan whitespace
-        $name = preg_replace('/\s+/', ' ', $name);
-
-        return trim($name);
-        //"Kas & bank" -> "kas dan bank"
-        // teu butuh sih kayak nya
-    }
-
     function classifyKas(array $akun): string
     {
         if ($akun['kelompok_akun'] !== 'aset' || $akun['sub_kelompok_akun'] !== 'aset_lancar') {
             return 'bukan_kas';
         }
 
-        $nama = $this->normalizeAccountName($akun['nama_akun']);
+        $nama = $this->normalizeLabel($akun['nama_akun']);
 
         // Jika di dalam nama akun terdapat kata 'kas', 'bank', 'giro', 'deposito', atau 'tabungan'
         if (

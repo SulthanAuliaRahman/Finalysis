@@ -70,7 +70,7 @@ class DokumenController extends Controller
 
             // start generating
             // GenerateAnalisisJob::dispatch($analisis);
-            // sesuai kan dengan desain saja.. + nambah bug ternyata
+            // sesuai kan dengan desain saja..
 
         } catch (Exception $e) {
             // Ditangkap onError di Create.jsx via errs.file
