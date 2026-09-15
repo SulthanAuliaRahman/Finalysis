@@ -63,6 +63,46 @@ class PerusahaanSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'nama' => 'PT Awan Teknologi Indonesia',
+                'deskripsi' => 'Perusahaan penyedia jasa cloud migration, cloud management, dan infrastructure monitoring untuk perusahaan.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nama' => 'PT Arsitektur Ruang Indonesia',
+                'deskripsi' => 'Biro jasa arsitektur dan desain interior yang mengerjakan proyek desain bangunan, renovasi, dan interior komersial.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],[
+                'nama' => 'PT Prima Rekrutmen Indonesia',
+                'deskripsi' => 'Perusahaan jasa recruitment dan executive search yang membantu perusahaan mencari dan menyeleksi tenaga kerja.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],[
+                'nama' => 'PT Solusi Pelatihan Teknologi',
+                'deskripsi' => 'Perusahaan penyedia jasa pelatihan teknologi dan program upskilling untuk karyawan perusahaan dan institusi pendidikan.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],[
+                'nama' => 'PT Konsultan Bisnis Indonesia',
+                'deskripsi' => 'Perusahaan jasa konsultasi bisnis yang membantu perusahaan dalam mengembangkan strategi dan solusi operasional.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nama' => 'PT Inovasi Digital Indonesia',
+                'deskripsi' => 'Perusahaan jasa inovasi digital yang menyediakan solusi teknologi untuk mengoptimalkan proses bisnis dan meningkatkan efisiensi operasional.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nama' => 'PT Kreatif Media Indonesia',
+                'deskripsi' => 'Agensi digital yang menyediakan jasa branding, desain, social media management, dan digital advertising untuk berbagai perusahaan.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+
         ]);
 
         foreach ($perusahaan as $data){

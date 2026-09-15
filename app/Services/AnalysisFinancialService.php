@@ -216,9 +216,9 @@ class AnalysisFinancialService
     // =====================================================================
 
     // GANTI method prosesLikuiditas() yang lama dengan versi ini.
-// Perubahan: tambah $aktivitas dan blok data WCT sebagai konteks pendukung,
-// supaya klaim "idle assets" di LiquidityAnalystAgent bisa dikonfirmasi
-// silang dengan angka WCT yang sebenarnya (bukan asumsi tanpa data).
+    // Perubahan: tambah $aktivitas dan blok data WCT sebagai konteks pendukung,
+    // supaya klaim "idle assets" di LiquidityAnalystAgent bisa dikonfirmasi
+    // silang dengan angka WCT yang sebenarnya (bukan asumsi tanpa data).
 
     public function prosesLikuiditas(Analisis $analisis, ?string $userPrompt = null): void
     {

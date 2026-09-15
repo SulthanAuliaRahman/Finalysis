@@ -67,7 +67,7 @@ class DokumenService
         $labaRugiGrouped = array_merge(
             $this->extract($sheetLabaRugi, ['Pendapatan'], 'pendapatan', 'pendapatan'),
             $this->extract($sheetLabaRugi, ['Beban'], 'beban', 'beban'),
-            $this->extractSingleRow($sheetLabaRugi, ['Beban pajak penghasilan', 'Beban pajak', 'Pajak Penghasilan'], 'beban', 'beban_pajak')
+            $this->extract($sheetLabaRugi, ['Beban pajak', 'Beban pajak', 'Pajak Penghasilan'], 'beban', 'beban_pajak')
         );
 
         // Validasi kelengkapan: Aset, Liabilitas, Ekuitas, Pendapatan, Beban wajib ada isinya
