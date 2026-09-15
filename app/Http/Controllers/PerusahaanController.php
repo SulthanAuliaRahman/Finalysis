@@ -15,8 +15,7 @@ class PerusahaanController extends Controller
 
         $perusahaan = Perusahaan::query()
             ->when($search, function ($query, $search) {
-                $query->where('nama', 'like', "%{$search}%")
-                      ->orWhere('sektor', 'like', "%{$search}%");
+                $query->where('nama', 'like', "%{$search}%");
             })
             ->withCount('dokumen')
             ->latest()

@@ -284,7 +284,8 @@ class DokumenService
             $nilaiAkun = 0;
 
             for ($kolomIndeks = $kolomLabel + 1; $kolomIndeks <= $maxCol; $kolomIndeks++) {
-                $nilaiSel = $sheet->getCellByColumnAndRow($kolomIndeks, $baris)->getCalculatedValue();
+                $nilaiSelRaw = $sheet->getCellByColumnAndRow($kolomIndeks, $baris)->getCalculatedValue();
+                $nilaiSel = $this->toFloatOrNull($nilaiSelRaw);
 
                 // nilainya > 100 menghindari angka catatan
                 if (is_numeric($nilaiSel) && abs((float)$nilaiSel) > 100) {
@@ -341,7 +342,9 @@ class DokumenService
         // Traversal ke kanan
         $nilaiAkun = 0;
         for ($kolomIndeks = $kolomLabel + 1; $kolomIndeks <= $maxCol; $kolomIndeks++) {
-            $nilaiSel = $sheet->getCellByColumnAndRow($kolomIndeks, $baris)->getCalculatedValue();
+            $nilaiSelRaw = $sheet->getCellByColumnAndRow($kolomIndeks, $baris)->getCalculatedValue();
+            $nilaiSel = $this->toFloatOrNull($nilaiSelRaw);
+
 
             if (is_numeric($nilaiSel) && abs((float)$nilaiSel) > 100) { // x>100 biar menghindari angka catatan
                 // ketemu angka numerik
@@ -485,5 +488,81 @@ class DokumenService
         }
 
         return 'aset_lancar_selain_kas';
+    }
+
+    // Helper
+
+    private function toFloatOrNull(mixed $value): ?float
+    {
+        // Sudah numeric (misal hasil getCalculatedValue() berupa int/float)
+        if (is_int($value) || is_float($value)) {
+            return (float) $value;
+        }
+
+        if ($value === null) {
+            return null;
+        }
+
+        $str = trim((string) $value);
+
+        if ($str === '') {
+            return null;
+        }
+
+        // Buang semua huruf & simbol lain, sisakan hanya digit, koma, titik, kurung, minus
+        $str = preg_replace('/[^0-9.,()\-]/', '', $str);
+
+        if ($str === '' || $str === null) {
+            return null;
+        }
+
+        // Cek tanda kurung akuntansi -> negatif, mis "(1.000.000)"
+        $isNegative = false;
+        if (preg_match('/^\((.*)\)$/', $str, $m)) {
+            $isNegative = true;
+            $str = $m[1];
+        }
+
+        if (str_contains($str, '-')) {
+            $isNegative = true;
+            $str = str_replace('-', '', $str);
+        }
+
+        if ($str === '') {
+            return null;
+        }
+
+        // Tentukan separator desimal: yang paling kanan
+        $lastComma = strrpos($str, ',');
+        $lastDot   = strrpos($str, '.');
+
+        if ($lastComma !== false && $lastDot !== false) {
+            if ($lastComma > $lastDot) {
+                // format Indonesia: 1.000.000,50
+                $str = str_replace('.', '', $str);
+                $str = str_replace(',', '.', $str);
+            } else {
+                // format umum: 1,000,000.50
+                $str = str_replace(',', '', $str);
+            }
+        } elseif ($lastComma !== false) {
+            $commaCount = substr_count($str, ',');
+            $str = $commaCount > 1
+                ? str_replace(',', '', $str)
+                : str_replace(',', '.', $str);
+        } elseif ($lastDot !== false) {
+            $dotCount = substr_count($str, '.');
+            if ($dotCount > 1) {
+                $str = str_replace('.', '', $str);
+            }
+        }
+
+        if (!is_numeric($str)) {
+            return null;
+        }
+
+        $result = (float) $str;
+
+        return $isNegative ? -abs($result) : $result;
     }
 }
