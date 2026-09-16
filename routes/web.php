@@ -34,19 +34,6 @@ Route::middleware(['auth','active'])->group(function(){
     Route::post('/perusahaan/{perusahaan}/analisis/{analisis}/generate', [AnalisisController::class, 'generateSeluruhAnalisis'])->name('analisis.generate');
     Route::get('/perusahaan/{perusahaan}/analisis/{analisis}/status', [AnalisisController::class, 'statusGenerate'])->name('analisis.status');
 
-    //Settings
-    Route::prefix('settings')->name('settings.')->group(function () {
-
-        //Ai Configuration
-        Route::get('/ai', [AiConfigurationController::class, 'index'])->name('ai.view');
-        Route::get('/ai/create', [AiConfigurationController::class, 'create'])->name('ai.create');
-        Route::post('/ai', [AiConfigurationController::class, 'store'])->name('ai.store');
-        Route::get('/ai/{aiConfiguration}/edit', [AiConfigurationController::class, 'edit'])->name('ai.edit');
-        Route::put('/ai/{aiConfiguration}', [AiConfigurationController::class, 'update'])->name('ai.update');
-        Route::delete('/ai/{aiConfiguration}', [AiConfigurationController::class, 'destroy'])->name('ai.destroy');
-        Route::post('/ai/{aiConfiguration}/activate', [AiConfigurationController::class, 'activate'])->name('ai.activate');
-
-    });
 
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -60,7 +47,7 @@ Route::middleware(['auth','active'])->group(function(){
 });
 
 //ROLE SUPER ADMIN
-Route::middleware(['auth','role:super_admin'])->group(function(){
+Route::middleware(['auth','active','role:super_admin'])->group(function(){
     // CRUD Perusahaan
     Route::get('/perusahaan', [PerusahaanController::class, 'index'])->name('perusahaan.index');
     Route::get('/perusahaan/create', [PerusahaanController::class, 'create'])->name('perusahaan.create');
@@ -76,6 +63,21 @@ Route::middleware(['auth','role:super_admin'])->group(function(){
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    //Settings
+    Route::prefix('settings')->name('settings.')->group(function () {
+
+        //Ai Configuration
+        Route::get('/ai', [AiConfigurationController::class, 'index'])->name('ai.view');
+        Route::get('/ai/create', [AiConfigurationController::class, 'create'])->name('ai.create');
+        Route::post('/ai', [AiConfigurationController::class, 'store'])->name('ai.store');
+        Route::get('/ai/{aiConfiguration}/edit', [AiConfigurationController::class, 'edit'])->name('ai.edit');
+        Route::put('/ai/{aiConfiguration}', [AiConfigurationController::class, 'update'])->name('ai.update');
+        Route::delete('/ai/{aiConfiguration}', [AiConfigurationController::class, 'destroy'])->name('ai.destroy');
+        Route::post('/ai/{aiConfiguration}/activate', [AiConfigurationController::class, 'activate'])->name('ai.activate');
+
+    });
+
 });
 
 
