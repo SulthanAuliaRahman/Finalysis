@@ -15,7 +15,7 @@ use App\Http\Controllers\AnalisisController;
 use App\Http\Controllers\UserController;
 
 //ROLE UMUM
-Route::middleware(['auth'])->group(function(){
+Route::middleware(['auth','active'])->group(function(){
 
 // Rute Pengelolaan Dokumen Perusahaan
     Route::get('/perusahaan/{perusahaan}/dokumen', [DokumenController::class, 'index'])->name('perusahaan.dokumen.index');
