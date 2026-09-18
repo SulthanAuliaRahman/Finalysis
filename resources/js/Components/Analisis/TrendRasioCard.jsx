@@ -54,7 +54,7 @@ const PROFITABILITAS_LINES = [
 const SOLVABILITAS_LINES = [
     { key: 'der', label: 'DER', color: '#ef4444', get: (a) => parseStandard(a?.solvabilitas?.debt_to_equity) },
     { key: 'dar', label: 'DAR', color: '#7f1d1d', get: (a) => parseStandard(a?.solvabilitas?.debt_to_asset) },
-    { key: 'leverage', label: 'DAR', color: '#6f3d1e', get: (a) => parseStandard(a?.solvabilitas?.leverage_multiplier) },
+    { key: 'leverage', label: 'Leverage', color: '#6f3d1e', get: (a) => parseStandard(a?.solvabilitas?.leverage_multiplier) },
 ];
 
 const AKTIVITAS_LINES = [

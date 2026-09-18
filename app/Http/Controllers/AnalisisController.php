@@ -117,6 +117,7 @@ class AnalisisController extends Controller
     }
 
     // dipanggil React tiap 2 detik selama status_generate == processing
+    // dipakai pas pooling
     public function statusGenerate(Perusahaan $perusahaan, Analisis $analisis)
     {
         return response()->json([
