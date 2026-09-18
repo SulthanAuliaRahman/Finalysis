@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useForm, Link, usePage } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import { Button } from "@/Components/ui/button";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { DESCRIPTION_SECTIONS, parseDescription, serializeDescription } from "@/utils/perusahaanDescription";
 
 const SEKTORS = ["Manufaktur", "Jasa", "Perdagangan", "Lainnya"];
 
 export default function Edit({ perusahaan }) {
-    const { data, setData, put, processing, errors } = useForm({
+    const [descriptionSections, setDescriptionSections] = useState(() => parseDescription(perusahaan.deskripsi));
+    const { data, setData, transform, put, processing, errors } = useForm({
         nama: perusahaan.nama ?? "",
         sektor: perusahaan.sektor ?? "",
         deskripsi: perusahaan.deskripsi ?? ""
@@ -22,6 +25,7 @@ export default function Edit({ perusahaan }) {
 
     function handleSubmit(e) {
         e.preventDefault();
+        transform(() => ({ ...data, deskripsi: serializeDescription(descriptionSections) }));
         put(`/perusahaan/${perusahaan.id}`);
     }
 
@@ -67,16 +71,25 @@ export default function Edit({ perusahaan }) {
                         {errors.sektor && <p className="text-xs text-red-500">{errors.sektor}</p>}
                     </div> */}
 
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-semibold text-slate-700" htmlFor="deskripsi">Deskripsi Profil</label>
-                        <textarea
-                            id="deskripsi"
-                            value={data.deskripsi}
-                            onChange={e => setData("deskripsi", e.target.value)}
-                            rows={8}
-                            className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
-                            disabled={processing}
-                        />
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-xs font-semibold text-slate-700">Deskripsi Profil</label>
+                            <p className="text-xs text-slate-500 mt-1">Isi bagian yang relevan. Semua isian disimpan pada satu kolom deskripsi.</p>
+                        </div>
+                        {DESCRIPTION_SECTIONS.map(({ key, label, placeholder }) => (
+                            <div key={key} className="flex flex-col gap-1.5">
+                                <label className="text-xs font-semibold text-slate-700" htmlFor={`deskripsi-${key}`}>{label}</label>
+                                <textarea
+                                    id={`deskripsi-${key}`}
+                                    placeholder={placeholder}
+                                    value={descriptionSections[key]}
+                                    onChange={e => setDescriptionSections(current => ({ ...current, [key]: e.target.value }))}
+                                    rows={3}
+                                    className="px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+                                    disabled={processing}
+                                />
+                            </div>
+                        ))}
                         {errors.deskripsi && <p className="text-xs text-red-500">{errors.deskripsi}</p>}
                     </div>
 
