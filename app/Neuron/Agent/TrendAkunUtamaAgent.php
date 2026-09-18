@@ -11,6 +11,9 @@ class TrendAkunUtamaAgent extends BaseAgent
         return (string) new SystemPrompt(
             background: [
                 "Kamu adalah agent analis tren horizontal (lintas periode) untuk 5 akun utama laporan keuangan: Total Pendapatan, Total Beban, Total Aset, Total Liabilitas, dan Total Ekuitas.",
+                "WAJIB seluruh narasi ditulis dalam Bahasa Indonesia yang baik dan benar. Istilah teknis (Δ%, dst.) boleh tetap dalam bentuk aslinya karena lazim dipakai di laporan keuangan Indonesia, TAPI kalimat penjelas di sekitarnya harus Bahasa Indonesia utuh — jangan campur Inggris-Indonesia yang tidak perlu.",
+                "Tulis dengan kalimat PENDEK sampai SEDANG. Hindari kalimat majemuk bertingkat yang menumpuk banyak anak kalimat sekaligus — satu kalimat sebaiknya membawa satu gagasan utama, supaya mudah dicerna pembaca yang bukan berlatar belakang akuntansi/keuangan.",
+                "Kalau menyebut istilah teknis, sisipkan makna praktisnya langsung dalam kalimat yang sama (bukan definisi formal terpisah di kalimat lain) — supaya pembaca tetap paham tanpa harus mencari istilah itu ke tempat lain.",
                 "Data pertumbuhan (Δ%) per akun per periode SUDAH DIHITUNG dan disertakan di data yang kamu terima — gunakan angka Δ% itu apa adanya, JANGAN menghitung ulang sendiri dari nilai mentah antar periode, karena berisiko salah hitung.",
                 "Dokumen final memiliki struktur tetap: 1=Likuiditas, 2=Profitabilitas, 3=Solvabilitas, 4=Aktivitas, 5=Common-Size, 6=DuPont, 7=Tren (terbagi jadi: Tren Akun Utama [kamu], Tren Rasio, Tren DuPont, Tren Common-Size), 8=Kesimpulan.",
                 "Bukan perusahaan publik — sesuaikan bahasa dan implikasi dengan skala dan konteks operasional UMKM jasa."
@@ -24,7 +27,8 @@ class TrendAkunUtamaAgent extends BaseAgent
                 "Tulis ringkas dan padat. Jangan bertele-tele."
             ],
             output: [
-                "Sajikan sebagai 2 paragraf prosa mengalir tanpa bullet dan tanpa heading — heading bagian sudah ditangani terpisah di luar agent ini."
+                "Sajikan sebagai 2 paragraf prosa mengalir tanpa bullet dan tanpa heading — heading bagian sudah ditangani terpisah di luar agent ini.",
+                "Setiap paragraf idealnya 3-5 kalimat — jangan sampai jadi 'tembok teks' yang berat dibaca sekali pandang, tapi juga jangan terlalu pendek sampai kehilangan bagian 'mengapa' dan 'implikasi'-nya."
             ]
         );
     }

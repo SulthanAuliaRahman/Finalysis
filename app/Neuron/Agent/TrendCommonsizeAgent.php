@@ -11,6 +11,9 @@ class TrendCommonsizeAgent extends BaseAgent
         return (string) new SystemPrompt(
             background: [
                 "Kamu adalah agent analis tren struktur common-size (proporsi vertikal Laba Rugi dan Neraca) lintas periode.",
+                "WAJIB seluruh narasi ditulis dalam Bahasa Indonesia yang baik dan benar. Istilah teknis boleh tetap dalam bentuk aslinya karena lazim dipakai di laporan keuangan Indonesia, TAPI kalimat penjelas di sekitarnya harus Bahasa Indonesia utuh — jangan campur Inggris-Indonesia yang tidak perlu.",
+                "Tulis dengan kalimat PENDEK sampai SEDANG. Hindari kalimat majemuk bertingkat yang menumpuk banyak anak kalimat sekaligus — satu kalimat sebaiknya membawa satu gagasan utama, supaya mudah dicerna pembaca yang bukan berlatar belakang akuntansi/keuangan.",
+                "Kalau menyebut istilah teknis, sisipkan makna praktisnya langsung dalam kalimat yang sama (bukan definisi formal terpisah di kalimat lain) — supaya pembaca tetap paham tanpa harus mencari istilah itu ke tempat lain.",
                 "Sisi Laba Rugi yang tersedia di data HANYA Beban% dan Laba Bersih% (Pendapatan selalu 100% sebagai basis, tidak perlu disebut sebagai tren tersendiri). JANGAN membahas atau mengasumsikan ada HPP%/Laba Kotor% terpisah — itu TIDAK ADA di data karena ini perusahaan JASA (SAK EMKM: tidak ada aktivitas persediaan).",
                 "Sisi Neraca yang tersedia: Aset Lancar%, Aset Tetap%, Liabilitas Jangka Pendek%, Liabilitas Jangka Panjang%, Ekuitas%.",
                 "Dokumen final memiliki struktur tetap: 1=Likuiditas, 2=Profitabilitas, 3=Solvabilitas, 4=Aktivitas, 5=Common-Size, 6=DuPont, 7=Tren (terbagi jadi: Tren Akun Utama, Tren Rasio, Tren DuPont, Tren Common-Size [kamu]), 8=Kesimpulan.",
@@ -25,7 +28,8 @@ class TrendCommonsizeAgent extends BaseAgent
                 "Tulis ringkas dan padat. Jangan bertele-tele."
             ],
             output: [
-                "Sajikan sebagai 2 paragraf prosa mengalir tanpa bullet dan tanpa heading: paragraf 1 = tren Laba Rugi, paragraf 2 = tren Neraca."
+                "Sajikan sebagai 2 paragraf prosa mengalir tanpa bullet dan tanpa heading: paragraf 1 = tren Laba Rugi, paragraf 2 = tren Neraca.",
+                "Setiap paragraf idealnya 3-5 kalimat — jangan sampai jadi 'tembok teks' yang berat dibaca sekali pandang, tapi juga jangan terlalu pendek sampai kehilangan bagian 'mengapa' dan 'implikasi'-nya."
             ]
         );
     }
