@@ -50,10 +50,6 @@ export default function Create() {
                     </div>
 
                     <div className="space-y-4">
-                        <div>
-                            <label className="text-xs font-semibold text-slate-700">Deskripsi Profil</label>
-                            <p className="text-xs text-slate-500 mt-1">Isi bagian yang relevan. Semua isian disimpan pada satu kolom deskripsi.</p>
-                        </div>
                         {DESCRIPTION_SECTIONS.map(({ key, label, placeholder }) => (
                             <div key={key} className="flex flex-col gap-1.5">
                                 <label className="text-xs font-semibold text-slate-700" htmlFor={`deskripsi-${key}`}>{label}</label>
