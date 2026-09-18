@@ -59,12 +59,34 @@ class Analisis extends Model
     public function apakahPeriodePertama(): bool
     {
         $dokumen = $this->dokumen;
-
-        return !Dokumen::query()
+    
+        $query = Dokumen::query()
             ->where('perusahaan_id', $dokumen->perusahaan_id)
             ->where('id', '!=', $dokumen->id)
-            ->where('tahun', '<', $dokumen->tahun)
-            ->exists();
+            ->where('periode_type', $dokumen->periode_type); // BR-13: jenis periode harus sama
+    
+        if ($dokumen->periode_type === 'quarterly') {
+            $query->where(function ($q) use ($dokumen) {
+                $q->where('tahun', '<', $dokumen->tahun)
+                ->orWhere(function ($q2) use ($dokumen) {
+                    $q2->where('tahun', $dokumen->tahun)
+                        ->where('quarter', '<', $dokumen->quarter);
+                });
+            });
+        } elseif ($dokumen->periode_type === 'monthly') {
+            $query->where(function ($q) use ($dokumen) {
+                $q->where('tahun', '<', $dokumen->tahun)
+                ->orWhere(function ($q2) use ($dokumen) {
+                    $q2->where('tahun', $dokumen->tahun)
+                        ->where('bulan', '<', $dokumen->bulan);
+                });
+            });
+        } else {
+            // annual
+            $query->where('tahun', '<', $dokumen->tahun);
+        }
+    
+        return !$query->exists();
     }
 
     public function sectionStatus(string $section): array
