@@ -35,8 +35,7 @@ class PerusahaanAnalisisSeeder extends Seeder
         // ---------- 1. Perusahaan ----------
         $perusahaanId = DB::table('perusahaan')->insertGetId([
             'nama'       => 'PT Bumi Sejahtera Tbk',
-            'sektor'     => 'Manufaktur',
-            'deskripsi'  => 'Perusahaan manufaktur alat berat dan komponen industri.',
+            'deskripsi'  => "Profil & skala usaha\nPerusahaan manufaktur alat berat dan komponen industri.\n\nBidang dan jasa utama\nManufaktur alat berat dan komponen industri.",
             'created_at' => $now,
             'updated_at' => $now,
         ]);

@@ -24,7 +24,8 @@ export default function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobile
         { href: `/perusahaan/${user.perusahaan_id}/dokumen`, label: "Dokumen", icon: FileText },
         { href: `/perusahaan/${user.perusahaan_id}/analisis`, label: "Analisis", icon: BarChart3 },
         ...(userRole === 'super_admin' ? [{ href: "/users", label: "Kelola User", icon: Users }] : []),
-        { href: "/settings/ai", label: "Konfigurasi AI", icon: Settings2 },
+        ...(userRole === 'super_admin' ? [{ href: "/settings/ai", label: "Konfigurasi AI", icon: Settings2 }] : []) 
+
     ];
 
     return (

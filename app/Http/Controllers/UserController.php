@@ -82,14 +82,18 @@ class UserController extends Controller
 
     public function destroy(Request $request, User $user)
     {
-        $auth_user = $request->user();
+        $authUser = $request->user();
 
-        if ($user->id === $auth_user->id) {
-            return redirect()->route('users.index')->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
+        if ($user->is($authUser)) {
+            return redirect()
+                ->route('users.index')
+                ->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }
 
         $user->delete();
 
-        return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
+        return redirect()
+            ->route('users.index')
+            ->with('success', 'User berhasil dihapus.');
     }
 }

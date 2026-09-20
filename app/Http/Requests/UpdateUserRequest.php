@@ -3,27 +3,21 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\User;
 
 class UpdateUserRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         $auth_user = $this->user();
+
         return $auth_user && $auth_user->role === 'super_admin';
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         $user = $this->route('user');
-        $userId = $user instanceof \App\Models\User ? $user->id : $user;
+        $userId = $user instanceof User ? $user->id : $user;
 
         $rules = [
             'name' => 'required|string|max:255',
@@ -38,5 +32,34 @@ class UpdateUserRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $authUser = $this->user();
+            $user = $this->route('user');
+
+            if (! $authUser || ! $user) {
+                return;
+            }
+
+            if ($authUser->is($user)) {
+
+                if (! $this->boolean('is_active')) {
+                    $validator->errors()->add(
+                        'is_active',
+                        'Anda tidak dapat menonaktifkan akun Anda sendiri.'
+                    );
+                }
+
+                if ($this->input('role') !== 'super_admin') {
+                    $validator->errors()->add(
+                        'role',
+                        'Anda tidak dapat mengubah role akun Anda sendiri.'
+                    );
+                }
+            }
+        });
     }
 }
