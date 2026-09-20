@@ -440,6 +440,12 @@ class DokumenService
         $totalLiabPanjang = $this->sumWhere($neracaGrouped, fn ($akun) => $akun['sub_kelompok_akun'] === 'liabilitas_jangka_panjang');
         $totalEkuitas = $this->sumWhere($neracaGrouped, fn ($akun) => $akun['sub_kelompok_akun'] === 'ekuitas');
 
+        if ($totalAsetLancar + $totalAsetTetap !== $totalLiabPendek + $totalLiabPanjang + $totalEkuitas) {
+            throw new \RuntimeException(
+                'Neraca tidak seimbang. Total Aset (' . ($totalAsetLancar + $totalAsetTetap) . ') tidak sama dengan Total Liabilitas + Ekuitas (' . ($totalLiabPendek + $totalLiabPanjang + $totalEkuitas) . ').'
+            );
+        }
+
         return [
             'total_kas_setara_kas'      => $totalKas,
             'total_asset_lancar'        => $totalAsetLancar,
