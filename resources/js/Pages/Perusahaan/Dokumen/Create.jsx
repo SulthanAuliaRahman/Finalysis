@@ -46,7 +46,7 @@ export default function Create({ perusahaan }) {
                         <p className="text-xs text-slate-500">Unggah berkas Excel laporan keuangan sesuai format yang telah ditentukan.</p>
                     </div>
                     <a
-                        href="/templates/format-laporan-keuangan.xlsx"
+                        href="/templates/template_format-laporan-keuangan.xlsx"
                         download
                         className="inline-flex flex-shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
                     >

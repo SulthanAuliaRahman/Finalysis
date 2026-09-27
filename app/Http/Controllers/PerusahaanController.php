@@ -36,7 +36,9 @@ class PerusahaanController extends Controller
     {
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
+            'profile' => 'nullable|string',
+            'bidang_jasa' => 'nullable|string',
+            'model_pendapatan' => 'nullable|string',
         ]);
 
         Perusahaan::create($validated);
@@ -55,7 +57,9 @@ class PerusahaanController extends Controller
     {
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
+            'profile' => 'nullable|string',
+            'bidang_jasa' => 'nullable|string',
+            'model_pendapatan' => 'nullable|string',
         ]);
 
         $perusahaan->update($validated);

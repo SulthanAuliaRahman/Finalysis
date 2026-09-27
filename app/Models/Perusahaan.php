@@ -14,7 +14,9 @@ class Perusahaan extends Model
 
     protected $fillable = [
         'nama',
-        'deskripsi',
+        'profile',
+        'bidang_jasa',
+        'model_pendapatan'
     ];
 
 
@@ -27,5 +29,10 @@ class Perusahaan extends Model
         return $this->hasMany(Dokumen::class);
     }
 
-    
+    public function getdeskripsi()
+    {
+        return $this->profile . ' ' . $this->bidang_jasa . ' ' . $this->model_pendapatan;
+    }
+
+
 }

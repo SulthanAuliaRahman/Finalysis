@@ -41,9 +41,9 @@ export default function CompanyCard({ perusahaan }) {
             </div>
 
             {/* Deskripsi */}
-            {perusahaan.deskripsi && (
+            {perusahaan.profile && (
                 <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
-                    {perusahaan.deskripsi}
+                    {perusahaan.profile}
                 </p>
             )}
 

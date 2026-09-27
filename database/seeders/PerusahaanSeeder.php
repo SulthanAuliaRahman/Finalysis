@@ -7,149 +7,109 @@ use Illuminate\Database\Seeder;
 
 class PerusahaanSeeder extends Seeder
 {
-    private const LABEL_BAGIAN = [
-        'identitas' => 'Profil & skala usaha',
-        'bidang' => 'Bidang dan jasa utama',
-        'pendapatan' => 'Model pendapatan & pola pembayaran',
-    ];
-
-    private static function deskripsi(array $bagian): string
-    {
-        $hasil = [];
-
-        foreach (self::LABEL_BAGIAN as $key => $label) {
-            if (!empty($bagian[$key])) {
-                $hasil[] = $label . "\n" . trim($bagian[$key]);
-            }
-        }
-
-        return implode("\n\n", $hasil);
-    }
-
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $perusahaan = ([
+        $perusahaan = [
             [
-
                 'nama' => 'PT Pilar Wahana Artha',
-                'deskripsi' => self::deskripsi(['bidang' => 'Layanan konsultasi dan solusi bisnis untuk mendukung kebutuhan di bidang IT.']),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'profile' => 'Perusahaan jasa yang menyediakan layanan konsultasi dan solusi bisnis berbasis teknologi informasi.',
+                'bidang_jasa' => 'Layanan konsultasi dan solusi bisnis untuk mendukung kebutuhan di bidang IT.',
+                'model_pendapatan' => 'Biaya jasa konsultasi, proyek pengembangan solusi, dan kontrak layanan dengan klien.',
             ],
             [
-
                 'nama' => 'PT Cakrawala Jasa Mandiri',
-                'deskripsi' => self::deskripsi(['bidang' => 'Layanan profesional dan solusi pendukung bagi berbagai kebutuhan bisnis.']),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'profile' => 'Perusahaan yang menyediakan layanan profesional dan solusi pendukung untuk kebutuhan operasional bisnis.',
+                'bidang_jasa' => 'Layanan profesional dan solusi pendukung bagi berbagai kebutuhan bisnis.',
+                'model_pendapatan' => 'Biaya jasa, proyek layanan, dan kontrak kerja sama dengan pelanggan.',
             ],
             [
                 'nama' => 'PT Pilar Karya Sejahtera',
-                'deskripsi' => self::deskripsi([
-                    'bidang' => 'Agensi digital untuk pemasaran dan komunikasi digital: branding, desain grafis, social media management, pembuatan konten, dan digital advertising.',
-                    'pendapatan' => 'Biaya jasa proyek, kontrak layanan berkala, dan pengelolaan kampanye digital.',
-                    'operasional' => 'Tenaga kerja, operasional kantor, perangkat lunak dan tools digital, serta pelaksanaan proyek dan kampanye klien.',
-                ]),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'profile' => 'Perusahaan jasa yang bergerak dalam bidang pemasaran dan komunikasi digital.',
+                'bidang_jasa' => 'Agensi digital untuk pemasaran dan komunikasi digital, meliputi branding, desain grafis, social media management, pembuatan konten, dan digital advertising.',
+                'model_pendapatan' => 'Biaya jasa proyek, kontrak layanan berkala, dan pengelolaan kampanye digital.',
             ],
             [
                 'nama' => 'PT Mitra Finansial Abadi',
-                'deskripsi' => self::deskripsi([
-                    'bidang' => 'Konsultasi keuangan, penyusunan laporan keuangan, analisis kondisi keuangan, dan pendampingan keputusan finansial bagi pelaku usaha.',
-                    'pendapatan' => 'Biaya jasa konsultasi dan kontrak layanan dengan klien.',
-                    'operasional' => 'Tenaga profesional keuangan, operasional kantor, perangkat lunak, dan layanan pendukung konsultasi.',
-                ]),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'profile' => 'Perusahaan jasa profesional yang menyediakan layanan konsultasi dan pendampingan di bidang keuangan.',
+                'bidang_jasa' => 'Konsultasi keuangan, penyusunan laporan keuangan, analisis kondisi keuangan, dan pendampingan keputusan finansial bagi pelaku usaha.',
+                'model_pendapatan' => 'Biaya jasa konsultasi dan kontrak layanan dengan klien.',
             ],
             [
                 'nama' => 'PT Sinar Usaha Persada',
-                'deskripsi' => self::deskripsi([
-                    'bidang' => 'Pendampingan operasional, pengembangan proses bisnis, konsultasi pengelolaan usaha, dan layanan pendukung manajemen.',
-                    'pendapatan' => 'Biaya jasa, proyek pendampingan, dan kontrak layanan dengan klien.',
-                    'operasional' => 'Tenaga profesional, operasional kantor, serta pelaksanaan proyek dan layanan kepada klien.',
-                ]),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'profile' => 'Perusahaan jasa yang menyediakan layanan pendampingan operasional dan pengembangan proses bisnis.',
+                'bidang_jasa' => 'Pendampingan operasional, pengembangan proses bisnis, konsultasi pengelolaan usaha, dan layanan pendukung manajemen.',
+                'model_pendapatan' => 'Biaya jasa, proyek pendampingan, dan kontrak layanan dengan klien.',
             ],
             [
                 'nama' => 'PT Lentera Bisnis Nusantara',
-                'deskripsi' => self::deskripsi([
-                    'bidang' => 'Konsultasi strategi bisnis, perencanaan pengembangan usaha, evaluasi proses bisnis, dan pendampingan implementasi strategi.',
-                    'pendapatan' => 'Biaya jasa konsultasi, proyek pendampingan, dan kontrak layanan dengan klien.',
-                    'operasional' => 'Tenaga konsultan dan profesional, operasional kantor, serta pendukung pelaksanaan proyek dan layanan konsultasi.',
-                ]),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'profile' => 'Perusahaan jasa konsultasi yang membantu usaha dalam perencanaan dan pengembangan bisnis.',
+                'bidang_jasa' => 'Konsultasi strategi bisnis, perencanaan pengembangan usaha, evaluasi proses bisnis, dan pendampingan implementasi strategi.',
+                'model_pendapatan' => 'Biaya jasa konsultasi, proyek pendampingan, dan kontrak layanan dengan klien.',
             ],
             [
                 'nama' => 'PT Prima Solusi Indonesia',
-                'deskripsi' => self::deskripsi([
-                    'bidang' => 'Konsultasi bisnis, pendampingan operasional, pengembangan solusi, dan layanan profesional berbasis proyek.',
-                    'pendapatan' => 'Biaya jasa, proyek konsultasi, dan kontrak layanan dengan pelanggan.',
-                    'operasional' => 'Tenaga profesional, operasional kantor, serta sumber daya dan perangkat pendukung pelaksanaan proyek.',
-                ]),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'profile' => 'Perusahaan jasa profesional yang menyediakan konsultasi dan solusi bisnis berbasis proyek.',
+                'bidang_jasa' => 'Konsultasi bisnis, pendampingan operasional, pengembangan solusi, dan layanan profesional berbasis proyek.',
+                'model_pendapatan' => 'Biaya jasa, proyek konsultasi, dan kontrak layanan dengan pelanggan.',
             ],
             [
                 'nama' => 'PT Karya Cakrawala Mandiri',
-                'deskripsi' => self::deskripsi([
-                    'bidang' => 'Pendampingan operasional, konsultasi pengembangan usaha, dan layanan profesional sesuai kebutuhan pelanggan.',
-                    'pendapatan' => 'Biaya jasa, proyek layanan, dan kontrak kerja sama dengan pelanggan.',
-                    'operasional' => 'Tenaga profesional, operasional kantor, dan sumber daya pendukung pelaksanaan layanan.',
-                ]),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'profile' => 'Perusahaan jasa yang menyediakan layanan profesional dan pendampingan pengembangan usaha.',
+                'bidang_jasa' => 'Pendampingan operasional, konsultasi pengembangan usaha, dan layanan profesional sesuai kebutuhan pelanggan.',
+                'model_pendapatan' => 'Biaya jasa, proyek layanan, dan kontrak kerja sama dengan pelanggan.',
             ],
             [
                 'nama' => 'PT Awan Teknologi Indonesia',
-                'deskripsi' => self::deskripsi(['bidang' => 'Cloud migration, cloud management, dan infrastructure monitoring untuk perusahaan.']),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'profile' => 'Perusahaan jasa teknologi yang menyediakan solusi infrastruktur dan layanan berbasis cloud.',
+                'bidang_jasa' => 'Cloud migration, cloud management, dan infrastructure monitoring untuk perusahaan.',
+                'model_pendapatan' => 'Biaya jasa implementasi, layanan pengelolaan cloud, dan kontrak layanan berlangganan.',
             ],
             [
                 'nama' => 'PT Arsitektur Ruang Indonesia',
-                'deskripsi' => self::deskripsi(['bidang' => 'Jasa arsitektur dan desain interior untuk proyek desain bangunan, renovasi, dan interior komersial.']),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],[
+                'profile' => 'Perusahaan jasa profesional yang bergerak dalam bidang arsitektur dan desain interior.',
+                'bidang_jasa' => 'Jasa arsitektur dan desain interior untuk proyek desain bangunan, renovasi, dan interior komersial.',
+                'model_pendapatan' => 'Biaya jasa desain, biaya proyek, dan kontrak jasa perancangan dengan klien.',
+            ],
+            [
                 'nama' => 'PT Prima Rekrutmen Indonesia',
-                'deskripsi' => self::deskripsi(['bidang' => 'Recruitment dan executive search untuk membantu perusahaan mencari serta menyeleksi tenaga kerja.']),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],[
+                'profile' => 'Perusahaan jasa profesional yang menyediakan layanan pencarian dan seleksi tenaga kerja.',
+                'bidang_jasa' => 'Recruitment dan executive search untuk membantu perusahaan mencari serta menyeleksi tenaga kerja.',
+                'model_pendapatan' => 'Biaya jasa rekrutmen dan recruitment fee berdasarkan layanan atau kandidat yang berhasil ditempatkan.',
+            ],
+            [
                 'nama' => 'PT Solusi Pelatihan Teknologi',
-                'deskripsi' => self::deskripsi(['bidang' => 'Pelatihan teknologi dan program upskilling untuk karyawan perusahaan serta institusi pendidikan.']),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],[
+                'profile' => 'Perusahaan jasa pendidikan dan pelatihan yang berfokus pada pengembangan kompetensi teknologi.',
+                'bidang_jasa' => 'Pelatihan teknologi dan program upskilling untuk karyawan perusahaan serta institusi pendidikan.',
+                'model_pendapatan' => 'Biaya pelatihan, biaya program, dan kontrak penyelenggaraan pelatihan dengan perusahaan atau institusi.',
+            ],
+            [
                 'nama' => 'PT Konsultan Bisnis Indonesia',
-                'deskripsi' => self::deskripsi(['bidang' => 'Konsultasi bisnis untuk membantu perusahaan mengembangkan strategi dan solusi operasional.']),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'profile' => 'Perusahaan jasa konsultasi yang membantu perusahaan dalam pengembangan strategi dan operasional bisnis.',
+                'bidang_jasa' => 'Konsultasi bisnis untuk membantu perusahaan mengembangkan strategi dan solusi operasional.',
+                'model_pendapatan' => 'Biaya konsultasi, proyek pendampingan, dan kontrak layanan konsultasi.',
             ],
             [
                 'nama' => 'PT Inovasi Digital Indonesia',
-                'deskripsi' => self::deskripsi(['bidang' => 'Solusi inovasi digital untuk mengoptimalkan proses bisnis dan meningkatkan efisiensi operasional.']),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'profile' => 'Perusahaan jasa teknologi yang menyediakan solusi digital untuk mendukung efisiensi proses bisnis.',
+                'bidang_jasa' => 'Solusi inovasi digital untuk mengoptimalkan proses bisnis dan meningkatkan efisiensi operasional.',
+                'model_pendapatan' => 'Biaya pengembangan solusi digital, proyek implementasi, dan kontrak layanan dengan pelanggan.',
             ],
             [
                 'nama' => 'PT Kreatif Media Indonesia',
-                'deskripsi' => self::deskripsi(['bidang' => 'Agensi digital yang menyediakan jasa branding, desain, social media management, dan digital advertising.']),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'profile' => 'Perusahaan jasa kreatif yang menyediakan layanan pemasaran dan komunikasi digital.',
+                'bidang_jasa' => 'Agensi digital yang menyediakan jasa branding, desain, social media management, dan digital advertising.',
+                'model_pendapatan' => 'Biaya jasa proyek, kontrak layanan berkala, dan pengelolaan kampanye digital.',
             ],
+        ];
 
-        ]);
-
-        foreach ($perusahaan as $data){
-            Perusahaan::updateOrCreate(['nama' => $data['nama']], $data);
+        foreach ($perusahaan as $data) {
+            Perusahaan::updateOrCreate(
+                ['nama' => $data['nama']],
+                $data
+            );
         }
     }
 }

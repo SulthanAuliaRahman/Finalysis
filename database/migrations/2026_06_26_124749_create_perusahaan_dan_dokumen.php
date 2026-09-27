@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('perusahaan', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama');
-            $table->text('deskripsi')->nullable();
+            $table->text('profile');
+            $table->text('bidang_jasa');
+            $table->text('model_pendapatan');
             $table->timestamps();
         });
 

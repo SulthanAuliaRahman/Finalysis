@@ -113,7 +113,9 @@ class AnalysisFinancialService
         $blok  = "=== INFORMASI PERUSAHAAN ===\n";
         $blok .= "Nama Perusahaan: {$perusahaan->nama}\n";
         $blok .= "Sektor: {$perusahaan->sektor}\n";
-        $blok .= "Deskripsi: {$perusahaan->deskripsi}\n";
+        $blok .= "Profile: {$perusahaan->profile}\n";
+        $blok .= "Bidang jasa: {$perusahaan->bidang_jasa}\n";
+        $blok .= "Model Pendapatan: {$perusahaan->model_pendapatan}\n";
 
         return $blok;
     }

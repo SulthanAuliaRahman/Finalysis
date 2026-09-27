@@ -16,6 +16,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('dokumen_id')->unique()->constrained('dokumen')->cascadeOnDelete();
 
+            // kebutuhan teknis (untuk generate analisis secara asycronus)
             $table->enum('status_generate', ['idle', 'processing', 'selesai', 'gagal'])->default('idle')->after('status');// untuk asycronus generate analisis
             $table->unsignedTinyInteger('progress_current')->default(0)->after('status_generate');
             $table->unsignedTinyInteger('progress_total')->default(0)->after('progress_current');
