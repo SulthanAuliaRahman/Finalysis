@@ -10,8 +10,12 @@ export function AnalisisDupontPage({
     aktivitas,
     solvabilitas,
     dupont,
+    neracaSebelumnya,
     chartImageBase64
 }) {
+
+    const adaPeriodeSebelumnya = !!neracaSebelumnya;
+
     const rows = [
         {
             label:   'Net Profit Margin (%)',
@@ -21,12 +25,12 @@ export function AnalisisDupontPage({
         {
             label:   'Total Asset Turnover (x)',
             value:   aktivitas?.total_asset_turnover,
-            formula: 'Pendapatan / Total Aset',
+            formula: adaPeriodeSebelumnya ? 'Pendapatan / Rata-rata Total Aset' : 'Pendapatan / Total Aset',
         },
         {
             label:   'Leverage Multiplier (x)',
             value:   solvabilitas?.leverage_multiplier,
-            formula: 'Total Aset / Total Ekuitas',
+            formula: adaPeriodeSebelumnya ? 'Rata-rata Total Aset / Rata-rata Total Ekuitas' : 'Total Aset / Total Ekuitas',
         },
         {
             label:   'Return on Equity / ROE (DuPont) (%)',

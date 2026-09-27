@@ -50,7 +50,11 @@ export default function Detail({
     });
 
     const { isGenerating, generatePdf } = usePdfGenerator({
-        pdfProps: { perusahaan, analisis, neraca, labaRugi, likuiditas, profitabilitas, solvabilitas, aktivitas, dupont, commonsize, trendAkunUtama, trendRasio, trendDupont, trendCommonsize, fileName },
+        pdfProps: {
+            perusahaan,
+            analisis,
+            neraca,neracaSebelumnya,labaRugi,
+            likuiditas, profitabilitas, solvabilitas, aktivitas, dupont, commonsize, trendAkunUtama, trendRasio, trendDupont, trendCommonsize, fileName },
         chartRefs: {
             likuiditas: refLikuiditas, profitabilitas: refProfitabilitas, solvabilitas: refSolvabilitas,
             aktivitas: refAktivitas, rasio: refRasio, dupont: refDupont, commonsize: refCommonsize,

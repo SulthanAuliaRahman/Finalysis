@@ -1,9 +1,10 @@
 import { Page, Text } from '@react-pdf/renderer';
 import { pdfStyles } from './shared/pdfStyles';
 import { PdfPageHeader, PdfPageFooter, TabelRasio, NarasiAiBlock, ChartImageBlock } from './shared/pdfComponents';
-import { formatPersentase } from './shared/pdfHelpers';
 
-export function RasioProfitabilitasPage({ perusahaan, analisis, profitabilitas, chartImageBase64 }) {
+export function RasioProfitabilitasPage({ perusahaan, analisis, profitabilitas, neracaSebelumnya, chartImageBase64 }) {
+    const adaPeriodeSebelumnya = !!neracaSebelumnya;
+
     const rows = [
         {
             label:   'Net Profit Margin (NPM) %',
@@ -13,12 +14,12 @@ export function RasioProfitabilitasPage({ perusahaan, analisis, profitabilitas, 
         {
             label:   'Return on Asset (ROA) %',
             value:   profitabilitas?.ROA,
-            formula: 'Laba Bersih / Total Aset',
+            formula: adaPeriodeSebelumnya ? 'Laba Bersih / Rata-rata Total Aset' : 'Laba Bersih / Total Aset',
         },
         {
             label:   'Return on Equity (ROE) %',
             value:   profitabilitas?.ROE,
-            formula: 'Laba Bersih / Total Ekuitas',
+            formula: adaPeriodeSebelumnya ? 'Laba Bersih / Rata-rata Total Ekuitas' : 'Laba Bersih / Total Ekuitas',
         },
     ];
 

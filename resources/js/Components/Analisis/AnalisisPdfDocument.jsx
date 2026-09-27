@@ -18,6 +18,7 @@ export function AnalisisPdfDocument({
     perusahaan,
     analisis,
     neraca,
+    neracaSebelumnya,
     labaRugi,
     likuiditas,
     profitabilitas,
@@ -78,6 +79,7 @@ export function AnalisisPdfDocument({
                     perusahaan={perusahaan}
                     analisis={analisis}
                     profitabilitas={profitabilitas}
+                    neracaSebelumnya={neracaSebelumnya}
                     chartImageBase64={chartImages.profitabilitas}
                 />
             )}
@@ -88,6 +90,7 @@ export function AnalisisPdfDocument({
                     perusahaan={perusahaan}
                     analisis={analisis}
                     solvabilitas={solvabilitas}
+                    neracaSebelumnya={neracaSebelumnya}
                     chartImageBase64={chartImages.solvabilitas}
                 />
             )}
@@ -98,6 +101,7 @@ export function AnalisisPdfDocument({
                     perusahaan={perusahaan}
                     analisis={analisis}
                     aktivitas={aktivitas}
+                    neracaSebelumnya={neracaSebelumnya}
                     chartImageBase64={chartImages.aktivitas}
                 />
             )}
@@ -111,6 +115,7 @@ export function AnalisisPdfDocument({
                     solvabilitas={solvabilitas}
                     aktivitas={aktivitas}
                     dupont={dupont}
+                    neracaSebelumnya={neracaSebelumnya}
                     chartImageBase64={chartImages.dupont}
                 />
             )}

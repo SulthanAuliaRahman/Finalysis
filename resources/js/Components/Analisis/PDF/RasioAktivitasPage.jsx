@@ -1,24 +1,25 @@
 import { Page, Text } from '@react-pdf/renderer';
 import { pdfStyles } from './shared/pdfStyles';
 import { PdfPageHeader, PdfPageFooter, TabelRasio, NarasiAiBlock, ChartImageBlock } from './shared/pdfComponents';
-import { formatRasio } from './shared/pdfHelpers';
 
-export function RasioAktivitasPage({ perusahaan, analisis, aktivitas, chartImageBase64 }) {
+export function RasioAktivitasPage({ perusahaan, analisis, aktivitas,neracaSebelumnya, chartImageBase64 }) {
+    const adaPeriodeSebelumnya = !!neracaSebelumnya;
+
     const rows = [
         {
             label:   'Total Asset Turnover (TATO) x',
             value:   aktivitas?.total_asset_turnover,
-            formula: 'Pendapatan / Total Aset',
+            formula: adaPeriodeSebelumnya ? 'Pendapatan / Rata-rata Total Aset' : 'Pendapatan / Total Aset',
         },
         {
             label:   'Working Capital Turnover (WCT) x',
             value:   aktivitas?.working_capital_turnover,
-            formula: 'Pendapatan / rata rata modal kerja',
+            formula: adaPeriodeSebelumnya ? 'Pendapatan / Rata-rata (Aset Lancar - Liabilitas Pendek)' : 'Pendapatan / (Aset Lancar - Liabilitas Pendek)',
         },
         {
             label:   'fixed_asset_turnover  x',
             value:   aktivitas?.fixed_asset_turnover,
-            formula: 'Pendapatan / rata rata Aset tetap',
+            formula: adaPeriodeSebelumnya ? 'Pendapatan / Rata-rata Aset Tetap' : 'Pendapatan / Aset Tetap',
         },
     ];
 

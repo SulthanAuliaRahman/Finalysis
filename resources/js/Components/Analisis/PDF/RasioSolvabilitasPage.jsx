@@ -3,7 +3,9 @@ import { pdfStyles } from './shared/pdfStyles';
 import { PdfPageHeader, PdfPageFooter, TabelRasio, NarasiAiBlock, ChartImageBlock } from './shared/pdfComponents';
 import { formatLikuiditasDanSolvabilitas } from './shared/pdfHelpers';
 
-export function RasioSolvabilitasPage({ perusahaan, analisis, solvabilitas, chartImageBase64 }) {
+export function RasioSolvabilitasPage({ perusahaan, analisis, solvabilitas,neracaSebelumnya, chartImageBase64 }) {
+    const adaPeriodeSebelumnya = !!neracaSebelumnya;
+
     const rows = [
         {
             label:   'Debt to Equity Ratio (DER) x',
@@ -18,7 +20,7 @@ export function RasioSolvabilitasPage({ perusahaan, analisis, solvabilitas, char
         {
             label:   'Leverage Multiplier x',
             value:   solvabilitas?.leverage_multiplier,
-            formula: 'rata rata Total aset/rata rata Total equitas',
+            formula: adaPeriodeSebelumnya ? 'Rata-rata Total Aset / Rata-rata Total Ekuitas' : 'Total Aset / Total Ekuitas',
         },
     ];
 
