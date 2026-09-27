@@ -14,6 +14,11 @@ function normalisasi(value, max) {
     return Math.min((value / max) * 100, 100);
 }
 
+const getRawDecimal = (val) => {
+    if (val == null) return null;
+    return Number(val / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+};
+
 export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
     data,
     profitabilitas,
@@ -93,7 +98,7 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
             value: profitabilitas?.net_profit_margin ?? null, suffix: '%',
             formula: 'Laba Bersih / Pendapatan',
             breakdown: labaRugi ? `${formatNum(labaRugi.laba_bersih_sesudah_pajak)} / ${formatNum(labaRugi.total_pendapatan)}` : null,
-            rawResult: profitabilitas?.net_profit_margin != null ? profitabilitas?.net_profit_margin : null,
+            rawResult: profitabilitas?.net_profit_margin != null ? getRawDecimal(profitabilitas?.net_profit_margin) : null,
             rawNote: null
         },
         {
@@ -117,7 +122,7 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
             value: data?.roe_dupont ?? null, suffix: '%',
             formula: 'NPM x TATO x Leverage',
             breakdown: data ? `${profitabilitas?.net_profit_margin ?? 0}% x ${aktivitas?.total_asset_turnover ?? 0}x x ${solvabilitas?.leverage_multiplier ?? 0}x` : null,
-            rawResult: data?.roe_dupont != null ? data?.roe_dupont : null,
+            rawResult: data?.roe_dupont != null ? getRawDecimal(data?.roe_dupont) : null,
             rawNote: null
         },
     ];

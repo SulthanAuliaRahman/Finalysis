@@ -131,7 +131,7 @@ export default function Detail({
                 <h3 className="font-semibold text-slate-900 mb-4">Rasio Keuangan</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <AnalisisLikuiditasCard ref={refLikuiditas} data={likuiditas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} {...cardProps('likuiditas')} />
-                    <AnalisisProfitabilitasCard ref={refProfitabilitas} data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} {...cardProps('profitabilitas')} />
+                    <AnalisisProfitabilitasCard ref={refProfitabilitas} data={profitabilitas} neraca={neraca} neracaSebelumnya={neracaSebelumnya} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} {...cardProps('profitabilitas')} />
                     <AnalisisSolvabilitasCard ref={refSolvabilitas} data={solvabilitas}  neraca={neraca} neracaSebelumnya={neracaSebelumnya}  perusahaanId={perusahaan.id} analisisId={analisis.id} {...cardProps('solvabilitas')} />
                     <AnalisisAktivitasCard ref={refAktivitas} data={aktivitas}  neraca={neraca} neracaSebelumnya={neracaSebelumnya}  labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} {...cardProps('aktivitas')} />
                 </div>

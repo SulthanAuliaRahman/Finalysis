@@ -5,6 +5,12 @@ import { RatioCardBase } from './RatioCardBase';
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
 const parseVal = (val) => val ? parseFloat(val) : 0;
 
+// Helper: Mengubah persentase (15.5) kembali menjadi desimal mentah hasil bagi (0,155)
+const getRawDecimal = (val) => {
+    if (val == null) return null;
+    return Number(val / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+};
+
 export const AnalisisSolvabilitasCard = forwardRef(function AnalisisSolvabilitasCard({ data, neraca, neracaSebelumnya, perusahaanId, analisisId, sectionStatus, canRegenerasi, onRegenerasiStart }, ref) {
 
     const chartData = [
@@ -39,7 +45,7 @@ export const AnalisisSolvabilitasCard = forwardRef(function AnalisisSolvabilitas
                     suffix: 'x',
                     formula: 'Total Kewajiban / Total Ekuitas',
                     breakdown: neraca ? `${formatNum(neraca.total_liabilities)} / ${formatNum(neraca.total_equitas)}` : null,
-                    rawResult: data?.debt_to_equity != null ? parseVal(data.debt_to_equity) : null
+                    rawResult: data?.debt_to_equity != null ? getRawDecimal(data.debt_to_equity) : null
                 },
                 {
                     label: 'Debt to Asset (DAR)',
@@ -47,7 +53,7 @@ export const AnalisisSolvabilitasCard = forwardRef(function AnalisisSolvabilitas
                     suffix: '%',
                     formula: 'Total Kewajiban / Total Aset',
                     breakdown: neraca ? `${formatNum(neraca.total_liabilities)} / ${formatNum(neraca.total_asset)}` : null,
-                    rawResult: data?.debt_to_asset != null ? parseVal(data.debt_to_asset) : null,
+                    rawResult: data?.debt_to_asset != null ? getRawDecimal(data.debt_to_asset) : null,
                 },
                 {
                     label: 'Leverage Multiplier',
