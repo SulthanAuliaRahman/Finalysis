@@ -231,8 +231,8 @@ class DokumenService
 
         if (!empty($kelompokKosong)) {
             throw new Exception(
-                'Data laporan keuangan tidak lengkap. Kelompok akun berikut tidak berhasil diekstrak: '
-                . implode(', ', $kelompokKosong) . '. Periksa kembali format file yang diunggah.'
+                'Data Laporan Keuangan Tidak Lengkap atau tidak mengikuti Struktur Template yang Valid.
+                Kelompok akun berikut tidak berhasil diekstrak: ' . implode(', ', $kelompokKosong) . '. Periksa kembali format file yang diunggah.'
             );
         }
     }
@@ -315,50 +315,6 @@ class DokumenService
         }
 
         return $results;
-    }
-
-    // Untuk Akun beban pajak beda sendiri soalnya kalau dalam format cuman ke kanan saja (kayak nya pasti 1 deh)
-    private function extractSingleRow(Worksheet $sheet, array $labelKelompokDicari, string $kelompok, string $subKelompok): array
-    {
-        $maxRow = $sheet->getHighestDataRow();
-        $maxCol = Coordinate::columnIndexFromString($sheet->getHighestDataColumn());
-
-        $startCell = null;
-        foreach ($labelKelompokDicari as $label) {
-            $startCell = $this->findCellByText($sheet, $label, $maxRow, $maxCol);
-
-            if ($startCell != null) {
-                // terdapat akun
-                break;
-            }
-        }
-
-        if (!$startCell) return [];
-
-        $baris = $startCell['row'];
-        $kolomLabel = $startCell['col'];
-        $namaAkunExcel = $sheet->getCellByColumnAndRow($kolomLabel, $baris)->getValue();
-
-        // Traversal ke kanan
-        $nilaiAkun = 0;
-        for ($kolomIndeks = $kolomLabel + 1; $kolomIndeks <= $maxCol; $kolomIndeks++) {
-            $nilaiSelRaw = $sheet->getCellByColumnAndRow($kolomIndeks, $baris)->getCalculatedValue();
-            $nilaiSel = $this->toFloatOrNull($nilaiSelRaw);
-
-
-            if (is_numeric($nilaiSel) && abs((float)$nilaiSel) > 100) { // x>100 biar menghindari angka catatan
-                // ketemu angka numerik
-                $nilaiAkun = (float)$nilaiSel;
-                break;
-            }
-        }
-
-        return [[
-            'nama_akun'         => trim((string)$namaAkunExcel),
-            'kelompok_akun'     => $kelompok,
-            'sub_kelompok_akun' => $subKelompok,
-            'nilai'             => $nilaiAkun,
-        ]];
     }
 
     private function findCellByText(Worksheet $sheet, string $searchText, int $maxRow, int $maxCol): ?array

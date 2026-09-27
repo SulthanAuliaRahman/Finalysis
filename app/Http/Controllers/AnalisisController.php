@@ -134,10 +134,15 @@ class AnalisisController extends Controller
     // regenerasi 1 section, HANYA boleh kalau proses generate awal sudah tuntas
     public function generateAnalisis(Request $request, Perusahaan $perusahaan, Analisis $analisis)
     {
-        $request->validate([
-            'section'     => 'required|string|in:'.implode(',', Analisis::SECTIONS),
-            'user_prompt' => 'nullable|string|max:1000',
-        ]);
+        $request->validate(
+            [
+                'section'     => 'required|string|in:' . implode(',', Analisis::SECTIONS),
+                'user_prompt' => 'nullable|string|max:1000',
+            ],
+            [
+                'user_prompt.max' => 'Prompt regenerasi maksimal 1000 karakter.',
+            ]
+        );
 
 
         if (!$analisis->semuaSelesai()) {
