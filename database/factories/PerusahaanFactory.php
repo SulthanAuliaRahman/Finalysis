@@ -13,8 +13,10 @@ class PerusahaanFactory extends Factory
     {
         return [
             'nama'      => $this->faker->company(),
-            'sektor'    => $this->faker->randomElement(['Teknologi', 'Keuangan', 'Manufaktur', 'Kesehatan', 'Ritel']),
-            'deskripsi' => $this->faker->sentence(),
+            'profile' => $this->faker->sentence(),
+            'bidang_jasa' => $this->faker->sentence(),
+            'model_pendapatan' => $this->faker->sentence(),
         ];
     }
 }
+

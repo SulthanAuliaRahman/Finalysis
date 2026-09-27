@@ -46,7 +46,12 @@ class SystemFlowTest extends TestCase
 
     private function buatPerusahaan(string $nama = 'PT Contoh Jasa'): Perusahaan
     {
-        return Perusahaan::create(['nama' => $nama, 'sektor' => 'Jasa']);
+        return Perusahaan::create([
+            'nama'   => 'PT Contoh Jasa',
+            'profile' => 'Jasa',
+            'bidang_jasa' => 'IT',
+            'model_pendapatan' => 'kontrakt'
+        ]);
     }
 
     private function buatUser(Perusahaan $perusahaan): User

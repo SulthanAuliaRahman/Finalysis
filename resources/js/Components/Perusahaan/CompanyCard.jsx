@@ -4,12 +4,6 @@ import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { cn } from "@/lib/utils";
 
-const SEKTOR_COLOR = {
-    Manufaktur: "bg-amber-50 text-amber-700 border-amber-200",
-    Jasa: "bg-blue-50 text-blue-700 border-blue-200",
-    Perdagangan: "bg-pink-50 text-pink-700 border-pink-200",
-    Lainnya: "bg-slate-50 text-slate-700 border-slate-200",
-};
 
 export default function CompanyCard({ perusahaan }) {
     const formattedDate = perusahaan.created_at ? perusahaan.created_at.slice(0, 10) : "—";
@@ -22,7 +16,7 @@ export default function CompanyCard({ perusahaan }) {
 
     return (
         <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-4 hover:border-blue-300 hover:shadow-xs transition-all duration-200">
-            {/* Header: Ikon, Nama, dan Badge Sektor */}
+            {/* Header: Ikon, Nama */}
             <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-3 min-w-0">
                     <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center">
@@ -35,9 +29,6 @@ export default function CompanyCard({ perusahaan }) {
                         <p className="text-xs text-slate-400">Dibuat: {formattedDate}</p>
                     </div>
                 </div>
-                <Badge variant="outline" className={cn("flex-shrink-0 text-[10px] font-semibold border", SEKTOR_COLOR[perusahaan.sektor] || SEKTOR_COLOR["Lainnya"])}>
-                    {perusahaan.sektor}
-                </Badge>
             </div>
 
             {/* Deskripsi */}

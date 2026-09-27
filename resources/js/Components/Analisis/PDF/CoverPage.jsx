@@ -14,12 +14,6 @@ export function CoverPage({ perusahaan, analisis }) {
 
                 <View style={{ flexDirection: 'row', gap: 40, marginTop: 10 }}>
                     <View>
-                        <Text style={pdfStyles.coverMeta}>Sektor</Text>
-                        <Text style={pdfStyles.coverMetaValue}>
-                            {perusahaan.sektor ?? 'Tidak diketahui'}
-                        </Text>
-                    </View>
-                    <View>
                         <Text style={pdfStyles.coverMeta}>Tanggal Dibuat</Text>
                         <Text style={pdfStyles.coverMetaValue}>{getTanggalSekarang()}</Text>
                     </View>

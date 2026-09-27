@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Perusahaan;
 use App\Models\Analisis;
+use App\Models\Dokumen;
+use App\Models\Neraca;
 use Illuminate\Http\Request;
 use App\Jobs\GenerateAnalisisJob;
 use Inertia\Inertia;
@@ -62,6 +64,9 @@ class AnalisisController extends Controller
             abort(404);
         }
 
+        // ini untuk UI breakdown aktivitas (yes its weird)
+        $neracaSebelumnya = $this->cariNeracaSebelumnya($analisis);
+
         // dd($analisis->getDupontTrend());
 
         return Inertia::render('Perusahaan/Analisis/Detail', [
@@ -97,6 +102,7 @@ class AnalisisController extends Controller
             'narasi_trend'     =>$analisis->trend,
             'neraca'          => $dokumen->neraca,
             'labaRugi'        => $dokumen->labaRugi,
+            'neracaSebelumnya' => $neracaSebelumnya,
         ]);
     }
 
@@ -152,5 +158,45 @@ class AnalisisController extends Controller
         GenerateAnalisisJob::dispatch($analisis, $request->input('section'), $request->input('user_prompt'));
 
         return back()->with(['success' => 'Regenerasi section dimulai.']);
+    }
+
+    // ini disamain sama yang haikal (untuk UI breakdown bagian Aktivitas)
+    private function cariNeracaSebelumnya(Analisis $analisis): ?Neraca
+    {
+        $dokumen = $analisis->dokumen;
+
+        if (!$dokumen) {
+            return null;
+        }
+
+        $query = Dokumen::query()
+            ->where('perusahaan_id', $dokumen->perusahaan_id)
+            ->where('id', '!=', $dokumen->id)
+            ->where('periode_type', $dokumen->periode_type);
+
+        if ($dokumen->periode_type === 'quarterly') {
+            $query->where(function ($q) use ($dokumen) {
+                $q->where('tahun', '<', $dokumen->tahun)
+                  ->orWhere(function ($q2) use ($dokumen) {
+                      $q2->where('tahun', $dokumen->tahun)
+                         ->where('quarter', '<', $dokumen->quarter);
+                  });
+            })->orderByDesc('tahun')->orderByDesc('quarter');
+        } elseif ($dokumen->periode_type === 'monthly') {
+            $query->where(function ($q) use ($dokumen) {
+                $q->where('tahun', '<', $dokumen->tahun)
+                  ->orWhere(function ($q2) use ($dokumen) {
+                      $q2->where('tahun', $dokumen->tahun)
+                         ->where('bulan', '<', $dokumen->bulan);
+                  });
+            })->orderByDesc('tahun')->orderByDesc('bulan');
+        } else {
+            // annual
+            $query->where('tahun', '<', $dokumen->tahun)->orderByDesc('tahun');
+        }
+
+        $dokumenSebelumnya = $query->first();
+
+        return $dokumenSebelumnya?->neraca;
     }
 }

@@ -106,13 +106,12 @@ class AnalysisFinancialService
     // HELPER — KONTEN PROMPT
     // =====================================================================
 
-    // Blok info perusahaan: Nama, Sektor, Deskripsi. Dipakai di SEMUA prompt
+    // Blok info perusahaan: Nama Deskripsi. Dipakai di SEMUA prompt
     // (per-section maupun trend) supaya AI selalu punya konteks perusahaan.
     private function blokInfoPerusahaan(Perusahaan $perusahaan): string
     {
         $blok  = "=== INFORMASI PERUSAHAAN ===\n";
         $blok .= "Nama Perusahaan: {$perusahaan->nama}\n";
-        $blok .= "Sektor: {$perusahaan->sektor}\n";
         $blok .= "Profile: {$perusahaan->profile}\n";
         $blok .= "Bidang jasa: {$perusahaan->bidang_jasa}\n";
         $blok .= "Model Pendapatan: {$perusahaan->model_pendapatan}\n";
@@ -622,7 +621,6 @@ class AnalysisFinancialService
 
         $Prompt .= "=== INFORMASI PERUSAHAAN ===\n";
         $Prompt .= "Perusahaan : {$perusahaan->nama}\n";
-        $Prompt .= "Sektor : {$perusahaan->sektor}\n";
         $Prompt .= "Periode Analisis : {$labelPeriode}\n";
 
         $Prompt .= "Gunakan seluruh hasil analisis berikut sebagai dasar penyusunan Executive Summary.\n";

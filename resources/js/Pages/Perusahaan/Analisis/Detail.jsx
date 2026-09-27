@@ -22,6 +22,7 @@ export default function Detail({
     likuiditas, profitabilitas, solvabilitas, aktivitas, dupont, commonsize,
     trendRasio, trendDupont, trendCommonsize, trendAkunUtama,
     neraca, labaRugi,
+    neracaSebelumnya
 }) {
     const refLikuiditas = useRef(null);
     const refProfitabilitas = useRef(null);
@@ -129,17 +130,17 @@ export default function Detail({
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Rasio Keuangan</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <AnalisisLikuiditasCard ref={refLikuiditas} data={likuiditas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} {...cardProps('likuiditas')} />
-                    <AnalisisProfitabilitasCard ref={refProfitabilitas} data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} {...cardProps('profitabilitas')} />
-                    <AnalisisSolvabilitasCard ref={refSolvabilitas} data={solvabilitas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} {...cardProps('solvabilitas')} />
-                    <AnalisisAktivitasCard ref={refAktivitas} data={aktivitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} sektor={perusahaan.sektor} {...cardProps('aktivitas')} />
+                    <AnalisisLikuiditasCard ref={refLikuiditas} data={likuiditas} neraca={neraca} perusahaanId={perusahaan.id} analisisId={analisis.id} {...cardProps('likuiditas')} />
+                    <AnalisisProfitabilitasCard ref={refProfitabilitas} data={profitabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} {...cardProps('profitabilitas')} />
+                    <AnalisisSolvabilitasCard ref={refSolvabilitas} data={solvabilitas}  neraca={neraca} neracaSebelumnya={neracaSebelumnya}  perusahaanId={perusahaan.id} analisisId={analisis.id} {...cardProps('solvabilitas')} />
+                    <AnalisisAktivitasCard ref={refAktivitas} data={aktivitas}  neraca={neraca} neracaSebelumnya={neracaSebelumnya}  labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} {...cardProps('aktivitas')} />
                 </div>
             </div>
 
             <div className="mb-8">
                 <h3 className="font-semibold text-slate-900 mb-4">Analisis Struktural</h3>
                 <div className="grid grid-cols-1 gap-6">
-                    <AnalisisDupontCard ref={refDupont} data={dupont} profitabilitas={profitabilitas} aktivitas={aktivitas} solvabilitas={solvabilitas} neraca={neraca} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} {...cardProps('dupont')} />
+                    <AnalisisDupontCard ref={refDupont} data={dupont} profitabilitas={profitabilitas} aktivitas={aktivitas} solvabilitas={solvabilitas} neraca={neraca} neracaSebelumnya={neracaSebelumnya} labaRugi={labaRugi} perusahaanId={perusahaan.id} analisisId={analisis.id} {...cardProps('dupont')} />
                     <AnalisisCommonsizeCard ref={refCommonsize} data={commonsize} perusahaanId={perusahaan.id} analisisId={analisis.id} {...cardProps('commonsize')} />
                 </div>
             </div>

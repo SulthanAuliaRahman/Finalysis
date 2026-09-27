@@ -18,7 +18,9 @@ class GenerateAnalisisJobTest extends TestCase
     {
         return Perusahaan::create([
             'nama'   => 'PT Contoh Jasa',
-            'sektor' => 'Jasa',
+            'profile' => 'Jasa',
+            'bidang_jasa' => 'IT',
+            'model_pendapatan' => 'kontrakt'
         ]);
     }
 

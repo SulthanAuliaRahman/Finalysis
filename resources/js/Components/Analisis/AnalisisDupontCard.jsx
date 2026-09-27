@@ -5,11 +5,6 @@ import { BarChart, Bar, XAxis, ResponsiveContainer, LabelList, Cell } from 'rech
 
 const formatNum = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
 
-const getRawDecimal = (val) => {
-    if (val == null) return null;
-    return Number(val / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
-};
-
 const NPM_SKALA_MAX = 30;
 const TATO_SKALA_MAX = 2;
 const LEVERAGE_SKALA_MAX = 3;
@@ -25,6 +20,7 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
     aktivitas,
     solvabilitas,
     neraca,
+    neracaSebelumnya,
     labaRugi,
     perusahaanId,
     analisisId,
@@ -38,6 +34,23 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
     const status = sectionStatus?.status ?? 'idle';
     const isLoading = status === 'processing';
     const sudahDianalisis = Boolean(data?.narasi_dupont_AI);
+
+    const adaPeriodeSebelumnya = !!neracaSebelumnya;
+    const pendapatan = labaRugi?.total_pendapatan;
+
+    const tatoBreakdown = (neraca && pendapatan != null)
+        ? (adaPeriodeSebelumnya
+            ? `${formatNum(pendapatan)} / ((${formatNum(neracaSebelumnya.total_asset)} + ${formatNum(neraca.total_asset)}) / 2)`
+            : `${formatNum(pendapatan)} / ${formatNum(neraca.total_asset)}`)
+        : null;
+
+    const leverageBreakdown = neraca
+        ? (adaPeriodeSebelumnya
+            ? `((${formatNum(neracaSebelumnya.total_asset)} + ${formatNum(neraca.total_asset)}) / 2) / ((${formatNum(neracaSebelumnya.total_equitas)} + ${formatNum(neraca.total_equitas)}) / 2)`
+            : `${formatNum(neraca.total_asset)} / ${formatNum(neraca.total_equitas)}`)
+        : null;
+
+
 
     function handleTrigger(customPrompt = '') {
         router.post(
@@ -80,22 +93,22 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
             value: profitabilitas?.net_profit_margin ?? null, suffix: '%',
             formula: 'Laba Bersih / Pendapatan',
             breakdown: labaRugi ? `${formatNum(labaRugi.laba_bersih_sesudah_pajak)} / ${formatNum(labaRugi.total_pendapatan)}` : null,
-            rawResult: profitabilitas?.net_profit_margin != null ? getRawDecimal(profitabilitas.net_profit_margin) : null,
-            rawNote: '(sebelum dikali 100%)'
+            rawResult: profitabilitas?.net_profit_margin != null ? profitabilitas?.net_profit_margin : null,
+            rawNote: null
         },
         {
             label: 'Total Asset Turnover (TATO)',
             value: aktivitas?.total_asset_turnover ?? null, suffix: 'x',
-            formula: 'Pendapatan / Total Aset',
-            breakdown: (labaRugi && neraca) ? `${formatNum(labaRugi.total_pendapatan)} / ${formatNum(neraca.total_asset)}` : null,
-            rawResult: aktivitas?.total_asset_turnover != null ? aktivitas.total_asset_turnover : null,
+            formula: adaPeriodeSebelumnya ? 'Pendapatan / Rata-rata Total Aset' : 'Pendapatan / Total Aset',
+            breakdown: tatoBreakdown,
+            rawResult: data?.total_asset_turnover != null ? aktivitas?.total_asset_turnover: null,
             rawNote: null
         },
         {
             label: 'Leverage Multiplier',
             value: solvabilitas?.leverage_multiplier ?? null, suffix: 'x',
-            formula: 'Total Aset / Total Ekuitas',
-            breakdown: neraca ? `${formatNum(neraca.total_asset)} / ${formatNum(neraca.total_equitas)}` : null,
+            formula: adaPeriodeSebelumnya ? 'Rata-rata Total Aset / Rata-rata Total Ekuitas' : 'Total Aset / Total Ekuitas',
+            breakdown: leverageBreakdown,
             rawResult: solvabilitas?.leverage_multiplier != null ? solvabilitas.leverage_multiplier : null,
             rawNote: null
         },
@@ -104,8 +117,8 @@ export const AnalisisDupontCard = forwardRef(function AnalisisDupontCard({
             value: data?.roe_dupont ?? null, suffix: '%',
             formula: 'NPM x TATO x Leverage',
             breakdown: data ? `${profitabilitas?.net_profit_margin ?? 0}% x ${aktivitas?.total_asset_turnover ?? 0}x x ${solvabilitas?.leverage_multiplier ?? 0}x` : null,
-            rawResult: data?.roe_dupont != null ? getRawDecimal(data.roe_dupont) : null,
-            rawNote: '(sebelum dikali 100%)'
+            rawResult: data?.roe_dupont != null ? data?.roe_dupont : null,
+            rawNote: null
         },
     ];
 

@@ -26,10 +26,16 @@ export function CompanyHeader({ perusahaan, dokumenPeriode }) {
                         ) : (
                             <div
                                 key={dokumenPeriode.id}
-                                className="flex items-center gap-3 bg-slate-50/70 rounded-lg p-3 border border-slate-100 max-w-md"
+                                className="flex bg-slate-50/70 rounded-lg p-3 border border-slate-100 max-w-md"
                             >
                                 <div className="p-2 bg-blue-50 rounded">
                                     <FileText className="w-4 h-4 text-blue-600" />
+                                </div>
+
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium text-slate-900 truncate">
+                                        {dokumenPeriode.nama_file}
+                                    </p>
                                 </div>
                             </div>
                         )}

@@ -19,7 +19,9 @@ class AnalisisControllerTest extends TestCase
     {
         return Perusahaan::create([
             'nama'   => 'PT Contoh Jasa',
-            'sektor' => 'Jasa',
+            'profile' => 'Jasa',
+            'bidang_jasa' => 'IT',
+            'model_pendapatan' => 'kontrakt'
         ]);
     }
 
@@ -77,7 +79,7 @@ class AnalisisControllerTest extends TestCase
     {
         $this->login();
         $perusahaanA = $this->buatPerusahaan();
-        $perusahaanB = Perusahaan::create(['nama' => 'PT Lain', 'sektor' => 'Dagang']);
+        $perusahaanB = Perusahaan::create(['nama' => 'PT Lain', 'profile' => 'perusahaan', 'bidang_jasa' => 'IT', 'model_pendapatan' => 'kontrak']);
 
         $dokumenB = $this->buatDokumen($perusahaanB);
         $analisisB = $this->buatAnalisis($dokumenB);
@@ -89,7 +91,7 @@ class AnalisisControllerTest extends TestCase
 
     public function test_detail_analisis_milik_perusahaan_sendiri_berhasil(): void
     {
-        
+
         $this->withoutExceptionHandling();
         $this->login();
         $perusahaan = $this->buatPerusahaan();
