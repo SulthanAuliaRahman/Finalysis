@@ -30,6 +30,10 @@ export const RatioCardBase = forwardRef(function RatioCardBase({
                     setUserPrompt('');
                     onRegenerasiStart?.(); // mulai polling, karena job berjalan async
                 },
+                onError: (errors) => {
+                    const pesan = Object.values(errors)[0] ?? 'Terjadi kesalahan saat regenerasi.';
+                    alert(pesan);
+                },
             }
         );
     }

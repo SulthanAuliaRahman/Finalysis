@@ -28,6 +28,11 @@ export function AIInsightCard({
                     setUserPrompt('');
                     onRegenerasiStart?.();
                 },
+                onError: (errors) => {
+                    // errors = { user_prompt: '...', section: '...', message: '...' }
+                    const pesan = Object.values(errors)[0] ?? 'Terjadi kesalahan saat regenerasi.';
+                    alert(pesan);
+                },
             }
         );
     }

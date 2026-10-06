@@ -58,6 +58,10 @@ export function TrendCardBase({
                     setUserPrompt('');
                     onRegenerasiStart?.();
                 },
+                onError: (errors) => {
+                    const pesan = Object.values(errors)[0] ?? 'Terjadi kesalahan saat regenerasi.';
+                    alert(pesan);
+                },
             }
         );
     }
